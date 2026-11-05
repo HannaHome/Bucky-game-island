@@ -142,6 +142,42 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .gopts.txt .gopt{min-height:58px;font-size:24px;font-weight:800}
 .gopt:disabled{opacity:.35}
 .gopt.right{background:#e6f8e6;box-shadow:0 5px 0 var(--leaf)}
+.island.read{background:#ffe9e2}
+.island.read .badge{background:#e2694e;font-family:var(--f-ui);font-size:22px}
+.island.read .stone .chars{font-size:34px}
+.mode.read{background:#e2694e}
+.rstage{flex:1;min-height:0;display:flex;gap:16px}
+.storybox{flex:1;min-width:0;min-height:0;overflow-y:auto;background:var(--paper);border-radius:24px;padding:18px 22px;box-shadow:0 6px 0 rgba(37,49,74,.1);display:flex;flex-direction:column;gap:8px}
+.st-title{display:flex;align-items:center;gap:12px;font-size:34px;font-weight:800}
+.st-emo{font-size:46px}
+.story{font-size:36px;line-height:2.2;text-indent:2em}
+.sent{border-radius:10px;transition:background .3s,box-shadow .3s}
+.sent.reading{background:#fff1b8}
+.sent.hint{background:#ffd96a;box-shadow:0 0 0 4px #ffd96a}
+.sent.found{background:#cdeecd;box-shadow:0 0 0 4px #cdeecd}
+.zc{display:inline-flex;align-items:center;margin:0 .04em;text-indent:0;vertical-align:middle;line-height:1}
+.zc .z{display:inline-flex;align-items:flex-end;font-size:.42em;margin-left:.1em;color:#5b4a8a;font-weight:600}
+.zc .zs{display:flex;flex-direction:column;align-items:center}
+.zc .zs i{font-style:normal;line-height:1.02}
+.zc .zs i.nd{line-height:.6}
+.zc .tn{line-height:1;font-size:1.2em;transform:translateY(-.1em);margin-left:.02em}
+.pu{text-indent:0}
+.rside{width:340px;flex:none;display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+.qcard{background:var(--card);border-radius:24px;padding:14px 16px;box-shadow:0 5px 0 var(--line)}
+.qno{display:block;font-size:15px;font-weight:800;color:var(--muted);margin-bottom:2px}
+.qtext{font-size:26px;font-weight:800;line-height:2}
+.ropts{display:flex;flex-direction:column;gap:10px}
+.ropt{background:var(--card);border-radius:18px;box-shadow:0 5px 0 var(--line);min-height:64px;padding:8px 14px;display:flex;align-items:center;gap:12px;text-align:left;font-size:24px;font-weight:700}
+.ropt .onum{flex:none;width:34px;height:34px;border-radius:50%;background:#ffe9e2;color:#c14d33;display:grid;place-items:center;font-family:var(--f-num);font-size:20px}
+.ropt:disabled{opacity:.35}
+.ropt.right{background:#e6f8e6;box-shadow:0 5px 0 var(--leaf)}
+.rtools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:820px),(orientation:portrait){
+  .rstage{flex-direction:column}
+  .storybox{flex:1 1 auto;max-height:55%}
+  .story,.st-title{font-size:26px}
+  .rside{width:100%;overflow:visible}
+}
 @media (max-width:820px),(orientation:portrait){
   .gstage{flex-direction:column}
   .gside{width:100%;flex-direction:row;flex-wrap:wrap}
@@ -215,6 +251,25 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
         <div class="gq"><div class="gflag" id="gFlag"></div><div class="gtext" id="gText"></div><button class="btn" id="gSay">再聽一次</button></div>
         <div class="gopts" id="gOpts"></div>
         <div class="coach"><svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="2.6" fill="#25314a"/><circle cx="36" cy="27" r="2.6" fill="#25314a"/><path d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><div class="bubble" id="gBubble">一起去環遊世界吧！</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 故事島 -->
+  <section class="screen" id="readScreen" hidden>
+    <div class="bar">
+      <button class="btn" id="readBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>地圖</button>
+      <div class="progress" id="readProg"></div>
+      <div class="spacer"></div>
+      <span class="mode read">閱讀</span>
+    </div>
+    <div class="rstage">
+      <div class="storybox"><div class="st-title" id="stTitle"></div><div class="story" id="story"></div></div>
+      <div class="rside">
+        <div class="qcard"><div class="qtext" id="qText"></div></div>
+        <div class="ropts" id="rOpts"></div>
+        <div class="rtools"><button class="btn" id="btnStory">聽故事</button><button class="btn" id="btnQ">聽題目</button></div>
+        <div class="coach"><svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="2.6" fill="#25314a"/><circle cx="36" cy="27" r="2.6" fill="#25314a"/><path d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><div class="bubble" id="rBubble"></div></div>
       </div>
     </div>
   </section>
@@ -298,9 +353,17 @@ const LEVELS=[
  {id:'g11',t:'geo',c:[],icon:'🇳🇬🇬🇭🇫🇯',label:'非洲和大洋洲 2',q:'flag',pool:['NGA','ETH','GHA','TZA','MDG','DZA','CMR','PNG','FJI'],view:[430,100,570,290]},
  {id:'g12',t:'geo',c:[],icon:'🧭',label:'找找在哪裡 2',q:'where',pool:['MEX','ARG','ZAF','SAU','MNG','KAZ','IDN','TUR','FRA','ESP','NGA','PER','NOR','IRN'],view:[0,0,1000,394]},
  {id:'g13',t:'geo',c:[],icon:'🏰',label:'首都大挑戰 2',q:'capital',pool:['DEU','ESP','NLD','CAN','BRA','KEN','PHL','VNM','PRT','NOR','SWE','CHL','TUR','CUB'],view:[0,0,1000,394]},
- {id:'g14',t:'geo',c:[],icon:'🏆',label:'全世界國旗大考驗',q:'flag',pool:'ALL',view:[0,0,1000,394]}
+ {id:'g14',t:'geo',c:[],icon:'🏆',label:'全世界國旗大考驗',q:'flag',pool:'ALL',view:[0,0,1000,394]},
+ {id:'r1',t:'read',c:[],icon:'🐶',label:'小狗的球',story:0},
+ {id:'r2',t:'read',c:[],icon:'🌧️',label:'下雨天',story:1},
+ {id:'r3',t:'read',c:[],icon:'🐰',label:'小兔子種紅蘿蔔',story:2},
+ {id:'r4',t:'read',c:[],icon:'🎂',label:'爸爸的生日',story:3},
+ {id:'r5',t:'read',c:[],icon:'🐜',label:'螞蟻搬家',story:4},
+ {id:'r6',t:'read',c:[],icon:'⏰',label:'小明的早上',story:5},
+ {id:'r7',t:'read',c:[],icon:'🐢',label:'烏龜和小鳥',story:6},
+ {id:'r8',t:'read',c:[],icon:'🍉',label:'好吃的水果',story:7}
 ];
-const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆','🎡','🚁','🗽','🏰','🐧','🦜','🚢'];
+const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆','🎡','🚁','🗽','🏰','🐧','🦜','🚢','📚','🖍️','🦉','🐞','🍀','🎨','🧸','🌟'];
 const COLORS=['#ff6b81','#3fa2f7','#4fb865','#f29e00','#7a6cf0','#ff8c42'];
 const strokesOf=ch=>NUM[ch]?NUM[ch].s:ZY[ch];
 const isNum=ch=>!!NUM[ch];
@@ -423,7 +486,7 @@ function startChar(){G.round=0;G.si=0;G.fail=0;G.showHint=true;G.demo=null;G.ink
 const picBig=document.getElementById('picBig'),picWord=document.getElementById('picWord');
 function renderTop(){const pr=document.getElementById('progress');pr.innerHTML='';G.lvl.c.forEach((c,i)=>{const s=document.createElement('span');s.className='chip'+(isNum(c)?' num':'')+(i<G.ci?' ok':i===G.ci?' now':'');s.textContent=c;pr.appendChild(s);});
  const mt=document.getElementById('modeTag');mt.textContent=G.round===0?'描描看':'自己寫';mt.className='mode'+(G.round===1?' solo':'');}
-function startLevel(i){if(LEVELS[i].t==='geo'){startGeo(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
+function startLevel(i){if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
 function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/2)?3:G.mist<=per*2?2:1;const id=G.lvl.id;const first=!S.stars[id];
  S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(G.li)){S.stickers.push(G.li);}stk=STICKERS[G.li%STICKERS.length];save();
  sfx.win();burst(160);document.getElementById('winTitle').textContent=(S.name||'')+'過關了！';
@@ -438,7 +501,7 @@ function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open)return 
 function renderMap(){document.getElementById('titleName').textContent=S.name||'我';
  let total=0;Object.values(S.stars).forEach(v=>total+=v);document.getElementById('starTotal').textContent=total;
  const map=document.getElementById('map');map.innerHTML='';
- [['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地']].forEach(([t,name,b])=>{const isl=document.createElement('div');isl.className='island '+t;isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
+ [['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地'],['read','故事島','讀']].forEach(([t,name,b])=>{const isl=document.createElement('div');isl.className='island '+t;isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
   let nextMarked=false;LEVELS.forEach((L,i)=>{if(L.t!==t)return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
    let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}btn.className=cls;
    const no=LEVELS.filter(x=>x.t===t).indexOf(L)+1;
@@ -446,7 +509,7 @@ function renderMap(){document.getElementById('titleName').textContent=S.name||'�
    btn.setAttribute('aria-label','第'+no+'關 '+(L.label||L.c.join(' '))+(open?'':'，還沒解鎖'));
    btn.onclick=()=>{audio();if(!open){sfx.bad();btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');return;}startLevel(i);};row.appendChild(btn);});
   isl.appendChild(row);map.appendChild(isl);});}
-function show(w){document.getElementById('mapScreen').hidden=w!=='map';document.getElementById('playScreen').hidden=w!=='play';document.getElementById('geoScreen').hidden=w!=='geo';if(w!=='geo'){GZ.tok++;GZ.L=null;}if(w==='map'){G.lvl=null;G.demo=null;try{speechSynthesis.cancel();}catch(e){}renderMap();}}
+function show(w){document.getElementById('mapScreen').hidden=w!=='map';document.getElementById('playScreen').hidden=w!=='play';document.getElementById('geoScreen').hidden=w!=='geo';document.getElementById('readScreen').hidden=w!=='read';if(w!=='read'){RZ.tok++;RZ.L=null;}if(w!=='geo'){GZ.tok++;GZ.L=null;}if(w==='map'){G.lvl=null;G.demo=null;try{speechSynthesis.cancel();}catch(e){}renderMap();}}
 
 /* ---------- buttons ---------- */
 const $=id=>document.getElementById(id);
@@ -546,6 +609,45 @@ $('geoBack').onclick=()=>show('map');
 $('gText').addEventListener('click',e=>{const b=e.target.closest('.sayb');if(!b)return;audio();sayPair(b.dataset.zh,b.dataset.en);});
 $('gSay').onclick=()=>{audio();if(GZ.last)sayPair(GZ.last[0],GZ.last[1]);};
 $('openBook').addEventListener('click',()=>{const b=$('passport');b.innerHTML='';Object.keys(CT).forEach(a=>{const s=document.createElement('div');const got=S.passport&&S.passport[a];s.className='slot'+(got?' got':'');s.textContent=got?CT[a][2]:'?';s.title=got?CT[a][0]+' '+enShow(CT[a][4]):'';if(got){s.style.cursor='pointer';s.onclick=()=>{audio();sayPair(CT[a][0]+'，首都是'+CT[a][1],enShow(CT[a][4])+'. '+CT[a][5]+'.');};}b.appendChild(s);});});
+
+/* ---------- 故事島：一年級閱讀測驗 ---------- */
+/* 每個字：[國字, 注音]；注音依臺灣課本標法（一 標本調、輕聲點在前） */
+const STORIES=[{"t":[["小","ㄒㄧㄠˇ"],["狗","ㄍㄡˇ"],["的","˙ㄉㄜ"],["球","ㄑㄧㄡˊ"]],"tt":"小狗的球","e":"🐶","s":[[["小","ㄒㄧㄠˇ"],["狗","ㄍㄡˇ"],["有","ㄧㄡˇ"],["一","ㄧ"],["顆","ㄎㄜ"],["紅","ㄏㄨㄥˊ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["球","ㄑㄧㄡˊ"],["。",""]],[["他","ㄊㄚ"],["把","ㄅㄚˇ"],["球","ㄑㄧㄡˊ"],["丟","ㄉㄧㄡ"],["到","ㄉㄠˋ"],["草","ㄘㄠˇ"],["地","ㄉㄧˋ"],["上","ㄕㄤˋ"],["。",""]],[["球","ㄑㄧㄡˊ"],["滾","ㄍㄨㄣˇ"],["呀","˙ㄧㄚ"],["滾","ㄍㄨㄣˇ"],["，",""],["滾","ㄍㄨㄣˇ"],["進","ㄐㄧㄣˋ"],["了","˙ㄌㄜ"],["花","ㄏㄨㄚ"],["園","ㄩㄢˊ"],["。",""]],[["小","ㄒㄧㄠˇ"],["狗","ㄍㄡˇ"],["跑","ㄆㄠˇ"],["過","ㄍㄨㄛˋ"],["去","ㄑㄩˋ"],["，",""],["把","ㄅㄚˇ"],["球","ㄑㄧㄡˊ"],["找","ㄓㄠˇ"],["回","ㄏㄨㄟˊ"],["來","ㄌㄞˊ"],["了","˙ㄌㄜ"],["。",""]]],"st":["小狗有一顆紅色的球。","他把球丟到草地上。","球滾呀滾，滾進了花園。","小狗跑過去，把球找回來了。"],"q":[{"q":[["小","ㄒㄧㄠˇ"],["狗","ㄍㄡˇ"],["的","˙ㄉㄜ"],["球","ㄑㄧㄡˊ"],["是","ㄕˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["顏","ㄧㄢˊ"],["色","ㄙㄜˋ"],["？",""]],"qt":"小狗的球是什麼顏色？","o":[[["紅","ㄏㄨㄥˊ"],["色","ㄙㄜˋ"]],[["藍","ㄌㄢˊ"],["色","ㄙㄜˋ"]],[["黃","ㄏㄨㄤˊ"],["色","ㄙㄜˋ"]]],"ot":["紅色","藍色","黃色"],"h":0,"k":"什麼"},{"q":[["球","ㄑㄧㄡˊ"],["滾","ㄍㄨㄣˇ"],["到","ㄉㄠˋ"],["哪","ㄋㄚˇ"],["裡","˙ㄌㄧ"],["去","ㄑㄩˋ"],["了","˙ㄌㄜ"],["？",""]],"qt":"球滾到哪裡去了？","o":[[["花","ㄏㄨㄚ"],["園","ㄩㄢˊ"]],[["河","ㄏㄜˊ"],["裡","ㄌㄧˇ"]],[["房","ㄈㄤˊ"],["間","ㄐㄧㄢ"]]],"ot":["花園","河裡","房間"],"h":2,"k":"在哪裡"},{"q":[["最","ㄗㄨㄟˋ"],["後","ㄏㄡˋ"],["，",""],["球","ㄑㄧㄡˊ"],["怎","ㄗㄣˇ"],["麼","˙ㄇㄜ"],["了","˙ㄌㄜ"],["？",""]],"qt":"最後，球怎麼了？","o":[[["被","ㄅㄟˋ"],["小","ㄒㄧㄠˇ"],["狗","ㄍㄡˇ"],["找","ㄓㄠˇ"],["回","ㄏㄨㄟˊ"],["來","ㄌㄞˊ"],["了","˙ㄌㄜ"]],[["不","ㄅㄨˋ"],["見","ㄐㄧㄢˋ"],["了","˙ㄌㄜ"]],[["破","ㄆㄛˋ"],["掉","ㄉㄧㄠˋ"],["了","˙ㄌㄜ"]]],"ot":["被小狗找回來了","不見了","破掉了"],"h":3,"k":"結果"}]},{"t":[["下","ㄒㄧㄚˋ"],["雨","ㄩˇ"],["天","ㄊㄧㄢ"]],"tt":"下雨天","e":"🌧️","s":[[["早","ㄗㄠˇ"],["上","˙ㄕㄤ"],["，",""],["天","ㄊㄧㄢ"],["空","ㄎㄨㄥ"],["下","ㄒㄧㄚˋ"],["起","ㄑㄧˇ"],["大","ㄉㄚˋ"],["雨","ㄩˇ"],["。",""]],[["妹","ㄇㄟˋ"],["妹","˙ㄇㄟ"],["穿","ㄔㄨㄢ"],["上","ㄕㄤˋ"],["黃","ㄏㄨㄤˊ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["雨","ㄩˇ"],["衣","ㄧ"],["，",""],["哥","ㄍㄜ"],["哥","˙ㄍㄜ"],["拿","ㄋㄚˊ"],["著","˙ㄓㄜ"],["藍","ㄌㄢˊ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["雨","ㄩˇ"],["傘","ㄙㄢˇ"],["。",""]],[["他","ㄊㄚ"],["們","˙ㄇㄣ"],["一","ㄧ"],["起","ㄑㄧˇ"],["走","ㄗㄡˇ"],["路","ㄌㄨˋ"],["去","ㄑㄩˋ"],["上","ㄕㄤˋ"],["學","ㄒㄩㄝˊ"],["。",""]],[["到","ㄉㄠˋ"],["了","˙ㄌㄜ"],["學","ㄒㄩㄝˊ"],["校","ㄒㄧㄠˋ"],["，",""],["雨","ㄩˇ"],["停","ㄊㄧㄥˊ"],["了","˙ㄌㄜ"],["，",""],["天","ㄊㄧㄢ"],["上","ㄕㄤˋ"],["出","ㄔㄨ"],["現","ㄒㄧㄢˋ"],["了","˙ㄌㄜ"],["彩","ㄘㄞˇ"],["虹","ㄏㄨㄥˊ"],["。",""]]],"st":["早上，天空下起大雨。","妹妹穿上黃色的雨衣，哥哥拿著藍色的雨傘。","他們一起走路去上學。","到了學校，雨停了，天上出現了彩虹。"],"q":[{"q":[["誰","ㄕㄟˊ"],["穿","ㄔㄨㄢ"],["黃","ㄏㄨㄤˊ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["雨","ㄩˇ"],["衣","ㄧ"],["？",""]],"qt":"誰穿黃色的雨衣？","o":[[["妹","ㄇㄟˋ"],["妹","˙ㄇㄟ"]],[["哥","ㄍㄜ"],["哥","˙ㄍㄜ"]],[["媽","ㄇㄚ"],["媽","˙ㄇㄚ"]]],"ot":["妹妹","哥哥","媽媽"],"h":1,"k":"誰"},{"q":[["他","ㄊㄚ"],["們","˙ㄇㄣ"],["要","ㄧㄠˋ"],["去","ㄑㄩˋ"],["哪","ㄋㄚˇ"],["裡","˙ㄌㄧ"],["？",""]],"qt":"他們要去哪裡？","o":[[["學","ㄒㄩㄝˊ"],["校","ㄒㄧㄠˋ"]],[["公","ㄍㄨㄥ"],["園","ㄩㄢˊ"]],[["超","ㄔㄠ"],["市","ㄕˋ"]]],"ot":["學校","公園","超市"],"h":2,"k":"在哪裡"},{"q":[["雨","ㄩˇ"],["停","ㄊㄧㄥˊ"],["了","˙ㄌㄜ"],["以","ㄧˇ"],["後","ㄏㄡˋ"],["，",""],["天","ㄊㄧㄢ"],["上","ㄕㄤˋ"],["出","ㄔㄨ"],["現","ㄒㄧㄢˋ"],["了","˙ㄌㄜ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["？",""]],"qt":"雨停了以後，天上出現了什麼？","o":[[["彩","ㄘㄞˇ"],["虹","ㄏㄨㄥˊ"]],[["月","ㄩㄝˋ"],["亮","˙ㄌㄧㄤ"]],[["飛","ㄈㄟ"],["機","ㄐㄧ"]]],"ot":["彩虹","月亮","飛機"],"h":3,"k":"什麼"}]},{"t":[["小","ㄒㄧㄠˇ"],["兔","ㄊㄨˋ"],["子","˙ㄗ"],["種","ㄓㄨㄥˋ"],["紅","ㄏㄨㄥˊ"],["蘿","ㄌㄨㄛˊ"],["蔔","˙ㄅㄛ"]],"tt":"小兔子種紅蘿蔔","e":"🐰","s":[[["春","ㄔㄨㄣ"],["天","ㄊㄧㄢ"],["到","ㄉㄠˋ"],["了","˙ㄌㄜ"],["，",""],["小","ㄒㄧㄠˇ"],["兔","ㄊㄨˋ"],["子","˙ㄗ"],["在","ㄗㄞˋ"],["土","ㄊㄨˇ"],["裡","ㄌㄧˇ"],["種","ㄓㄨㄥˋ"],["下","ㄒㄧㄚˋ"],["紅","ㄏㄨㄥˊ"],["蘿","ㄌㄨㄛˊ"],["蔔","˙ㄅㄛ"],["的","˙ㄉㄜ"],["種","ㄓㄨㄥˇ"],["子","ㄗˇ"],["。",""]],[["他","ㄊㄚ"],["每","ㄇㄟˇ"],["天","ㄊㄧㄢ"],["都","ㄉㄡ"],["幫","ㄅㄤ"],["種","ㄓㄨㄥˇ"],["子","ㄗˇ"],["澆","ㄐㄧㄠ"],["水","ㄕㄨㄟˇ"],["。",""]],[["過","ㄍㄨㄛˋ"],["了","˙ㄌㄜ"],["很","ㄏㄣˇ"],["多","ㄉㄨㄛ"],["天","ㄊㄧㄢ"],["，",""],["土","ㄊㄨˇ"],["裡","ㄌㄧˇ"],["長","ㄓㄤˇ"],["出","ㄔㄨ"],["綠","ㄌㄩˋ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["葉","ㄧㄝˋ"],["子","˙ㄗ"],["。",""]],[["小","ㄒㄧㄠˇ"],["兔","ㄊㄨˋ"],["子","˙ㄗ"],["拔","ㄅㄚˊ"],["起","ㄑㄧˇ"],["來","ㄌㄞˊ"],["一","ㄧ"],["看","ㄎㄢˋ"],["，",""],["是","ㄕˋ"],["一","ㄧ"],["根","ㄍㄣ"],["又","ㄧㄡˋ"],["大","ㄉㄚˋ"],["又","ㄧㄡˋ"],["紅","ㄏㄨㄥˊ"],["的","˙ㄉㄜ"],["紅","ㄏㄨㄥˊ"],["蘿","ㄌㄨㄛˊ"],["蔔","˙ㄅㄛ"],["！",""]]],"st":["春天到了，小兔子在土裡種下紅蘿蔔的種子。","他每天都幫種子澆水。","過了很多天，土裡長出綠色的葉子。","小兔子拔起來一看，是一根又大又紅的紅蘿蔔！"],"q":[{"q":[["小","ㄒㄧㄠˇ"],["兔","ㄊㄨˋ"],["子","˙ㄗ"],["種","ㄓㄨㄥˋ"],["了","˙ㄌㄜ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["？",""]],"qt":"小兔子種了什麼？","o":[[["紅","ㄏㄨㄥˊ"],["蘿","ㄌㄨㄛˊ"],["蔔","˙ㄅㄛ"]],[["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"]],[["玉","ㄩˋ"],["米","ㄇㄧˇ"]]],"ot":["紅蘿蔔","西瓜","玉米"],"h":0,"k":"什麼"},{"q":[["小","ㄒㄧㄠˇ"],["兔","ㄊㄨˋ"],["子","˙ㄗ"],["是","ㄕˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["時","ㄕˊ"],["候","˙ㄏㄡ"],["種","ㄓㄨㄥˋ"],["下","ㄒㄧㄚˋ"],["種","ㄓㄨㄥˇ"],["子","ㄗˇ"],["的","˙ㄉㄜ"],["？",""]],"qt":"小兔子是什麼時候種下種子的？","o":[[["春","ㄔㄨㄣ"],["天","ㄊㄧㄢ"]],[["夏","ㄒㄧㄚˋ"],["天","ㄊㄧㄢ"]],[["冬","ㄉㄨㄥ"],["天","ㄊㄧㄢ"]]],"ot":["春天","夏天","冬天"],"h":0,"k":"什麼時候"},{"q":[["小","ㄒㄧㄠˇ"],["兔","ㄊㄨˋ"],["子","˙ㄗ"],["每","ㄇㄟˇ"],["天","ㄊㄧㄢ"],["做","ㄗㄨㄛˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["事","ㄕˋ"],["？",""]],"qt":"小兔子每天做什麼事？","o":[[["幫","ㄅㄤ"],["種","ㄓㄨㄥˇ"],["子","ㄗˇ"],["澆","ㄐㄧㄠ"],["水","ㄕㄨㄟˇ"]],[["去","ㄑㄩˋ"],["游","ㄧㄡˊ"],["泳","ㄩㄥˇ"]],[["睡","ㄕㄨㄟˋ"],["大","ㄉㄚˋ"],["覺","ㄐㄧㄠˋ"]]],"ot":["幫種子澆水","去游泳","睡大覺"],"h":1,"k":"做什麼"}]},{"t":[["爸","ㄅㄚˋ"],["爸","˙ㄅㄚ"],["的","˙ㄉㄜ"],["生","ㄕㄥ"],["日","ㄖˋ"]],"tt":"爸爸的生日","e":"🎂","s":[[["今","ㄐㄧㄣ"],["天","ㄊㄧㄢ"],["是","ㄕˋ"],["爸","ㄅㄚˋ"],["爸","˙ㄅㄚ"],["的","˙ㄉㄜ"],["生","ㄕㄥ"],["日","ㄖˋ"],["。",""]],[["我","ㄨㄛˇ"],["和","ㄏㄜˊ"],["媽","ㄇㄚ"],["媽","˙ㄇㄚ"],["一","ㄧ"],["起","ㄑㄧˇ"],["做","ㄗㄨㄛˋ"],["了","˙ㄌㄜ"],["一","ㄧ"],["個","˙ㄍㄜ"],["草","ㄘㄠˇ"],["莓","ㄇㄟˊ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"],["。",""]],[["晚","ㄨㄢˇ"],["上","˙ㄕㄤ"],["爸","ㄅㄚˋ"],["爸","˙ㄅㄚ"],["回","ㄏㄨㄟˊ"],["家","ㄐㄧㄚ"],["，",""],["我","ㄨㄛˇ"],["們","˙ㄇㄣ"],["一","ㄧ"],["起","ㄑㄧˇ"],["唱","ㄔㄤˋ"],["生","ㄕㄥ"],["日","ㄖˋ"],["快","ㄎㄨㄞˋ"],["樂","ㄌㄜˋ"],["歌","ㄍㄜ"],["。",""]],[["爸","ㄅㄚˋ"],["爸","˙ㄅㄚ"],["笑","ㄒㄧㄠˋ"],["著","˙ㄓㄜ"],["說","ㄕㄨㄛ"],["：",""],["「",""],["這","ㄓㄜˋ"],["是","ㄕˋ"],["最","ㄗㄨㄟˋ"],["好","ㄏㄠˇ"],["吃","ㄔ"],["的","˙ㄉㄜ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"],["！",""],["」",""]]],"st":["今天是爸爸的生日。","我和媽媽一起做了一個草莓蛋糕。","晚上爸爸回家，我們一起唱生日快樂歌。","爸爸笑著說：「這是最好吃的蛋糕！」"],"q":[{"q":[["今","ㄐㄧㄣ"],["天","ㄊㄧㄢ"],["是","ㄕˋ"],["誰","ㄕㄟˊ"],["的","˙ㄉㄜ"],["生","ㄕㄥ"],["日","ㄖˋ"],["？",""]],"qt":"今天是誰的生日？","o":[[["爸","ㄅㄚˋ"],["爸","˙ㄅㄚ"]],[["媽","ㄇㄚ"],["媽","˙ㄇㄚ"]],[["我","ㄨㄛˇ"]]],"ot":["爸爸","媽媽","我"],"h":0,"k":"誰"},{"q":[["他","ㄊㄚ"],["們","˙ㄇㄣ"],["做","ㄗㄨㄛˋ"],["了","˙ㄌㄜ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"],["？",""]],"qt":"他們做了什麼蛋糕？","o":[[["草","ㄘㄠˇ"],["莓","ㄇㄟˊ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"]],[["巧","ㄑㄧㄠˇ"],["克","ㄎㄜˋ"],["力","ㄌㄧˋ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"]],[["香","ㄒㄧㄤ"],["蕉","ㄐㄧㄠ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"]]],"ot":["草莓蛋糕","巧克力蛋糕","香蕉蛋糕"],"h":1,"k":"什麼"},{"q":[["爸","ㄅㄚˋ"],["爸","˙ㄅㄚ"],["吃","ㄔ"],["了","˙ㄌㄜ"],["蛋","ㄉㄢˋ"],["糕","ㄍㄠ"],["，",""],["心","ㄒㄧㄣ"],["情","ㄑㄧㄥˊ"],["怎","ㄗㄣˇ"],["麼","˙ㄇㄜ"],["樣","ㄧㄤˋ"],["？",""]],"qt":"爸爸吃了蛋糕，心情怎麼樣？","o":[[["很","ㄏㄣˇ"],["開","ㄎㄞ"],["心","ㄒㄧㄣ"]],[["很","ㄏㄣˇ"],["生","ㄕㄥ"],["氣","ㄑㄧˋ"]],[["很","ㄏㄣˇ"],["難","ㄋㄢˊ"],["過","ㄍㄨㄛˋ"]]],"ot":["很開心","很生氣","很難過"],"h":3,"k":"心情"}]},{"t":[["螞","ㄇㄚˇ"],["蟻","ㄧˇ"],["搬","ㄅㄢ"],["家","ㄐㄧㄚ"]],"tt":"螞蟻搬家","e":"🐜","s":[[["天","ㄊㄧㄢ"],["空","ㄎㄨㄥ"],["黑","ㄏㄟ"],["黑","ㄏㄟ"],["的","˙ㄉㄜ"],["，",""],["好","ㄏㄠˇ"],["像","ㄒㄧㄤˋ"],["快","ㄎㄨㄞˋ"],["要","ㄧㄠˋ"],["下","ㄒㄧㄚˋ"],["雨","ㄩˇ"],["了","˙ㄌㄜ"],["。",""]],[["一","ㄧ"],["群","ㄑㄩㄣˊ"],["小","ㄒㄧㄠˇ"],["螞","ㄇㄚˇ"],["蟻","ㄧˇ"],["排","ㄆㄞˊ"],["成","ㄔㄥˊ"],["長","ㄔㄤˊ"],["長","ㄔㄤˊ"],["的","˙ㄉㄜ"],["隊","ㄉㄨㄟˋ"],["伍","ㄨˇ"],["。",""]],[["他","ㄊㄚ"],["們","˙ㄇㄣ"],["搬","ㄅㄢ"],["著","˙ㄓㄜ"],["食","ㄕˊ"],["物","ㄨˋ"],["，",""],["一","ㄧ"],["起","ㄑㄧˇ"],["往","ㄨㄤˇ"],["高","ㄍㄠ"],["高","ㄍㄠ"],["的","˙ㄉㄜ"],["地","ㄉㄧˋ"],["方","˙ㄈㄤ"],["走","ㄗㄡˇ"],["。",""]],[["因","ㄧㄣ"],["為","ㄨㄟˋ"],["下","ㄒㄧㄚˋ"],["雨","ㄩˇ"],["的","˙ㄉㄜ"],["時","ㄕˊ"],["候","˙ㄏㄡ"],["，",""],["低","ㄉㄧ"],["低","ㄉㄧ"],["的","˙ㄉㄜ"],["地","ㄉㄧˋ"],["方","˙ㄈㄤ"],["會","ㄏㄨㄟˋ"],["積","ㄐㄧ"],["水","ㄕㄨㄟˇ"],["。",""]]],"st":["天空黑黑的，好像快要下雨了。","一群小螞蟻排成長長的隊伍。","他們搬著食物，一起往高高的地方走。","因為下雨的時候，低低的地方會積水。"],"q":[{"q":[["天","ㄊㄧㄢ"],["空","ㄎㄨㄥ"],["看","ㄎㄢˋ"],["起","ㄑㄧˇ"],["來","ㄌㄞˊ"],["怎","ㄗㄣˇ"],["麼","˙ㄇㄜ"],["樣","ㄧㄤˋ"],["？",""]],"qt":"天空看起來怎麼樣？","o":[[["黑","ㄏㄟ"],["黑","ㄏㄟ"],["的","˙ㄉㄜ"]],[["藍","ㄌㄢˊ"],["藍","ㄌㄢˊ"],["的","˙ㄉㄜ"]],[["紅","ㄏㄨㄥˊ"],["紅","ㄏㄨㄥˊ"],["的","˙ㄉㄜ"]]],"ot":["黑黑的","藍藍的","紅紅的"],"h":0,"k":"什麼"},{"q":[["螞","ㄇㄚˇ"],["蟻","ㄧˇ"],["往","ㄨㄤˇ"],["哪","ㄋㄚˇ"],["裡","˙ㄌㄧ"],["走","ㄗㄡˇ"],["？",""]],"qt":"螞蟻往哪裡走？","o":[[["高","ㄍㄠ"],["高","ㄍㄠ"],["的","˙ㄉㄜ"],["地","ㄉㄧˋ"],["方","˙ㄈㄤ"]],[["低","ㄉㄧ"],["低","ㄉㄧ"],["的","˙ㄉㄜ"],["地","ㄉㄧˋ"],["方","˙ㄈㄤ"]],[["水","ㄕㄨㄟˇ"],["裡","ㄌㄧˇ"]]],"ot":["高高的地方","低低的地方","水裡"],"h":2,"k":"在哪裡"},{"q":[["螞","ㄇㄚˇ"],["蟻","ㄧˇ"],["為","ㄨㄟˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["要","ㄧㄠˋ"],["搬","ㄅㄢ"],["家","ㄐㄧㄚ"],["？",""]],"qt":"螞蟻為什麼要搬家？","o":[[["怕","ㄆㄚˋ"],["下","ㄒㄧㄚˋ"],["雨","ㄩˇ"],["會","ㄏㄨㄟˋ"],["積","ㄐㄧ"],["水","ㄕㄨㄟˇ"]],[["想","ㄒㄧㄤˇ"],["去","ㄑㄩˋ"],["玩","ㄨㄢˊ"]],[["肚","ㄉㄨˇ"],["子","˙ㄗ"],["餓","ㄜˋ"],["了","˙ㄌㄜ"]]],"ot":["怕下雨會積水","想去玩","肚子餓了"],"h":3,"k":"為什麼"}]},{"t":[["小","ㄒㄧㄠˇ"],["明","ㄇㄧㄥˊ"],["的","˙ㄉㄜ"],["早","ㄗㄠˇ"],["上","˙ㄕㄤ"]],"tt":"小明的早上","e":"⏰","s":[[["小","ㄒㄧㄠˇ"],["明","ㄇㄧㄥˊ"],["起","ㄑㄧˇ"],["床","ㄔㄨㄤˊ"],["後","ㄏㄡˋ"],["，",""],["先","ㄒㄧㄢ"],["去","ㄑㄩˋ"],["刷","ㄕㄨㄚ"],["牙","ㄧㄚˊ"],["洗","ㄒㄧˇ"],["臉","ㄌㄧㄢˇ"],["。",""]],[["接","ㄐㄧㄝ"],["著","˙ㄓㄜ"],["，",""],["他","ㄊㄚ"],["坐","ㄗㄨㄛˋ"],["下","ㄒㄧㄚˋ"],["來","ㄌㄞˊ"],["吃","ㄔ"],["早","ㄗㄠˇ"],["餐","ㄘㄢ"],["。",""]],[["吃","ㄔ"],["完","ㄨㄢˊ"],["早","ㄗㄠˇ"],["餐","ㄘㄢ"],["，",""],["他","ㄊㄚ"],["背","ㄅㄟ"],["起","ㄑㄧˇ"],["書","ㄕㄨ"],["包","ㄅㄠ"],["。",""]],[["最","ㄗㄨㄟˋ"],["後","ㄏㄡˋ"],["，",""],["他","ㄊㄚ"],["跟","ㄍㄣ"],["媽","ㄇㄚ"],["媽","˙ㄇㄚ"],["說","ㄕㄨㄛ"],["再","ㄗㄞˋ"],["見","ㄐㄧㄢˋ"],["，",""],["去","ㄑㄩˋ"],["上","ㄕㄤˋ"],["學","ㄒㄩㄝˊ"],["了","˙ㄌㄜ"],["。",""]]],"st":["小明起床後，先去刷牙洗臉。","接著，他坐下來吃早餐。","吃完早餐，他背起書包。","最後，他跟媽媽說再見，去上學了。"],"q":[{"q":[["小","ㄒㄧㄠˇ"],["明","ㄇㄧㄥˊ"],["起","ㄑㄧˇ"],["床","ㄔㄨㄤˊ"],["後","ㄏㄡˋ"],["，",""],["第","ㄉㄧˋ"],["一","ㄧ"],["件","ㄐㄧㄢˋ"],["事","ㄕˋ"],["做","ㄗㄨㄛˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["？",""]],"qt":"小明起床後，第一件事做什麼？","o":[[["刷","ㄕㄨㄚ"],["牙","ㄧㄚˊ"],["洗","ㄒㄧˇ"],["臉","ㄌㄧㄢˇ"]],[["吃","ㄔ"],["早","ㄗㄠˇ"],["餐","ㄘㄢ"]],[["背","ㄅㄟ"],["書","ㄕㄨ"],["包","ㄅㄠ"]]],"ot":["刷牙洗臉","吃早餐","背書包"],"h":0,"k":"順序"},{"q":[["吃","ㄔ"],["完","ㄨㄢˊ"],["早","ㄗㄠˇ"],["餐","ㄘㄢ"],["以","ㄧˇ"],["後","ㄏㄡˋ"],["，",""],["他","ㄊㄚ"],["做","ㄗㄨㄛˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["？",""]],"qt":"吃完早餐以後，他做什麼？","o":[[["背","ㄅㄟ"],["起","ㄑㄧˇ"],["書","ㄕㄨ"],["包","ㄅㄠ"]],[["去","ㄑㄩˋ"],["睡","ㄕㄨㄟˋ"],["覺","ㄐㄧㄠˋ"]],[["看","ㄎㄢˋ"],["電","ㄉㄧㄢˋ"],["視","ㄕˋ"]]],"ot":["背起書包","去睡覺","看電視"],"h":2,"k":"順序"},{"q":[["最","ㄗㄨㄟˋ"],["後","ㄏㄡˋ"],["，",""],["小","ㄒㄧㄠˇ"],["明","ㄇㄧㄥˊ"],["去","ㄑㄩˋ"],["哪","ㄋㄚˇ"],["裡","˙ㄌㄧ"],["？",""]],"qt":"最後，小明去哪裡？","o":[[["學","ㄒㄩㄝˊ"],["校","ㄒㄧㄠˋ"]],[["動","ㄉㄨㄥˋ"],["物","ㄨˋ"],["園","ㄩㄢˊ"]],[["奶","ㄋㄞˇ"],["奶","˙ㄋㄞ"],["家","ㄐㄧㄚ"]]],"ot":["學校","動物園","奶奶家"],"h":3,"k":"在哪裡"}]},{"t":[["烏","ㄨ"],["龜","ㄍㄨㄟ"],["和","ㄏㄜˊ"],["小","ㄒㄧㄠˇ"],["鳥","ㄋㄧㄠˇ"]],"tt":"烏龜和小鳥","e":"🐢","s":[[["烏","ㄨ"],["龜","ㄍㄨㄟ"],["慢","ㄇㄢˋ"],["慢","ㄇㄢˋ"],["的","˙ㄉㄜ"],["在","ㄗㄞˋ"],["路","ㄌㄨˋ"],["上","ㄕㄤˋ"],["走","ㄗㄡˇ"],["。",""]],[["小","ㄒㄧㄠˇ"],["鳥","ㄋㄧㄠˇ"],["飛","ㄈㄟ"],["過","ㄍㄨㄛˋ"],["來","ㄌㄞˊ"],["問","ㄨㄣˋ"],["：",""],["「",""],["烏","ㄨ"],["龜","ㄍㄨㄟ"],["，",""],["你","ㄋㄧˇ"],["要","ㄧㄠˋ"],["去","ㄑㄩˋ"],["哪","ㄋㄚˇ"],["裡","˙ㄌㄧ"],["？",""],["」",""]],[["烏","ㄨ"],["龜","ㄍㄨㄟ"],["說","ㄕㄨㄛ"],["：",""],["「",""],["我","ㄨㄛˇ"],["要","ㄧㄠˋ"],["去","ㄑㄩˋ"],["河","ㄏㄜˊ"],["邊","ㄅㄧㄢ"],["找","ㄓㄠˇ"],["朋","ㄆㄥˊ"],["友","˙ㄧㄡ"],["。",""],["」",""]],[["小","ㄒㄧㄠˇ"],["鳥","ㄋㄧㄠˇ"],["說","ㄕㄨㄛ"],["：",""],["「",""],["我","ㄨㄛˇ"],["幫","ㄅㄤ"],["你","ㄋㄧˇ"],["帶","ㄉㄞˋ"],["路","ㄌㄨˋ"],["吧","˙ㄅㄚ"],["！",""],["」",""]],[["他","ㄊㄚ"],["們","˙ㄇㄣ"],["一","ㄧ"],["起","ㄑㄧˇ"],["開","ㄎㄞ"],["心","ㄒㄧㄣ"],["的","˙ㄉㄜ"],["往","ㄨㄤˇ"],["河","ㄏㄜˊ"],["邊","ㄅㄧㄢ"],["走","ㄗㄡˇ"],["去","ㄑㄩˋ"],["。",""]]],"st":["烏龜慢慢的在路上走。","小鳥飛過來問：「烏龜，你要去哪裡？」","烏龜說：「我要去河邊找朋友。」","小鳥說：「我幫你帶路吧！」","他們一起開心的往河邊走去。"],"q":[{"q":[["烏","ㄨ"],["龜","ㄍㄨㄟ"],["要","ㄧㄠˋ"],["去","ㄑㄩˋ"],["哪","ㄋㄚˇ"],["裡","˙ㄌㄧ"],["？",""]],"qt":"烏龜要去哪裡？","o":[[["河","ㄏㄜˊ"],["邊","ㄅㄧㄢ"]],[["山","ㄕㄢ"],["上","ㄕㄤˋ"]],[["學","ㄒㄩㄝˊ"],["校","ㄒㄧㄠˋ"]]],"ot":["河邊","山上","學校"],"h":2,"k":"在哪裡"},{"q":[["誰","ㄕㄟˊ"],["幫","ㄅㄤ"],["烏","ㄨ"],["龜","ㄍㄨㄟ"],["帶","ㄉㄞˋ"],["路","ㄌㄨˋ"],["？",""]],"qt":"誰幫烏龜帶路？","o":[[["小","ㄒㄧㄠˇ"],["鳥","ㄋㄧㄠˇ"]],[["小","ㄒㄧㄠˇ"],["狗","ㄍㄡˇ"]],[["小","ㄒㄧㄠˇ"],["魚","ㄩˊ"]]],"ot":["小鳥","小狗","小魚"],"h":3,"k":"誰"},{"q":[["這","ㄓㄜˋ"],["個","˙ㄍㄜ"],["故","ㄍㄨˋ"],["事","ㄕˋ"],["最","ㄗㄨㄟˋ"],["適","ㄕˋ"],["合","ㄏㄜˊ"],["的","˙ㄉㄜ"],["題","ㄊㄧˊ"],["目","ㄇㄨˋ"],["是","ㄕˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["？",""]],"qt":"這個故事最適合的題目是什麼？","o":[[["烏","ㄨ"],["龜","ㄍㄨㄟ"],["和","ㄏㄜˊ"],["小","ㄒㄧㄠˇ"],["鳥","ㄋㄧㄠˇ"]],[["下","ㄒㄧㄚˋ"],["雨","ㄩˇ"],["天","ㄊㄧㄢ"]],[["生","ㄕㄥ"],["日","ㄖˋ"],["快","ㄎㄨㄞˋ"],["樂","ㄌㄜˋ"]]],"ot":["烏龜和小鳥","下雨天","生日快樂"],"h":-1,"k":"題目"}]},{"t":[["好","ㄏㄠˇ"],["吃","ㄔ"],["的","˙ㄉㄜ"],["水","ㄕㄨㄟˇ"],["果","ㄍㄨㄛˇ"]],"tt":"好吃的水果","e":"🍉","s":[[["夏","ㄒㄧㄚˋ"],["天","ㄊㄧㄢ"],["的","˙ㄉㄜ"],["水","ㄕㄨㄟˇ"],["果","ㄍㄨㄛˇ"],["攤","ㄊㄢ"],["很","ㄏㄣˇ"],["熱","ㄖㄜˋ"],["鬧","˙ㄋㄠ"],["。",""]],[["有","ㄧㄡˇ"],["紅","ㄏㄨㄥˊ"],["紅","ㄏㄨㄥˊ"],["的","˙ㄉㄜ"],["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"],["、",""],["黃","ㄏㄨㄤˊ"],["黃","ㄏㄨㄤˊ"],["的","˙ㄉㄜ"],["香","ㄒㄧㄤ"],["蕉","ㄐㄧㄠ"],["，",""],["還","ㄏㄞˊ"],["有","ㄧㄡˇ"],["紫","ㄗˇ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["葡","ㄆㄨˊ"],["萄","˙ㄊㄠ"],["。",""]],[["弟","ㄉㄧˋ"],["弟","˙ㄉㄧ"],["最","ㄗㄨㄟˋ"],["喜","ㄒㄧˇ"],["歡","˙ㄏㄨㄢ"],["吃","ㄔ"],["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"],["，",""],["因","ㄧㄣ"],["為","ㄨㄟˋ"],["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"],["又","ㄧㄡˋ"],["甜","ㄊㄧㄢˊ"],["又","ㄧㄡˋ"],["多","ㄉㄨㄛ"],["汁","ㄓ"],["。",""]],[["媽","ㄇㄚ"],["媽","˙ㄇㄚ"],["買","ㄇㄞˇ"],["了","˙ㄌㄜ"],["一","ㄧ"],["個","˙ㄍㄜ"],["大","ㄉㄚˋ"],["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"],["，",""],["弟","ㄉㄧˋ"],["弟","˙ㄉㄧ"],["高","ㄍㄠ"],["興","ㄒㄧㄥˋ"],["得","˙ㄉㄜ"],["跳","ㄊㄧㄠˋ"],["起","ㄑㄧˇ"],["來","ㄌㄞˊ"],["。",""]]],"st":["夏天的水果攤很熱鬧。","有紅紅的西瓜、黃黃的香蕉，還有紫色的葡萄。","弟弟最喜歡吃西瓜，因為西瓜又甜又多汁。","媽媽買了一個大西瓜，弟弟高興得跳起來。"],"q":[{"q":[["水","ㄕㄨㄟˇ"],["果","ㄍㄨㄛˇ"],["攤","ㄊㄢ"],["上","ㄕㄤˋ"],["，",""],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["水","ㄕㄨㄟˇ"],["果","ㄍㄨㄛˇ"],["是","ㄕˋ"],["紫","ㄗˇ"],["色","ㄙㄜˋ"],["的","˙ㄉㄜ"],["？",""]],"qt":"水果攤上，什麼水果是紫色的？","o":[[["葡","ㄆㄨˊ"],["萄","˙ㄊㄠ"]],[["香","ㄒㄧㄤ"],["蕉","ㄐㄧㄠ"]],[["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"]]],"ot":["葡萄","香蕉","西瓜"],"h":1,"k":"什麼"},{"q":[["弟","ㄉㄧˋ"],["弟","˙ㄉㄧ"],["為","ㄨㄟˋ"],["什","ㄕㄣˊ"],["麼","˙ㄇㄜ"],["喜","ㄒㄧˇ"],["歡","˙ㄏㄨㄢ"],["吃","ㄔ"],["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"],["？",""]],"qt":"弟弟為什麼喜歡吃西瓜？","o":[[["又","ㄧㄡˋ"],["甜","ㄊㄧㄢˊ"],["又","ㄧㄡˋ"],["多","ㄉㄨㄛ"],["汁","ㄓ"]],[["很","ㄏㄣˇ"],["便","ㄆㄧㄢˊ"],["宜","ㄧˊ"]],[["很","ㄏㄣˇ"],["好","ㄏㄠˇ"],["拿","ㄋㄚˊ"]]],"ot":["又甜又多汁","很便宜","很好拿"],"h":2,"k":"為什麼"},{"q":[["媽","ㄇㄚ"],["媽","˙ㄇㄚ"],["買","ㄇㄞˇ"],["了","˙ㄌㄜ"],["西","ㄒㄧ"],["瓜","ㄍㄨㄚ"],["，",""],["弟","ㄉㄧˋ"],["弟","˙ㄉㄧ"],["的","˙ㄉㄜ"],["心","ㄒㄧㄣ"],["情","ㄑㄧㄥˊ"],["怎","ㄗㄣˇ"],["麼","˙ㄇㄜ"],["樣","ㄧㄤˋ"],["？",""]],"qt":"媽媽買了西瓜，弟弟的心情怎麼樣？","o":[[["很","ㄏㄣˇ"],["高","ㄍㄠ"],["興","ㄒㄧㄥˋ"]],[["很","ㄏㄣˇ"],["害","ㄏㄞˋ"],["怕","ㄆㄚˋ"]],[["很","ㄏㄣˇ"],["生","ㄕㄥ"],["氣","ㄑㄧˋ"]]],"ot":["很高興","很害怕","很生氣"],"h":3,"k":"心情"}]}];
+const RZ={L:null,S:null,qi:0,mist:0,lock:true,tok:0,order:[]};
+function zyHTML(arr){return arr.map(([c,z])=>{if(!z)return '<span class="pu">'+c+'</span>';const nd=z[0]==='˙';let b=nd?z.slice(1):z,tn='';const l=b.slice(-1);if('ˊˇˋ'.includes(l)){tn=l;b=b.slice(0,-1);}
+ return '<span class="zc"><span class="h">'+c+'</span><span class="z"><span class="zs">'+(nd?'<i class="nd">˙</i>':'')+[...b].map(s=>'<i>'+s+'</i>').join('')+'</span>'+(tn?'<span class="tn">'+tn+'</span>':'')+'</span></span>';}).join('');}
+function speakSeq(items,tk){/* items: [{t, onstart}] 依序唸，回傳 Promise */return new Promise(done=>{if(!S.voice){done();return;}try{speechSynthesis.cancel();}catch(e){}let i=0;
+ const next=()=>{if(RZ.tok!==tk){done();return;}if(i>=items.length){done();return;}const it=items[i++];if(it.on)it.on();let fin=false;const go=()=>{if(fin)return;fin=true;if(it.off)it.off();setTimeout(next,250);};
+  try{const u=new SpeechSynthesisUtterance(it.t);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.8;u.pitch=1.1;u.onend=go;u.onerror=go;speechSynthesis.speak(u);setTimeout(go,it.t.length*420+2500);}catch(e){go();}};next();});}
+function sentEl(i){return document.querySelector('#story .sent[data-i="'+i+'"]');}
+function clearMarks(){document.querySelectorAll('#story .sent').forEach(s=>s.classList.remove('reading','hint','found'));}
+function readStory(){const tk=RZ.tok,S2=RZ.S;clearMarks();return speakSeq([{t:S2.tt}].concat(S2.st.map((t,i)=>({t,on:()=>{const e=sentEl(i);if(e)e.classList.add('reading');},off:()=>{const e=sentEl(i);if(e)e.classList.remove('reading');}}))),tk);}
+function startRead(i){G.li=i;G.lvl=null;const L=LEVELS[i];RZ.tok++;show('read');RZ.L=L;RZ.S=STORIES[L.story];RZ.qi=0;RZ.mist=0;RZ.lock=false;
+ const st=RZ.S;$('stTitle').innerHTML='<span class="st-emo">'+st.e+'</span><span>'+zyHTML(st.t)+'</span>';
+ $('story').innerHTML=st.s.map((s,k)=>'<span class="sent" data-i="'+k+'">'+zyHTML(s)+'</span>').join('');
+ rCoach('先聽故事，再回答問題喔！也可以自己讀讀看。');showQ(false);
+ const tk=RZ.tok;readStory().then(()=>{if(RZ.tok===tk)sayQ();});}
+function rCoach(t,k){const b=$('rBubble');b.textContent=t;b.className='bubble'+(k?' '+k:'');}
+function rProg(){const pr=$('readProg');pr.innerHTML='';RZ.S.q.forEach((q,i)=>{const s=document.createElement('span');s.className='chip num'+(i<RZ.qi?' ok':i===RZ.qi?' now':'');s.textContent=i<RZ.qi?'✓':String(i+1);pr.appendChild(s);});}
+function showQ(speak){const q=RZ.S.q[RZ.qi];rProg();RZ.lock=false;$('qText').innerHTML='<span class="qno">第 '+(RZ.qi+1)+' 題</span>'+zyHTML(q.q);
+ RZ.order=shuffle([0,1,2].slice(0,q.o.length));const box=$('rOpts');box.innerHTML='';
+ RZ.order.forEach((oi,k)=>{const b=document.createElement('button');b.className='ropt';b.innerHTML='<span class="onum">'+(k+1)+'</span><span class="otx">'+zyHTML(q.o[oi])+'</span>';b.setAttribute('aria-label',q.ot[oi]);b.onclick=()=>rAnswer(oi,b);box.appendChild(b);});
+ if(speak)sayQ();}
+function sayQ(){const q=RZ.S.q[RZ.qi],tk=RZ.tok;speakSeq([{t:q.qt}].concat(RZ.order.map((oi,k)=>({t:(k+1)+'，'+q.ot[oi]}))),tk);}
+function rAnswer(oi,btn){if(RZ.lock)return;audio();const q=RZ.S.q[RZ.qi],tk=RZ.tok;clearMarks();
+ if(oi===0){RZ.lock=true;sfx.char();btn.classList.add('right');const e=q.h>=0?sentEl(q.h):null;if(e)e.classList.add('found');
+  rCoach(praise()+(q.h>=0?' 答案就藏在綠色的這一句裡。':''),'good');
+  speakSeq([{t:'答對了！'+q.ot[0]}],tk).then(()=>setTimeout(()=>{if(RZ.tok!==tk)return;RZ.qi++;clearMarks();if(RZ.qi>=RZ.S.q.length)readDone();else{showQ(true);rCoach('下一題，慢慢想喔。');}},700));return;}
+ sfx.bad();RZ.mist++;btn.disabled=true;btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');
+ if(q.h>=0){const e=sentEl(q.h);if(e){e.classList.add('hint');e.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  rCoach('再讀讀看亮起來的這一句，答案就在裡面喔！','bad');speakSeq([{t:'再讀讀看這一句'},{t:RZ.S.st[q.h]}],tk);}
+ else{rCoach('想一想，這個故事主要在說誰和誰呢？','bad');speakSeq([{t:'想一想，這個故事主要在說誰和誰呢？'}],tk);}}
+function readDone(){RZ.lock=true;const stars=RZ.mist===0?3:RZ.mist<=2?2:1;const L=RZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(G.li))S.stickers.push(G.li);save();
+ sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+'讀完了！';$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
+ $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再讀一次可以拿到更多星星。':' 三顆星，好會讀！');const nx=LEVELS[G.li+1];$('winNext').hidden=!nx||nx.t!=='read';say((S.name||'')+'好會讀故事！');$('winOv').hidden=false;}
+$('readBack').onclick=()=>show('map');
+$('btnStory').onclick=()=>{audio();RZ.tok++;readStory();};
+$('btnQ').onclick=()=>{audio();RZ.tok++;sayQ();};
 
 renderMap();
 })();
