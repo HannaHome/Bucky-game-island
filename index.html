@@ -109,6 +109,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .form input[type=checkbox]{width:26px;height:26px;accent-color:var(--leaf)}
 .note{font-size:14px!important;text-align:left}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+.xfer{border-top:2px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.xfer h4{margin:0;font-size:19px}
+.xfer textarea{font:15px/1.4 ui-monospace,Menlo,monospace;width:100%;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;color:var(--ink);word-break:break-all;resize:vertical;-webkit-user-select:text;user-select:text}
+.xfer .xl{font-weight:700;font-size:16px;display:block}
+#xMsg.ok{color:var(--leaf-deep);font-weight:700}#xMsg.bad{color:#c43c52;font-weight:700}
 
 .island.geo{background:#dcefff}
 .island.geo .badge{background:#2f7fd0;font-family:var(--f-ui);font-size:22px}
@@ -374,6 +379,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
     <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
     <p class="note">「自己寫」會在描完之後，把字的灰色底稿變很淡，讓孩子憑記憶寫一次。錯兩次會自動再示範。<br>進度存在這台 iPad 的瀏覽器裡，清除 Safari 資料就會不見。<br>注音的筆順和真人讀音來自教育部《國字標準字體筆順學習網》；例字和數字的國字讀音也來自同一網站；只有載入失敗時才改用 iPad 內建語音。</p>
+    <div class="xfer">
+      <h4>進度轉移碼</h4>
+      <p class="note">換裝置或備份時使用。在這台按「產生轉移碼」，把碼傳給自己（LINE、訊息或備忘錄），再到另一台貼上。匯入會<b>合併</b>兩邊的進度，不會蓋掉任何星星或貼紙。</p>
+      <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn sun" id="xMake">產生轉移碼</button><button class="btn" id="xCopy" hidden>複製</button></div>
+      <textarea id="xOut" readonly hidden rows="3" aria-label="這台裝置的轉移碼"></textarea>
+      <label for="xIn" class="xl">貼上另一台的轉移碼</label>
+      <textarea id="xIn" rows="3" placeholder="KK1…"></textarea>
+      <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn leaf" id="xLoad">匯入並合併</button></div>
+      <p class="note" id="xMsg" role="status"></p>
+    </div>
     <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="resetBtn">清除進度</button></div>
   </div>
   <div class="row"><button class="btn sun" data-close="parentOv">完成</button></div>
@@ -597,7 +612,7 @@ $('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
 $('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
 $('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
 $('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(L.id);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
-$('openParent').onclick=()=>{$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('parentOv').hidden=false;};
+$('openParent').onclick=()=>{$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');$('parentOv').hidden=false;};
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
 $('setTol').onchange=e=>{S.tol=e.target.value;save();};
 $('setVoice').onchange=e=>{S.voice=e.target.checked;save();};
@@ -723,6 +738,28 @@ function readDone(){RZ.lock=true;const stars=RZ.mist===0?3:RZ.mist<=2?2:1;const 
 $('readBack').onclick=()=>show('map');
 $('btnStory').onclick=()=>{audio();RZ.tok++;readStory();};
 $('btnQ').onclick=()=>{audio();RZ.tok++;sayQ();};
+
+/* ---------- 進度轉移碼 ---------- */
+const b64u={enc:u=>{let b='';u.forEach(x=>b+=String.fromCharCode(x));return btoa(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');},
+ dec:t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const b=atob(t);return Uint8Array.from(b,c=>c.charCodeAt(0));}};
+function ck(t){let h=7;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%1296;return h.toString(36).padStart(2,'0');}
+async function zip(u,inflate){if(typeof CompressionStream==='undefined')return null;try{const st=new Blob([u]).stream().pipeThrough(inflate?new DecompressionStream('deflate-raw'):new CompressionStream('deflate-raw'));return new Uint8Array(await new Response(st).arrayBuffer());}catch(e){return null;}}
+async function makeCode(){const o={v:1,n:S.name||'',s:S.stars||{},k:S.stickers||[],p:Object.keys(S.passport||{})};const raw=new TextEncoder().encode(JSON.stringify(o));
+ const z=await zip(raw,false);const body=z&&z.length<raw.length?'Z'+b64u.enc(z):'J'+b64u.enc(raw);return 'KK1'+body+ck(body);}
+async function readCode(t){t=(t||'').replace(/\s+/g,'');if(!t.startsWith('KK1')||t.length<8)throw new Error('form');const body=t.slice(3,-2);if(ck(body)!==t.slice(-2))throw new Error('check');
+ let u=b64u.dec(body.slice(1));if(body[0]==='Z'){u=await zip(u,true);if(!u)throw new Error('zip');}else if(body[0]!=='J')throw new Error('form');
+ const o=JSON.parse(new TextDecoder().decode(u));if(!o||o.v!==1)throw new Error('form');return o;}
+function tally(){let st=0;Object.values(S.stars||{}).forEach(v=>st+=v);return '星星 '+st+' 顆、貼紙 '+(S.stickers||[]).length+' 張、護照章 '+Object.keys(S.passport||{}).length+' 個';}
+function xMsg(t,k){const m=$('xMsg');m.textContent=t;m.className='note'+(k?' '+k:'');}
+$('xMake').onclick=async()=>{const c=await makeCode();const o=$('xOut');o.value=c;o.hidden=false;$('xCopy').hidden=false;o.focus();o.select();xMsg('這台目前有：'+tally()+'。','');};
+$('xCopy').onclick=()=>{const o=$('xOut');const done=()=>{$('xCopy').textContent='已複製';setTimeout(()=>$('xCopy').textContent='複製',1800);};
+ try{navigator.clipboard.writeText(o.value).then(done,()=>{o.focus();o.select();xMsg('請長按上面的碼，選「拷貝」。','');});}catch(e){o.focus();o.select();xMsg('請長按上面的碼，選「拷貝」。','');}};
+$('xLoad').onclick=async()=>{let o;try{o=await readCode($('xIn').value);}catch(e){
+  xMsg(e.message==='check'?'這串碼好像少了或多了幾個字，請重新完整複製一次。':e.message==='zip'?'這台裝置的瀏覽器太舊，讀不了這串碼。請在舊裝置更新 iOS 後再產生一次。':'看不懂這串碼，請確認是從「產生轉移碼」複製來的，開頭是 KK1。','bad');return;}
+ S.stars=S.stars||{};Object.entries(o.s||{}).forEach(([k,v])=>{if(typeof v==='number')S.stars[k]=Math.max(S.stars[k]||0,Math.min(3,v));});
+ const ids=new Set(LEVELS.map(L=>L.id));(o.k||[]).forEach(k=>{if(ids.has(k)&&!S.stickers.includes(k))S.stickers.push(k);});
+ S.passport=S.passport||{};(o.p||[]).forEach(a=>{if(typeof CT!=='undefined'&&CT[a])S.passport[a]=1;});
+ if(!S.name&&o.n)S.name=String(o.n).slice(0,8);save();renderMap();$('xIn').value='';xMsg('合併完成！現在有：'+tally()+'。','ok');sfx.win();};
 
 renderMap();
 })();
