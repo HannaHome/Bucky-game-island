@@ -1,0 +1,539 @@
+<title>愷愷的寫字冒險</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="寫字冒險">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: one-screen game. Map of two islands (數字島 / 注音森林) with level stones, then a big 習字格 board beside a picture card. Single bright daytime look, by choice. */
+:root{
+  --sky:#cfeeff; --sky-deep:#9fd6fb; --paper:#fffaf0; --ink:#25314a; --muted:#66738f;
+  --grid:#f0b4aa; --guide:#e7e0d2; --sun:#ffc23d; --sun-deep:#f29e00; --leaf:#4fb865; --leaf-deep:#2f8f47;
+  --berry:#ff6b81; --card:#ffffff; --lock:#c9d3e3; --line:#dbe6f2;
+  --f-num:"Baloo 2","Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif;
+  --f-ui:ui-rounded,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:linear-gradient(180deg,var(--sky) 0%,var(--sky) 70%,#dff5e3 100%);color:var(--ink);font-family:var(--f-ui);
+  overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;overflow:hidden;font-size:16px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sun-deep);outline-offset:2px}
+#app{height:100%;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.title{font-size:clamp(22px,3.4vw,34px);font-weight:800;letter-spacing:.02em;text-wrap:balance}
+.title small{display:block;font-size:14px;font-weight:600;color:var(--muted);letter-spacing:0}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:8px 14px;font-weight:700;box-shadow:0 3px 0 var(--line)}
+.pill .n{font-family:var(--f-num);font-size:20px;line-height:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 18px;border-radius:16px;font-weight:800;font-size:18px;background:var(--card);box-shadow:0 4px 0 var(--line);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.sun{background:var(--sun);box-shadow:0 4px 0 var(--sun-deep)}
+.btn.leaf{background:var(--leaf);color:#fff;box-shadow:0 4px 0 var(--leaf-deep)}
+.btn.round{width:52px;padding:0;border-radius:50%}
+.btn svg{width:24px;height:24px}
+
+/* map */
+.map{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:16px;padding-bottom:12px}
+.island{border-radius:28px;padding:18px 18px 22px;position:relative}
+.island.num{background:#fff3cf}
+.island.zy{background:#e3f6dc}
+.island h2{margin:0 0 12px;font-size:22px;display:flex;align-items:center;gap:10px}
+.island h2 .badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-family:var(--f-num);font-size:28px;color:#fff}
+.island.num .badge{background:var(--sun-deep)}
+.island.zy .badge{background:var(--leaf-deep);font-family:var(--f-ui);font-size:24px}
+.stones{display:flex;flex-wrap:wrap;gap:14px}
+.stone{width:118px;min-height:118px;border-radius:26px;background:var(--card);box-shadow:0 5px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;position:relative}
+.stone .no{position:absolute;top:8px;left:12px;font-family:var(--f-num);font-size:15px;color:var(--muted)}
+.stone .chars{font-size:24px;font-weight:800;letter-spacing:.06em;line-height:1.2;text-align:center}
+.island.num .stone .chars{font-family:var(--f-num);font-size:28px}
+.stone .stars{font-size:16px;letter-spacing:2px;color:var(--lock)}
+.stone .stars b{color:var(--sun-deep)}
+.stone.next{outline:4px solid var(--sun);animation:bob 1.6s ease-in-out infinite}
+.stone.locked{background:#eef2f8;box-shadow:0 5px 0 var(--lock);color:var(--lock)}
+.stone.locked .chars{opacity:.55}
+.lockico{width:26px;height:26px}
+@keyframes bob{50%{transform:translateY(-5px)}}
+
+/* practice */
+.stage{flex:1;min-height:0;display:flex;gap:18px;align-items:center;justify-content:center}
+.boardwrap{position:relative;flex:none}
+#board{display:block;border-radius:22px;box-shadow:0 8px 0 rgba(37,49,74,.12);touch-action:none;background:var(--paper)}
+.side{display:flex;flex-direction:column;gap:12px;width:250px;flex:none}
+.pic{background:var(--card);border-radius:24px;padding:16px;text-align:center;box-shadow:0 5px 0 var(--line)}
+.pic .big{font-size:64px;line-height:1.1;min-height:72px;word-break:break-all}
+.pic .word{font-size:26px;font-weight:800;margin-top:6px}
+.pic .word em{font-style:normal;color:var(--berry)}
+.pic .word{display:flex;align-items:center;justify-content:center;gap:10px}
+.pic .hz{font-size:1.5em;line-height:1}
+.pic .bp{font-size:.8em;line-height:1;letter-spacing:.06em;color:var(--muted)}
+.coach{display:flex;gap:10px;align-items:flex-start}
+.coach svg{flex:none;width:58px;height:58px}
+.bubble{background:var(--card);border-radius:18px;padding:12px 14px;font-size:19px;font-weight:700;line-height:1.4;position:relative;flex:1;min-width:0;box-shadow:0 4px 0 var(--line)}
+.bubble.bad{background:#ffe9ec}
+.bubble.good{background:#e6f8e6}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tools .btn{font-size:17px;padding:0 8px}
+.progress{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{min-width:44px;height:44px;border-radius:14px;background:var(--card);display:grid;place-items:center;font-weight:800;font-size:22px;box-shadow:0 3px 0 var(--line);padding:0 6px}
+.chip.num{font-family:var(--f-num)}
+.chip.now{background:var(--sun);box-shadow:0 3px 0 var(--sun-deep)}
+.chip.ok{background:var(--leaf);color:#fff;box-shadow:0 3px 0 var(--leaf-deep)}
+.mode{font-weight:800;font-size:18px;background:var(--berry);color:#fff;border-radius:999px;padding:8px 16px}
+.mode.solo{background:#7a6cf0}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(37,49,74,.45);display:grid;place-items:center;z-index:20;padding:20px}
+.panel{background:var(--card);border-radius:30px;padding:26px;max-width:min(560px,100%);width:100%;max-height:100%;overflow:auto;text-align:center}
+.panel h3{margin:0 0 8px;font-size:30px}
+.panel p{margin:6px 0;color:var(--muted);font-size:17px;line-height:1.5}
+.bigstars{font-size:58px;letter-spacing:6px;margin:8px 0;color:var(--lock)}
+.bigstars b{color:var(--sun-deep);display:inline-block;animation:pop .5s backwards}
+.bigstars b:nth-child(2){animation-delay:.25s}.bigstars b:nth-child(3){animation-delay:.5s}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.sticker{font-size:84px;animation:pop .6s .7s backwards}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.book{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px;margin-top:12px}
+.slot{aspect-ratio:1;max-width:100%;border-radius:20px;background:#f2f5fa;display:grid;place-items:center;font-size:44px;color:var(--lock);font-family:var(--f-num)}
+.slot.got{background:#fff3cf}
+.form{display:flex;flex-direction:column;gap:14px;text-align:left;margin-top:12px}
+.form label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700;font-size:17px}
+.form input[type=text],.form select{font:inherit;font-size:17px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);min-width:0;width:150px}
+.form input[type=checkbox]{width:26px;height:26px;accent-color:var(--leaf)}
+.note{font-size:14px!important;text-align:left}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+
+.island.geo{background:#dcefff}
+.island.geo .badge{background:#2f7fd0;font-family:var(--f-ui);font-size:22px}
+.island.geo .stone .chars{font-size:26px;letter-spacing:0}
+.stone .lbl{font-size:14px;font-weight:700;color:var(--muted);text-align:center;line-height:1.2}
+.mode.geo{background:#2f7fd0}
+.gstage{flex:1;min-height:0;display:flex;gap:16px}
+.mapbox{flex:1;min-width:0;min-height:0;background:#b9e0fb;border-radius:24px;overflow:hidden;display:flex;box-shadow:0 6px 0 rgba(37,49,74,.1)}
+#world{width:100%;height:100%;display:block;touch-action:manipulation}
+#wland path{fill:#f7f1df;stroke:#bfb294;stroke-width:.7px;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+#wland path.hi{fill:var(--sun);animation:glow 1.1s ease-in-out infinite}
+#wland path.ok{fill:var(--leaf)}
+#wmark circle{fill:none;stroke-width:3px;vector-effect:non-scaling-stroke}
+#wmark circle.hi{stroke:var(--sun-deep);animation:glow 1.1s ease-in-out infinite}
+#wmark circle.ok{stroke:var(--leaf-deep)}
+@keyframes glow{50%{opacity:.45}}
+.gside{width:300px;flex:none;display:flex;flex-direction:column;gap:12px;min-height:0}
+.gq{background:var(--card);border-radius:24px;padding:14px;text-align:center;box-shadow:0 5px 0 var(--line);display:flex;flex-direction:column;align-items:center;gap:6px}
+.gflag{font-size:78px;line-height:1.05}
+.gtext{font-size:22px;font-weight:800;line-height:1.4}
+.gtext small{display:block;font-size:17px;color:var(--muted);font-weight:700}
+.en{font-family:var(--f-num);letter-spacing:.01em}
+.sayb{display:block;margin:0 auto;padding:2px 10px;border-radius:12px;font-weight:800}
+.sayb:active{background:#eef6ff}
+.sayb.cap{margin-top:4px;background:#f2f8ff}
+.gtext small.en{font-size:20px;color:#2f7fd0}
+.gopt small.en{display:block;font-size:16px;font-weight:700;color:var(--muted);margin-top:4px}
+.gopts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gopts.txt{grid-template-columns:1fr}
+.gopt{background:var(--card);border-radius:20px;box-shadow:0 5px 0 var(--line);min-height:96px;font-size:64px;line-height:1;display:grid;place-items:center}
+.gopts.txt .gopt{min-height:58px;font-size:24px;font-weight:800}
+.gopt:disabled{opacity:.35}
+.gopt.right{background:#e6f8e6;box-shadow:0 5px 0 var(--leaf)}
+@media (max-width:820px),(orientation:portrait){
+  .gstage{flex-direction:column}
+  .gside{width:100%;flex-direction:row;flex-wrap:wrap}
+  .gq{flex:1 1 220px}.gflag{font-size:54px}.gtext{font-size:19px}
+  .gopts{flex:1 1 260px}.gopt{min-height:76px;font-size:48px}
+  .gside .coach{flex:1 1 100%}
+}
+@media (max-width:820px),(orientation:portrait){
+  .stage{flex-direction:column;gap:12px}
+  .side{width:100%;max-width:640px;flex-direction:row;flex-wrap:wrap}
+  .pic{flex:1 1 160px;padding:10px}
+  .pic .big{font-size:40px;min-height:46px}
+  .pic .word{font-size:20px}
+  .coach{flex:2 1 260px}
+  .tools{flex:1 1 100%;grid-template-columns:repeat(4,1fr)}
+}
+@media (max-width:520px){ .tools{grid-template-columns:1fr 1fr} .stone{width:calc(50% - 7px)} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+
+<div id="app">
+  <!-- MAP -->
+  <section class="screen" id="mapScreen">
+    <div class="bar">
+      <div class="title"><span id="titleName">愷愷</span>的寫字冒險<small>一筆一筆跟著寫，收集星星和貼紙</small></div>
+      <div class="spacer"></div>
+      <span class="pill" aria-label="星星總數"><span style="color:var(--sun-deep)">★</span><span class="n" id="starTotal">0</span></span>
+      <button class="btn" id="openBook">貼紙簿</button>
+      <button class="btn round" id="openParent" aria-label="家長設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+    </div>
+    <div class="map" id="map"></div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section class="screen" id="playScreen" hidden>
+    <div class="bar">
+      <button class="btn" id="backMap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>地圖</button>
+      <div class="progress" id="progress"></div>
+      <div class="spacer"></div>
+      <span class="mode" id="modeTag">描描看</span>
+    </div>
+    <div class="stage" id="stage">
+      <div class="boardwrap" id="boardwrap"><canvas id="board" aria-label="寫字板"></canvas></div>
+      <div class="side">
+        <div class="pic"><div class="big" id="picBig"></div><div class="word" id="picWord"></div></div>
+        <div class="coach">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="2.6" fill="#25314a"/><circle cx="36" cy="27" r="2.6" fill="#25314a"/><path d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="19.5" cy="32" r="2.4" fill="#ff9aa8"/><circle cx="40.5" cy="32" r="2.4" fill="#ff9aa8"/></svg>
+          <div class="bubble" id="bubble">看星星老師示範喔！</div>
+        </div>
+        <div class="tools">
+          <button class="btn" id="btnSay">聽聽看</button>
+          <button class="btn" id="btnDemo">看示範</button>
+          <button class="btn" id="btnRedo">重寫</button>
+          <button class="btn sun" id="btnSkip">下一個</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 地球島 -->
+  <section class="screen" id="geoScreen" hidden>
+    <div class="bar">
+      <button class="btn" id="geoBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>地圖</button>
+      <div class="progress" id="geoProg"></div>
+      <div class="spacer"></div>
+      <span class="mode geo" id="geoTag">國旗</span>
+    </div>
+    <div class="gstage">
+      <div class="mapbox"><svg id="world" viewBox="0 0 1000 394" preserveAspectRatio="xMidYMid meet" aria-label="世界地圖"><g id="wland"></g><g id="wmark"></g></svg></div>
+      <div class="gside">
+        <div class="gq"><div class="gflag" id="gFlag"></div><div class="gtext" id="gText"></div><button class="btn" id="gSay">再聽一次</button></div>
+        <div class="gopts" id="gOpts"></div>
+        <div class="coach"><svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="2.6" fill="#25314a"/><circle cx="36" cy="27" r="2.6" fill="#25314a"/><path d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><div class="bubble" id="gBubble">一起去環遊世界吧！</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="winOv" hidden><div class="panel">
+  <h3 id="winTitle">過關了！</h3>
+  <div class="bigstars" id="winStars"></div>
+  <div class="sticker" id="winSticker"></div>
+  <p id="winMsg"></p>
+  <div class="row"><button class="btn" id="winMap">回地圖</button><button class="btn" id="winAgain">再玩一次</button><button class="btn leaf" id="winNext">下一關</button></div>
+</div></div>
+
+<div class="overlay" id="bookOv" hidden><div class="panel">
+  <h3>貼紙簿</h3><p>每過一關，就能拿到一張新貼紙！</p>
+  <div class="book" id="book"></div>
+  <h3 style="margin-top:22px">我的護照</h3><p>在地球島答對的國家，會蓋上一個國旗章。</p>
+  <div class="book" id="passport"></div>
+  <div class="row"><button class="btn sun" data-close="bookOv">關閉</button></div>
+</div></div>
+
+<div class="overlay" id="parentOv" hidden><div class="panel">
+  <h3>家長設定</h3>
+  <div class="form">
+    <label for="setName">小朋友的名字<input type="text" id="setName" maxlength="8"></label>
+    <label for="setTol">判定寬鬆度<select id="setTol"><option value="easy">寬鬆（剛開始）</option><option value="normal">一般</option><option value="hard">嚴格</option></select></label>
+    <label for="setVoice">唸出注音和字<input type="checkbox" id="setVoice"></label>
+    <label for="setGender">注音讀音<select id="setGender"><option value="F">女聲</option><option value="M">男聲</option></select></label>
+    <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
+    <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
+    <p class="note">「自己寫」會在描完之後，把字的灰色底稿變很淡，讓孩子憑記憶寫一次。錯兩次會自動再示範。<br>進度存在這台 iPad 的瀏覽器裡，清除 Safari 資料就會不見。<br>注音的筆順和真人讀音來自教育部《國字標準字體筆順學習網》；例字和數字的國字讀音也來自同一網站；只有載入失敗時才改用 iPad 內建語音。</p>
+    <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="resetBtn">清除進度</button></div>
+  </div>
+  <div class="row"><button class="btn sun" data-close="parentOv">完成</button></div>
+</div></div>
+
+<canvas id="fx"></canvas>
+
+<script>
+(function(){
+"use strict";
+/* ---------- stroke data (100×100 grid) ---------- */
+function arc(cx,cy,rx,ry,a0,a1,n){n=n||28;const p=[];for(let i=0;i<=n;i++){const a=(a0+(a1-a0)*i/n)*Math.PI/180;p.push([cx+rx*Math.cos(a),cy+ry*Math.sin(a)]);}return p;}
+function eight(){const p=[];for(let i=0;i<=64;i++){const t=i/64*Math.PI*2;p.push([50-24*Math.sin(2*t)/1.25,50-36*Math.cos(t)]);}return p;}
+const NUM={
+ '0':{s:[arc(50,50,26,37,-90,-450,40)]},
+ '1':{s:[[[50,12],[50,88]]]},
+ '2':{s:[arc(50,34,24,21,-165,5,22).concat([[66,52],[26,88],[78,88]])]},
+ '3':{s:[arc(48,31,22,18,-155,90,20).concat(arc(48,68,26,20,-90,155,22).slice(1))]},
+ '4':{s:[[[58,12],[22,64],[82,64]],[[62,30],[62,90]]]},
+ '5':{s:[[[32,14],[30,46]].concat(arc(48,64,24,22,-131,150,22).slice(1)),[[32,14],[74,14]]]},
+ '6':{s:[[[66,13],[48,22],[35,38],[28,58]].concat(arc(50,66,22,20,180,-180,32))]},
+ '7':{s:[[[22,16],[78,16],[44,88]]]},
+ '8':{s:[eight()]},
+ '9':{s:[arc(50,33,22,20,0,-360,32).concat([[72,58],[70,88]])]}
+};
+const NUMTIP={'0':'0 像雞蛋：從上面開始，往左邊轉一圈回到起點。','1':'1 像鉛筆：從上面直直往下。','2':'2 像鴨子：上面彎一個弧，斜斜滑下來，最後橫一條。','3':'3 像耳朵：上面彎一下，下面再彎一下。','4':'4 像旗子：先寫斜線和橫線，再從上面直直下來。','5':'5 像鉤子：先直直下來轉一個大肚子，最後戴上帽子。','6':'6 像哨子：從最上面開始，溜滑梯滑下來，到下面再轉一個小圈圈。','7':'7 像鐮刀：先橫一條，再斜斜滑下來。','8':'8 像葫蘆：從上面開始寫一個 S，再彎回起點。一筆寫完，中間不能停！','9':'9 像氣球：先轉一個圈圈，再直直拉下來。'};
+const NUMINFO={'0':['🍽️','零','空盤子'],'1':['🍎','一','一顆蘋果'],'2':['🐥🐥','二','兩隻小雞'],'3':['🎈🎈🎈','三','三顆氣球'],'4':['🐟🐟🐟🐟','四','四條魚'],'5':['⭐⭐⭐⭐⭐','五','五顆星星'],'6':['🍓🍓🍓🍓🍓🍓','六','六顆草莓'],'7':['🌈','七','彩虹七個顏色'],'8':['🐙','八','章魚八隻腳'],'9':['🍬🍬🍬🍬🍬🍬🍬🍬🍬','九','九顆糖果']};
+/* 注音筆順：教育部《國字標準字體筆順學習網》stroke-order.learningweb.moe.edu.tw，t=筆畫行進路線，o=筆畫外框（座標換算成 100×100） */
+const ZY={"ㄅ":[[[37.9,14.3],[17.5,36.1],[24.6,42.0],[74.9,32.0],[82.4,41.6],[69.0,68.6],[51.2,87.2],[38.1,75.9]]],"ㄆ":[[[42.3,15.6],[25.3,33.9],[32.6,38.1],[71.7,28.0],[76.5,35.3],[54.0,62.8],[18.3,84.9]],[[30.9,51.1],[54.0,63.7],[82.0,83.0]]],"ㄇ":[[[17.9,23.8],[19.0,51.3],[21.3,79.4]],[[22.3,29.0],[51.7,23.2],[76.3,19.6],[82.4,27.6],[78.4,80.7]]],"ㄈ":[[[15.8,25.7],[47.9,24.0],[80.9,20.4]],[[20.9,30.1],[20.9,52.8],[21.3,74.0],[30.9,81.3],[85.5,79.6]]],"ㄉ":[[[33.9,14.8],[16.9,35.1],[24.6,40.2],[76.1,30.7],[82.2,39.1],[72.3,61.8],[57.0,86.4],[44.4,76.7]],[[47.3,39.3],[35.3,62.4],[18.1,80.7]]],"ㄊ":[[[15.2,45.4],[39.3,43.7],[62.4,42.1],[85.9,40.6]],[[53.8,18.1],[46.1,36.2],[35.8,57.2],[24.8,76.5],[34.1,81.5],[69.8,72.5]],[[66.2,62.6],[79.2,82.2]]],"ㄋ":[[[21.9,21.9],[59.9,12.0],[66.0,19.0],[42.9,41.9],[51.3,44.2],[73.6,37.9],[77.5,45.8],[66.2,66.2],[48.4,85.5],[34.1,77.1]]],"ㄌ":[[[30.1,15.2],[16.9,36.0],[25.9,40.0],[76.1,29.3],[82.4,35.8],[76.1,63.1],[57.8,87.4],[46.1,79.0]],[[57.6,11.6],[49.4,38.1],[38.7,61.0],[17.5,83.6]]],"ㄍ":[[[41.2,13.7],[29.3,34.1],[16.0,51.9],[30.5,70.2],[43.3,88.3]],[[79.2,14.8],[68.1,32.4],[54.2,51.7],[68.3,69.8],[81.7,87.6]]],"ㄎ":[[[16.7,21.5],[37.7,19.0],[61.0,17.9],[85.5,17.5]],[[43.3,24.2],[29.0,42.3],[36.2,46.3],[64.1,39.5],[72.1,45.4],[64.1,68.1],[52.4,85.3],[41.4,77.3]]],"ㄏ":[[[29.2,24.3],[47.1,23.3],[67.8,22.2],[85.4,21.3]],[[32.6,27.4],[31.7,45.9],[27.8,64.9],[15.2,81.3]]],"ㄐ":[[[30.2,15.1],[28.3,35.7],[26.7,60.9],[36.8,67.0],[68.1,52.8]],[[71.0,11.4],[70.8,36.2],[70.2,61.6],[70.4,89.3]]],"ㄑ":[[[67.9,13.5],[47.9,32.0],[26.1,51.7],[50.5,67.5],[72.5,87.0]]],"ㄒ":[[[13.3,19.8],[39.1,19.2],[61.0,17.9],[85.9,17.7]],[[51.1,21.3],[50.7,49.2],[50.9,84.1]]],"ㄓ":[[[23.5,23.5],[20.7,42.9],[18.6,57.5],[27.6,61.3],[52.2,56.0],[75.2,54.6]],[[76.3,23.4],[73.3,41.4],[71.4,56.5]],[[48.4,12.7],[47.9,34.5],[47.7,55.1],[47.3,80.9]],[[14.1,83.6],[38.3,81.7],[59.9,80.9],[86.2,80.3]]],"ㄔ":[[[64.3,12.5],[49.8,28.2],[31.1,41.6]],[[71.2,32.0],[53.6,49.4],[27.2,65.6]],[[56.3,50.9],[57.0,88.9]]],"ㄕ":[[[31.6,20.6],[55.5,16.4],[77.8,12.5],[82.4,19.0],[72.9,40.8]],[[35.1,45.2],[78.0,41.6]],[[35.8,41.2],[32.0,66.2],[17.5,87.8]]],"ㄖ":[[[22.1,15.6],[22.5,46.9],[24.2,87.4]],[[22.1,19.6],[48.4,15.2],[74.2,11.6],[79.0,19.6],[79.2,45.8],[78.6,85.1],[67.5,82.4]],[[38.3,37.4],[57.0,59.5]],[[21.7,84.5],[49.0,83.2],[76.1,82.4]]],"ㄗ":[[[16.0,19.0],[43.5,16.2],[74.4,12.2],[83.6,19.8],[74.6,41.6],[63.1,61.0],[51.5,50.7]],[[41.0,19.4],[41.0,40.2],[40.8,63.3],[40.6,88.0]]],"ㄘ":[[[13.7,36.8],[37.0,34.7],[60.1,32.8],[85.7,30.9]],[[46.9,10.4],[40.8,36.4],[34.7,56.3],[43.3,59.5],[67.9,51.7],[76.3,58.4],[64.1,75.9],[47.5,90.6]]],"ㄙ":[[[54.2,13.9],[37.9,44.6],[11.8,82.8],[25.5,82.4],[78.4,73.3]],[[73.3,57.4],[87.4,84.9]]],"ㄚ":[[[20.6,14.3],[35.3,31.6],[50.9,48.8]],[[79.2,12.7],[65.2,30.9],[51.1,48.6]],[[51.3,44.2],[51.5,66.6],[52.1,89.5]]],"ㄛ":[[[12.9,21.5],[50.9,18.5],[86.6,16.2]],[[54.2,20.6],[56.3,45.6],[34.7,44.0],[23.2,63.3],[36.2,80.7],[63.1,83.2],[83.2,69.4]]],"ㄜ":[[[13.5,34.9],[38.3,32.4],[63.9,30.3],[86.4,28.8]],[[51.9,11.2],[54.0,52.4],[30.3,53.8],[24.6,71.5],[40.0,85.1],[61.4,85.3],[80.9,74.2]]],"ㄝ":[[[10.1,48.2],[37.4,45.8],[62.6,44.0],[90.1,42.7]],[[66.0,13.1],[65.4,39.8],[63.1,70.2]],[[29.3,16.7],[31.1,49.8],[32.2,79.9],[46.5,86.4],[80.5,83.0]]],"ㄞ":[[[13.7,17.5],[51.1,15.4],[86.2,13.9]],[[22.7,28.8],[15.4,47.7],[25.5,50.9],[74.4,38.7],[81.5,45.6],[75.7,66.6],[58.9,89.1]],[[50.3,17.7],[47.5,45.0],[37.4,67.5],[16.9,87.4]]],"ㄟ":[[[12.0,22.5],[36.6,14.3],[42.7,39.3],[55.9,62.8],[79.9,83.6]]],"ㄠ":[[[52.6,12.5],[35.6,28.6],[18.8,44.2],[46.1,57.0]],[[74.2,29.9],[48.8,54.5],[17.9,79.6],[28.8,86.6],[73.8,76.3]],[[67.9,63.1],[80.1,87.4]]],"ㄡ":[[[19.0,19.0],[46.7,15.0],[73.3,11.4],[75.7,20.4],[63.3,39.1],[40.6,66.2],[9.7,85.3]],[[24.2,34.1],[43.1,47.9],[66.8,66.0],[89.7,87.4]]],"ㄢ":[[[17.9,18.8],[64.3,9.9],[75.7,16.2],[57.0,36.2]],[[31.8,24.6],[19.2,49.8],[29.0,52.4],[73.3,41.6],[81.5,50.7],[51.1,90.1]]],"ㄣ":[[[20.2,11.6],[13.5,43.5],[25.1,49.8],[78.2,37.7],[84.5,44.8],[49.4,89.1]]],"ㄤ":[[[19.2,44.2],[51.7,40.8],[82.4,38.3]],[[51.5,11.0],[49.0,33.2],[42.1,56.3],[28.4,76.5],[12.0,88.5]],[[55.9,43.3],[54.5,65.8],[54.0,86.8],[87.2,84.5]]],"ㄥ":[[[51.7,16.2],[31.6,48.4],[12.0,78.2],[24.8,83.2],[87.8,78.0]]],"ㄦ":[[[34.5,15.6],[32.0,59.1],[12.0,87.2]],[[58.7,13.5],[58.2,49.4],[56.8,83.0],[87.8,80.1]]],"ㄧ":[[[11.4,51.7],[49.4,49.4],[90.6,48.4]]],"ㄨ":[[[77.5,13.9],[61.6,44.8],[36.8,70.6],[11.8,85.3]],[[20.0,24.4],[47.7,44.0],[67.7,62.2],[88.3,85.3]]],"ㄩ":[[[19.6,22.1],[17.1,52.8],[13.9,78.4],[27.4,80.9],[79.6,72.5]],[[80.3,15.0],[82.2,46.3],[85.3,80.9],[73.8,73.1]]]};
+const ZYO={"ㄅ":["M39.2 77.8L37.6 75.9Q37.1 75.4 37.2 75.3Q37.4 75.1 37.8 75.3L40.3 76.5Q45.9 79.3 47.2 79.7Q48.6 80.1 50.0 80.0Q53.0 79.9 55.8 77.7Q58.6 75.5 63.0 69.0Q67.4 62.4 70.1 55.6Q72.9 48.7 73.7 45.6L74.3 43.1Q74.5 42.3 74.6 41.8Q74.7 41.3 74.6 40.7Q74.6 39.8 73.6 38.7Q72.7 37.6 70.4 37.8L61.6 38.7L51.5 39.8L41.9 40.7Q31.3 41.9 26.1 42.7Q20.9 43.6 20.5 43.6Q18.4 43.5 17.4 41.8Q16.4 40.1 16.4 38.2Q16.4 37.2 16.7 36.6Q16.9 36.1 18.1 35.2Q19.2 34.2 20.1 33.4Q20.9 32.5 23.8 29.0Q26.6 25.5 28.3 22.3Q30.0 19.1 30.4 18.2Q30.8 17.3 31.9 14.7Q33.0 12.1 33.2 11.8Q33.5 11.5 33.9 11.4Q34.4 11.4 36.6 12.3Q38.9 13.3 39.8 14.4Q40.8 15.4 40.8 15.9Q40.8 16.3 40.3 17.2L39.5 18.8Q38.9 19.9 37.0 22.8Q35.1 25.7 32.2 29.2L29.4 32.5Q28.8 33.3 28.4 33.7Q28.0 34.2 27.9 34.4Q27.8 34.6 27.8 34.9Q27.8 35.2 28.3 35.6Q28.9 35.9 30.3 35.8Q31.2 35.8 35.2 35.3Q39.2 34.9 55.1 33.5L66.3 32.6Q72.1 32.1 73.6 31.7Q75.1 31.4 75.4 31.4Q75.9 31.4 76.4 31.7Q76.9 31.9 78.1 33.1Q79.4 34.2 79.9 34.8Q80.4 35.4 81.5 36.8Q82.6 38.2 83.1 38.9Q83.5 39.5 83.5 40.2Q83.6 40.9 83.2 41.9Q82.2 44.4 82.0 45.3L81.0 48.2L78.8 54.7Q78.1 56.6 76.3 60.8Q74.6 65.0 72.7 69.0Q70.9 72.9 67.9 77.3Q64.9 81.7 60.4 84.7Q55.8 87.7 53.6 88.1Q51.3 88.6 49.7 88.6Q47.4 88.7 46.5 87.9Q45.6 87.1 44.4 84.9Q43.1 82.7 42.1 81.4Q41.1 80.0 39.2 77.8Z"],"ㄆ":["M51.8 59.2Q56.9 54.1 59.5 51.0Q62.1 47.9 65.2 43.7Q68.4 39.6 68.9 38.2Q69.4 36.9 69.4 36.1Q69.3 35.1 68.6 34.4Q67.8 33.6 63.4 34.1L54.8 35.1Q53.7 35.3 47.3 36.2Q40.9 37.1 38.6 37.7Q36.2 38.2 34.7 38.7L31.1 39.9Q29.3 40.4 28.7 40.3Q26.9 40.3 25.7 38.1Q24.6 35.9 24.6 35.1Q24.6 34.6 24.9 34.1Q25.2 33.7 26.1 32.8Q27.0 31.8 29.6 28.7Q32.2 25.6 34.0 22.9Q35.9 20.1 36.5 18.9Q37.2 17.8 37.8 16.4L38.8 14.1Q39.2 13.2 40.0 13.1Q40.8 13.1 42.6 14.1Q44.4 15.0 45.0 16.1Q45.6 17.2 45.5 17.8Q45.5 18.3 44.1 19.8Q42.8 21.4 42.3 21.9Q41.8 22.5 41.3 23.3L39.5 25.9Q37.3 28.8 35.6 30.9L34.4 32.3Q33.8 33.0 33.9 33.2Q34.0 33.4 34.7 33.2L38.2 32.7L55.4 30.1Q57.6 29.8 61.8 29.3Q66.0 28.7 68.4 28.2Q70.9 27.6 71.3 27.6Q72.6 27.6 73.9 28.5Q75.2 29.4 76.8 30.9Q78.3 32.3 79.0 33.1Q79.6 34.0 79.6 34.9Q79.6 35.8 79.0 37.0Q78.6 37.5 77.4 39.0Q76.2 40.4 75.3 41.5L73.0 44.7Q70.2 48.4 67.6 51.9Q64.9 55.3 58.1 62.6L53.5 67.0Q46.3 73.0 41.5 76.3Q36.6 79.6 29.8 82.3Q22.9 85.0 19.8 85.5L18.3 85.8Q17.6 85.9 17.3 85.8Q17.0 85.7 17.0 85.4Q16.9 85.1 17.5 84.8L18.5 84.3Q25.0 81.2 31.1 76.9Q37.3 72.5 40.5 69.8Q43.7 67.2 47.9 63.2L51.8 59.2Z","M47.9 63.2L29.8 52.1L27.4 50.5Q26.8 50.2 26.5 50.0Q26.1 49.7 26.2 49.4Q26.2 49.0 27.2 49.2Q28.7 49.5 30.6 50.1L32.7 50.9Q37.2 52.6 51.8 59.2L58.1 62.6L69.1 68.0Q76.8 71.9 78.6 73.3Q80.4 74.7 81.3 76.0Q82.1 77.2 82.6 79.4Q83.0 81.7 83.0 83.2Q83.0 84.5 82.6 85.7Q82.2 86.8 80.9 86.9Q79.1 87.0 77.4 85.7Q75.8 84.4 74.4 83.2Q73.0 82.0 70.8 80.0Q68.6 78.1 66.0 76.0Q63.3 73.9 53.5 67.0L47.9 63.2Z"],"ㄇ":["M22.7 31.9L22.7 44.8L23.2 58.8Q23.3 63.6 23.5 66.4L23.9 72.0L24.1 76.2Q24.1 77.8 23.5 80.0Q23.0 82.2 21.2 82.2Q18.7 82.2 17.4 78.2Q16.0 74.2 15.8 72.1Q15.6 70.0 15.5 66.9L15.3 60.8L14.8 36.1Q14.7 33.2 14.6 31.6Q14.6 30.1 14.5 28.7Q14.4 27.3 14.3 26.7L14.1 25.1Q14.1 24.7 14.1 24.3Q14.3 23.9 15.3 23.0Q16.3 22.1 17.8 22.1Q18.6 22.2 22.1 23.8Q24.3 25.6 22.7 31.9Z","M22.1 23.8Q40.4 20.6 56.0 19.9L65.9 19.4Q69.0 19.3 70.4 19.1Q71.7 18.9 73.4 18.3Q75.1 17.8 75.7 17.7Q79.5 17.6 82.4 20.0Q85.2 22.5 85.5 23.9Q85.9 25.4 85.9 27.0Q85.9 28.6 85.8 31.7L85.5 36.8Q85.3 39.5 85.2 41.5L84.4 58.9Q84.1 63.9 83.7 68.3Q83.3 72.7 82.9 76.1Q82.5 79.5 81.6 80.9Q80.7 82.3 79.4 82.3Q78.4 82.4 76.5 81.2Q74.6 80.0 74.1 77.7Q73.6 75.4 73.7 74.4Q73.7 73.9 74.0 72.1Q74.3 70.3 74.6 66.5Q75.0 62.8 75.2 60.3L75.7 50.7Q75.8 47.9 75.8 46.5Q75.9 45.1 75.8 42.3Q75.7 38.7 75.7 37.5Q75.6 36.2 75.4 33.7Q75.1 31.2 74.8 29.8Q74.4 28.4 72.5 27.3Q70.7 26.2 65.1 26.4L58.8 26.6Q50.5 26.9 40.0 28.6Q29.6 30.2 22.7 31.9Q16.3 28.1 22.1 23.8Z"],"ㄈ":["M15.9 28.0Q15.5 27.4 14.7 26.6Q13.9 25.9 13.8 25.5Q13.7 25.1 13.7 24.5Q13.7 21.8 15.7 21.9L19.1 21.9Q22.7 22.1 27.0 22.1Q31.2 22.0 48.7 20.5L58.8 19.6Q64.2 19.1 66.9 18.7Q69.5 18.3 72.4 17.5Q75.4 16.7 76.4 16.6Q80.9 16.3 82.1 18.8Q83.3 21.3 83.3 22.3Q83.2 23.3 82.5 24.1Q81.9 24.9 78.8 25.5Q75.8 26.1 62.4 26.9L55.8 27.3Q37.5 28.4 25.2 28.8Q18.8 30.7 15.9 28.0Z","M25.2 28.8L25.4 59.2Q25.4 64.2 25.6 67.4Q25.8 70.7 26.5 72.3Q27.2 74.0 28.6 74.8Q30.1 75.6 32.3 75.9Q34.6 76.2 41.7 76.0L67.8 75.3Q72.2 75.2 75.7 74.9Q79.2 74.5 80.0 74.4Q82.2 74.4 83.2 75.1Q84.3 75.7 85.3 77.2Q86.4 78.8 86.3 80.4Q86.2 81.2 85.8 81.7Q85.4 82.2 84.3 82.6Q83.3 83.0 78.9 82.9L71.8 82.8Q60.8 82.6 59.4 82.6Q56.7 82.6 48.9 82.8L42.2 82.9Q41.4 83.0 36.2 83.2Q31.0 83.5 30.3 83.5Q26.4 83.5 23.9 82.2Q21.4 80.8 20.2 76.8Q19.0 72.7 18.8 71.1Q18.5 69.6 18.4 67.8Q18.3 66.1 18.2 62.6Q18.1 59.2 18.1 59.1L17.0 38.1Q16.9 36.2 16.7 34.0Q16.6 31.8 16.4 30.2Q16.2 28.6 15.9 28.0Q20.5 25.0 25.2 28.8Z"],"ㄉ":["M40.9 39.2L30.9 40.3Q28.2 40.6 26.2 41.0Q24.2 41.3 22.9 41.7Q21.6 42.1 20.9 42.0Q18.9 41.9 17.8 40.6Q16.7 39.2 16.6 38.6Q16.4 38.0 16.4 37.3Q16.5 36.5 16.8 36.0Q17.2 35.4 19.1 33.2Q21.0 31.0 22.2 29.3Q23.4 27.5 24.6 25.3Q25.9 23.2 26.7 21.5Q27.5 19.8 28.3 17.7Q29.0 15.7 29.3 14.8L29.8 12.8Q30.2 11.5 31.3 11.5Q32.2 11.5 34.7 13.6Q37.2 15.7 37.7 16.6Q38.2 17.6 38.2 18.3Q38.2 19.6 35.6 22.6L29.8 29.5Q27.4 32.4 26.4 33.4Q25.5 34.3 25.7 34.8Q25.9 35.8 28.3 35.4L35.4 34.5Q47.2 33.0 56.0 32.3L66.8 31.4Q70.0 31.2 72.4 30.6Q74.7 30.0 75.4 30.0Q77.4 30.1 79.3 32.0Q81.2 34.0 82.4 35.7Q83.6 37.4 83.5 38.6Q83.5 39.0 83.4 39.3Q83.3 39.5 82.6 40.7Q82.0 41.9 81.4 44.5L80.4 48.3Q78.5 55.2 76.8 59.9Q75.2 64.6 74.1 67.0Q73.1 69.4 71.2 73.3Q69.3 77.2 66.7 80.3Q64.1 83.3 59.7 86.0Q55.4 88.7 52.9 88.6Q51.5 88.5 50.8 87.9Q50.1 87.3 49.7 86.7Q49.3 86.1 48.3 84.0Q47.3 82.0 46.1 80.4Q44.8 78.8 44.0 78.0L42.8 76.8Q42.5 76.6 42.4 76.4Q42.4 76.2 42.4 75.9Q42.4 75.6 43.2 75.9L44.8 76.7Q50.0 79.3 53.1 79.4Q56.7 79.5 58.9 77.2Q61.0 74.9 64.5 69.5Q68.0 64.2 70.5 56.2Q73.0 48.3 73.6 45.2Q74.1 42.1 74.3 41.0Q74.4 39.8 74.4 38.9Q74.4 38.0 74.2 37.5Q73.1 35.7 67.6 36.1L46.3 37.8L40.9 39.2Z","M46.3 37.8Q49.0 39.8 49.4 40.2Q49.9 40.7 50.2 41.4Q50.5 42.1 50.6 42.8Q50.6 43.5 50.4 44.4Q49.7 46.7 47.7 50.3Q45.6 53.8 42.1 59.3Q38.7 64.7 31.8 71.2Q24.9 77.7 20.6 79.9L18.7 80.9Q17.8 81.5 17.4 81.4Q17.1 81.3 17.0 81.0Q16.8 80.8 17.0 80.5Q17.1 80.2 17.8 79.4L19.2 77.7L21.7 74.8Q23.5 72.7 24.5 71.4Q25.5 70.1 29.0 65.2Q32.4 60.4 34.1 57.9Q35.7 55.5 37.2 52.9Q38.6 50.3 39.8 47.8Q40.9 45.3 41.6 43.6Q42.3 41.9 42.6 41.3Q42.8 40.8 42.7 39.9C39.5 37.8 45.1 37.9 46.3 37.8Z"],"ㄊ":["M48.7 39.6L63.8 37.9L69.3 37.2Q70.5 37.1 72.1 36.8Q73.8 36.5 75.9 36.1Q78.0 35.6 79.2 35.6Q81.5 35.5 83.7 36.5Q85.9 37.6 86.8 39.3Q87.8 41.0 87.8 41.9Q87.8 42.8 87.5 43.2Q86.9 44.0 85.4 44.0Q84.6 44.0 81.8 43.8Q78.9 43.7 74.8 44.0L70.9 44.2Q66.8 44.4 63.4 44.8Q60.0 45.1 57.5 45.3L51.7 46.0L46.4 46.6L39.2 46.8L27.6 48.3Q26.7 48.4 23.0 49.0Q19.4 49.7 18.4 49.6Q17.0 49.5 15.1 48.6Q13.3 47.6 12.7 46.2Q12.2 44.7 12.2 44.0Q12.2 43.3 12.4 42.8Q12.6 42.4 13.2 42.1Q13.7 41.8 16.2 41.6L24.1 41.3Q34.3 41.0 41.6 40.1L48.7 39.6Z","M41.6 40.1Q43.0 36.3 44.2 32.5Q45.3 28.6 45.9 26.4L46.6 23.8Q46.7 23.2 47.0 20.4Q47.3 17.6 47.5 16.6Q47.8 15.5 49.4 15.4Q50.3 15.4 51.9 16.2Q53.5 17.1 54.9 18.7Q56.3 20.3 56.3 21.7Q56.4 23.1 56.3 23.6Q56.1 24.0 56.0 24.3Q55.8 24.5 55.2 25.1Q54.5 25.8 54.0 26.8Q53.5 27.8 53.0 29.1Q52.4 30.3 51.6 32.6Q50.7 34.8 50.6 35.0L48.7 39.6L46.4 46.6Q44.4 52.3 43.0 55.8Q41.6 59.4 41.0 61.0L39.1 65.5L37.3 69.9L36.2 72.5Q35.6 73.8 35.8 74.5Q35.8 75.1 36.4 75.7Q36.9 76.2 39.9 75.8L46.0 75.0Q54.9 73.8 68.5 70.8Q75.4 72.2 70.0 75.2L33.5 84.0Q30.8 84.6 29.8 84.6Q28.7 84.7 27.8 84.2Q26.9 83.7 26.0 82.1Q25.0 80.5 24.7 79.7Q24.4 78.8 24.4 78.3Q24.4 77.7 24.7 77.0Q24.9 76.5 26.5 74.3Q28.0 72.1 29.3 70.0Q30.5 68.0 33.2 62.1Q35.9 56.2 39.2 46.8L41.6 40.1Z","M68.5 70.8L63.4 60.5Q63.1 60.0 63.1 59.5Q63.2 59.0 64.0 59.5L65.2 60.2Q67.1 61.5 70.8 64.3Q74.5 67.2 77.2 70.2Q79.8 73.2 80.5 75.0Q81.1 76.8 81.1 78.5Q81.1 79.6 80.8 80.8Q80.5 82.0 79.6 83.4Q78.6 84.7 76.8 84.7Q75.5 84.7 74.7 84.0Q73.9 83.2 73.2 81.8L70.0 75.2L68.5 70.8Z"],"ㄋ":["M33.2 76.5L40.4 78.3Q43.2 79.1 44.8 79.1Q48.8 79.0 51.6 77.2Q54.3 75.4 55.4 74.4Q56.5 73.5 58.9 70.3Q61.3 67.0 63.7 61.9Q66.1 56.8 67.4 52.6L68.5 48.7Q69.2 46.2 69.4 45.3L69.6 43.9L69.8 42.9Q69.7 42.5 69.4 42.3Q69.1 42.1 67.4 42.4L53.7 45.0Q49.5 45.8 48.3 46.2Q47.1 46.7 46.8 46.6Q46.1 46.6 44.5 45.7Q42.8 44.7 42.7 43.3Q42.6 42.0 42.9 41.4Q43.1 40.9 43.4 40.7Q43.7 40.4 44.6 39.6Q45.5 38.9 46.0 38.2Q46.6 37.5 47.6 36.1L49.8 33.1L53.8 27.2Q56.0 24.0 56.6 22.8L57.2 21.2Q57.5 20.4 57.3 19.5Q57.2 18.7 54.7 18.8Q52.6 19.0 52.4 19.1Q52.1 19.1 44.9 20.4Q37.6 21.8 32.2 23.5L27.4 25.1Q25.4 25.8 24.9 25.7Q23.4 25.7 21.9 24.0Q20.4 22.3 20.1 21.3Q19.8 20.2 19.8 19.8Q19.8 18.6 20.7 18.3Q21.5 18.0 22.7 17.8L27.5 17.3Q30.6 17.0 41.4 15.6Q52.2 14.2 55.6 13.2Q59.0 12.2 60.0 12.2Q62.3 12.1 65.4 13.7Q68.5 15.4 69.5 16.7Q70.5 18.0 69.5 19.9Q68.9 21.2 67.7 22.5Q66.4 23.8 64.1 26.1Q61.8 28.3 59.0 31.8Q56.2 35.2 55.4 36.5L54.4 38.1Q53.8 39.0 53.9 39.3Q54.1 39.6 55.1 39.5L69.8 37.4Q72.6 37.0 74.1 37.3Q75.7 37.6 77.3 39.1Q78.9 40.6 79.6 41.8Q80.3 43.0 80.2 43.9Q80.1 44.5 79.6 45.4L78.5 47.3Q77.7 48.6 77.1 50.1Q76.5 51.6 74.9 56.2Q73.3 60.8 72.1 63.3Q71.0 65.8 69.1 69.5Q67.2 73.3 64.2 77.4Q61.1 81.5 55.6 84.7Q50.0 87.9 46.3 87.9Q44.7 87.9 43.9 87.5Q43.1 87.0 42.8 86.6Q42.4 86.2 40.6 83.6Q38.7 80.9 33.8 77.7L32.8 77.0Q32.4 76.8 32.6 76.6Q32.7 76.3 33.2 76.5Z"],"ㄌ":["M45.9 39.0L26.7 41.3Q24.8 41.6 23.4 41.9Q22.0 42.1 21.7 42.1Q19.8 42.0 18.0 39.8Q16.3 37.5 16.5 36.2Q16.5 35.7 16.8 35.3Q17.1 34.9 18.7 33.1Q20.4 31.3 21.3 29.2Q22.3 27.1 23.1 25.3Q23.8 23.5 24.1 22.6Q24.3 21.7 24.6 20.3Q24.8 18.9 24.8 18.2Q24.9 17.5 24.9 16.1Q24.9 15.4 24.8 14.9Q24.8 14.3 24.9 13.5Q25.0 12.7 26.9 12.8Q29.8 13.0 31.7 14.7Q33.5 16.4 33.5 18.2Q33.4 19.0 33.0 20.2Q32.5 21.5 30.3 25.8L26.6 33.0L25.9 34.0Q25.9 34.3 26.3 34.6Q26.7 34.9 29.2 34.7L35.8 34.1Q42.3 33.5 48.2 32.5L56.0 31.9L64.1 31.0Q68.9 30.6 69.9 30.3Q70.9 30.1 72.7 29.6Q74.6 29.1 75.6 29.1Q77.1 29.1 79.2 30.1Q81.2 31.0 82.3 32.3Q83.5 33.6 83.8 34.4Q84.1 35.3 84.1 36.2Q84.0 36.7 83.5 39.1Q83.0 41.6 82.7 43.7L81.7 49.3Q80.5 56.0 79.1 60.8Q77.8 65.6 74.0 73.5Q70.2 81.5 64.5 85.7Q58.8 89.9 55.2 89.8Q53.0 89.7 52.5 88.9Q52.1 88.1 51.9 87.2Q51.8 86.3 51.6 85.8Q51.5 85.4 50.1 83.4Q48.7 81.5 46.4 79.5L45.3 78.5Q44.8 78.1 44.9 77.8Q45.1 77.6 45.5 77.7L46.9 78.2Q48.5 78.8 51.1 79.4Q53.7 80.0 55.2 80.0Q57.5 80.1 59.5 79.2Q61.5 78.3 63.5 76.3Q65.5 74.2 66.8 71.8Q68.2 69.4 69.6 66.1Q71.0 62.8 71.7 60.6Q72.3 58.4 73.2 55.0Q74.0 51.5 74.5 49.1Q74.9 46.7 75.2 44.9Q75.4 43.1 75.6 41.6Q75.7 40.1 75.7 39.2Q75.7 38.2 75.5 37.6Q75.2 36.9 74.4 36.4Q73.6 36.0 70.5 36.3L54.4 37.9L45.9 39.0Z","M48.2 32.5Q49.6 29.0 50.7 25.4Q51.8 21.7 52.2 19.7Q52.6 17.8 52.7 16.8Q52.8 15.7 52.8 15.0Q52.9 14.3 52.7 13.3Q52.6 12.2 52.6 11.9Q52.6 11.5 52.7 11.1Q53.1 10.3 54.2 10.3Q55.9 10.3 58.0 11.3Q60.1 12.4 60.6 13.3Q61.1 14.2 61.1 15.3Q61.1 15.9 60.9 16.6Q60.7 17.3 60.2 18.5Q59.8 19.7 59.6 20.6L58.7 23.5L56.0 31.9L54.4 37.9Q51.3 45.6 49.8 48.8Q48.4 52.0 43.0 61.8Q37.6 71.5 29.9 77.2Q22.2 83.0 17.9 83.8L16.7 84.1Q16.1 84.2 15.9 83.9Q15.7 83.6 15.9 83.3L16.7 82.8Q19.0 81.1 21.5 78.7Q24.0 76.2 28.0 71.1Q31.9 66.0 35.0 61.1Q38.1 56.3 40.8 50.9Q43.4 45.5 44.0 43.9L45.9 39.0L48.2 32.5Z"],"ㄍ":["M23.3 64.4L19.6 58.7Q17.2 55.0 16.8 53.7Q16.3 52.5 16.3 51.5Q16.3 50.5 16.7 49.3Q16.9 48.4 17.6 47.0Q18.4 45.7 19.6 43.8L23.0 38.5Q24.1 36.8 25.8 33.7L28.2 29.2Q29.0 27.9 30.9 23.6Q32.8 19.3 33.4 17.7Q34.0 16.0 34.3 14.6Q34.6 13.3 34.7 12.6L35.0 11.1Q35.1 10.2 35.6 9.8Q36.0 9.4 36.9 9.4Q38.2 9.4 40.4 10.8Q42.6 12.2 43.9 14.4Q45.2 16.5 45.2 18.2Q45.1 19.5 44.6 20.1Q44.1 20.7 42.7 22.0Q41.3 23.2 40.2 24.6Q39.2 26.1 37.4 28.8Q35.7 31.4 34.0 33.8L28.6 41.4Q26.6 44.2 25.1 46.2Q23.6 48.2 23.1 49.5Q22.5 50.7 22.5 51.7Q22.4 52.6 22.9 53.6Q23.2 54.2 24.3 55.5L26.1 57.6L36.1 68.4Q42.5 75.4 43.5 76.8Q44.5 78.1 44.8 79.7Q45.1 81.3 45.1 83.0Q45.2 84.6 44.9 86.1Q44.6 87.4 43.8 89.1Q43.0 90.7 40.7 90.7Q37.8 90.8 36.6 89.0Q35.5 87.2 35.1 86.5Q34.7 85.8 33.4 83.0Q32.1 80.3 28.5 73.6Q24.9 67.0 23.3 64.4Z","M60.0 62.2L56.6 57.0Q54.9 54.5 54.5 53.3Q54.0 52.1 54.0 51.2Q54.0 50.3 54.4 49.2Q55.0 47.3 56.1 45.4Q57.3 43.6 59.6 40.3Q61.8 36.9 63.6 34.0Q65.3 31.1 66.0 29.9Q66.7 28.7 68.7 24.4Q70.7 20.1 71.4 18.0Q72.0 16.0 72.3 14.9Q72.5 13.8 72.6 13.0Q72.8 12.1 73.0 11.1Q73.2 10.1 74.6 10.1Q76.1 10.2 78.2 11.6Q80.3 12.9 82.0 15.5Q83.6 18.1 83.7 19.4Q83.7 20.7 83.5 21.1Q83.3 21.4 82.8 21.8Q82.3 22.1 81.0 22.9Q79.6 23.8 78.5 25.2Q77.3 26.6 73.3 32.2L66.0 42.4L63.8 45.3Q61.5 48.2 60.9 49.5Q60.3 50.8 60.4 51.8Q60.4 52.5 60.8 53.3Q61.1 54.2 62.9 56.1L71.6 65.6Q71.6 65.6 74.3 68.4L76.7 70.9Q79.7 74.1 80.8 75.4Q81.8 76.7 82.4 78.3Q83.0 79.8 83.1 81.9Q83.1 84.1 82.8 85.4Q82.5 86.9 81.6 88.4Q80.7 89.9 78.8 89.9Q76.7 90.0 75.4 88.9Q74.1 87.9 72.8 85.3L69.5 78.8Q68.2 76.3 64.6 70.0Q61.0 63.7 60.0 62.2Z"],"ㄎ":["M38.4 21.7L30.5 22.8Q26.9 23.3 24.3 24.0Q21.8 24.7 20.0 25.3Q18.2 26.0 17.8 25.9Q16.3 25.9 14.9 24.1Q13.4 22.2 13.3 21.8Q13.2 21.4 13.2 21.0Q13.3 19.8 14.3 19.2Q15.3 18.5 18.1 18.2L26.1 17.5Q27.1 17.4 36.8 16.3Q46.6 15.2 61.4 14.7L72.2 14.3Q74.7 14.2 76.0 13.9L78.1 13.3Q79.3 13.0 80.3 13.0Q82.1 13.1 84.4 14.6Q86.7 16.1 86.7 17.6Q86.8 19.1 86.4 19.8Q85.5 21.4 83.8 21.3L74.9 20.4Q71.5 20.1 68.4 20.1Q67.0 20.1 65.1 20.1Q63.2 20.2 56.9 20.3Q50.5 20.5 43.1 21.0L38.4 21.7Z","M43.1 21.0Q45.1 23.3 45.8 24.6Q46.5 25.9 46.6 26.5Q46.6 27.2 46.4 27.6Q46.3 28.0 46.0 28.2L45.3 29.0Q43.7 30.4 41.7 34.2Q39.6 38.0 39.4 38.5L38.6 40.0Q38.2 40.9 38.2 41.3Q38.2 41.7 38.5 42.0Q38.8 42.2 40.8 41.9L47.9 40.9Q50.2 40.6 54.4 40.1Q58.6 39.5 60.6 39.1Q62.5 38.6 63.4 38.5Q65.0 38.5 67.9 39.6Q70.8 40.7 72.1 42.2Q73.3 43.6 73.8 45.1Q74.3 46.7 74.1 47.9Q74.0 48.4 73.9 48.7Q73.8 49.1 73.5 50.0Q73.1 50.8 72.9 51.6Q72.7 52.3 71.8 56.1L70.6 60.6Q69.9 63.0 69.5 64.3Q69.1 65.7 66.8 71.3Q64.5 76.9 59.6 82.0Q54.6 87.0 51.3 87.0Q50.3 87.0 49.7 86.7Q49.0 86.3 48.3 85.3L47.1 83.7Q45.7 81.9 42.9 79.5L41.2 78.0Q40.7 77.6 40.6 77.1Q40.4 76.6 41.3 76.8L43.3 77.5Q43.9 77.7 46.3 78.5Q48.7 79.4 49.8 79.3Q52.4 79.1 55.7 74.8Q59.1 70.5 60.7 66.9Q62.3 63.4 63.2 60.4Q64.2 57.4 64.6 55.4Q65.0 53.4 65.3 51.2Q65.5 49.0 65.5 48.0Q65.5 47.0 65.4 46.4Q65.1 45.6 64.3 45.0Q63.5 44.5 60.9 44.6Q57.6 44.8 56.0 44.9L50.6 45.5Q44.8 46.2 41.2 47.0Q37.5 47.7 35.3 48.3Q33.1 48.8 32.4 48.8Q30.3 48.9 29.2 47.0Q28.0 45.0 28.0 43.2Q28.0 42.4 28.2 42.0Q28.5 41.5 29.0 41.0L30.4 39.9Q31.2 39.2 32.8 37.2Q34.3 35.2 36.1 32.2Q37.8 29.2 38.2 27.9Q38.5 26.6 38.7 25.8Q38.8 25.0 38.8 24.5Q38.8 24.0 38.8 23.5Q38.7 22.7 38.4 21.7Q39.9 19.2 43.1 21.0Z"],"ㄏ":["M28.2 26.6Q27.8 25.8 27.7 25.5Q27.6 25.3 27.6 24.7Q27.6 24.2 27.7 23.2Q27.8 22.5 28.2 21.7Q28.6 21.0 30.3 21.0L37.8 21.3Q41.3 21.5 53.6 20.3L76.7 18.2Q80.2 17.9 82.3 17.9Q84.4 17.8 85.4 19.3Q86.3 20.8 86.3 22.0Q86.3 23.1 86.0 23.8Q85.7 24.5 85.2 24.7Q84.7 25.0 83.6 25.0L70.7 25.2Q58.2 25.4 50.8 26.1Q43.4 26.8 36.3 27.7Q28.5 29.3 28.2 26.6Z","M36.3 27.7Q36.0 33.6 35.7 37.6Q35.5 41.6 34.9 47.9Q34.3 54.1 32.2 62.5Q30.1 70.8 24.8 75.7Q19.5 80.5 15.6 81.7L14.6 82.1Q13.8 82.3 13.7 82.0Q13.5 81.6 14.0 81.1L15.1 79.9Q16.0 78.9 17.6 76.7Q19.2 74.5 21.3 71.2Q23.4 67.8 24.6 64.0Q25.9 60.1 26.5 57.7Q27.0 55.4 27.5 53.1Q27.9 50.9 28.2 46.5Q28.6 42.0 28.7 39.2L28.9 30.3Q28.9 29.6 28.8 28.5C27.5 25.7 34.1 26.4 36.3 27.7Z"],"ㄐ":["M66.8 55.7L48.7 64.0Q40.5 67.8 38.2 68.6Q35.9 69.3 34.7 69.2Q33.0 69.2 30.3 67.6Q27.6 66.0 26.9 64.8Q26.2 63.6 26.1 62.7Q25.9 61.8 25.9 60.7Q25.9 60.0 26.1 57.8Q26.2 55.6 26.1 54.1L25.5 32.8Q25.4 29.9 25.4 29.1L25.2 26.3Q25.1 24.6 25.0 23.9Q24.9 23.3 24.6 21.6Q24.2 19.8 24.1 19.0Q24.0 18.2 24.0 17.2Q24.0 16.3 24.1 15.7Q24.8 13.6 27.5 13.6Q29.4 13.6 32.1 15.2Q34.8 16.9 34.7 19.4Q34.7 19.8 34.5 20.9Q34.3 22.0 34.2 22.8Q34.2 23.5 34.2 25.2L34.1 27.7L33.9 56.3Q33.8 57.6 34.1 58.5Q34.4 59.4 34.9 59.9Q35.5 60.3 36.9 60.2Q41.5 60.2 55.5 54.7L67.1 50.3Q71.9 50.8 66.8 55.7Z","M67.1 50.3L67.0 36.7Q66.9 35.2 66.7 28.9Q66.5 22.5 66.5 20.9Q66.4 19.3 66.3 17.9Q66.2 16.6 66.0 15.0Q65.8 13.3 65.9 12.7Q66.0 9.8 68.6 9.7Q70.8 9.7 72.9 11.4Q75.0 13.2 75.5 13.9Q75.9 14.6 76.0 15.3Q76.0 16.0 75.9 17.1Q75.5 19.3 75.3 20.9Q75.1 22.6 75.0 23.8Q74.9 24.9 74.9 28.0L74.8 34.2L74.5 52.9Q74.5 55.6 74.6 62.1Q74.7 68.6 74.8 69.6L75.1 82.0Q75.1 84.1 74.8 85.9Q74.5 87.7 73.2 89.0Q72.0 90.3 70.9 90.3Q70.2 90.4 68.4 89.3Q66.7 88.2 66.4 86.0Q66.0 83.8 66.1 82.9L66.2 80.7L66.6 70.7Q66.7 68.5 66.8 62.2L66.8 55.7L67.1 50.3Z"],"ㄑ":["M35.6 40.7L50.4 26.0Q54.6 21.9 57.7 18.0Q60.9 14.2 61.9 12.6Q62.9 11.0 63.4 10.7Q63.8 10.4 64.5 10.4Q65.6 10.3 67.7 11.4Q69.8 12.6 71.0 14.6Q72.3 16.7 72.2 17.7Q72.1 18.7 71.5 19.3Q70.9 20.0 70.0 20.4L68.3 21.2Q65.0 23.0 58.1 29.0L45.5 40.0Q44.8 40.6 40.3 44.2Q35.8 47.9 35.1 49.3Q34.5 50.7 34.5 51.3Q34.5 52.1 35.4 53.0Q36.3 53.9 38.5 55.2L52.9 64.0Q57.0 66.5 63.0 70.9Q68.9 75.2 70.8 77.3Q72.7 79.4 73.3 80.8Q74.0 82.2 74.2 83.5Q74.4 84.8 74.4 85.7Q74.2 86.9 73.5 88.2Q72.8 89.6 70.9 89.7Q68.5 90.0 66.5 88.1Q64.6 86.3 60.4 81.9Q56.3 77.4 51.2 73.1Q46.2 68.7 41.0 64.5Q35.8 60.2 31.8 58.0Q27.7 55.7 26.8 54.9Q25.9 54.2 25.8 52.6Q25.6 51.0 25.6 50.5Q25.6 49.9 25.8 49.6Q26.0 49.2 26.3 49.0Q26.6 48.7 27.6 47.9Q28.7 47.1 31.6 44.4Q34.5 41.8 35.6 40.7Z"],"ㄒ":["M46.6 22.2L37.9 22.9Q33.9 23.3 32.8 23.4Q31.8 23.5 27.2 24.4Q22.7 25.3 20.8 25.1Q15.4 24.9 14.0 22.6Q12.6 20.2 12.6 18.9Q12.7 18.0 13.1 17.6Q13.6 17.2 15.2 17.2L21.8 17.4Q23.5 17.5 28.6 17.2Q33.7 16.9 41.9 16.5L65.9 15.4Q70.5 15.2 72.5 15.2Q74.4 15.1 75.2 15.1Q75.9 15.1 77.1 15.0Q78.3 14.9 79.6 14.6Q80.9 14.3 81.2 14.3Q83.3 14.2 85.0 15.6Q86.6 17.0 87.0 18.2Q87.3 19.4 87.3 20.2Q87.3 22.4 84.9 22.4Q84.6 22.5 82.4 22.1Q80.2 21.7 74.1 21.7Q64.9 21.8 55.4 22.2L46.6 22.2Z","M55.4 22.2L55.0 37.2L54.5 63.9Q54.5 65.3 54.5 68.8Q54.6 72.2 54.7 75.2Q54.8 78.2 54.8 79.1Q54.8 80.6 54.6 82.4Q54.4 84.2 53.3 85.0Q52.1 85.7 51.3 85.8Q50.1 85.9 48.3 84.8Q46.4 83.7 46.1 82.2Q45.7 80.8 45.7 79.8Q45.7 79.1 45.9 77.1Q46.1 75.1 46.3 70.3Q46.6 65.6 46.7 63.0L47.0 50.3Q47.1 45.1 47.1 43.3Q47.1 41.5 47.0 35.8Q46.9 30.1 46.9 28.5Q46.8 26.9 46.6 22.2Q50.8 18.7 55.4 22.2Z"],"ㄓ":["M44.4 59.7L34.9 61.0Q33.1 61.2 31.6 61.6L28.8 62.3Q27.7 62.6 26.4 62.6Q24.8 62.6 23.5 62.1Q22.3 61.5 21.4 60.0Q20.5 58.4 20.2 57.5Q19.9 56.5 19.7 55.2Q19.5 53.9 19.5 53.0L19.0 39.4Q18.9 37.8 18.7 35.3Q18.5 32.9 18.4 31.9Q18.3 31.0 18.0 29.4Q17.7 27.9 17.7 27.1Q17.7 26.3 18.0 25.5Q18.5 24.6 19.8 23.8Q21.1 23.0 22.7 23.0Q24.2 23.1 25.1 23.9Q25.9 24.7 26.2 25.2Q26.4 25.6 26.4 26.1Q26.4 26.7 26.1 27.7Q25.9 28.6 25.8 29.3Q25.7 29.9 25.7 31.1Q25.6 32.3 25.5 34.3Q25.4 36.2 25.5 37.2L25.6 43.9Q25.6 45.3 25.7 48.0Q25.9 50.7 26.4 52.9Q26.9 55.1 27.6 55.5Q28.3 55.9 29.0 55.9Q29.8 56.0 32.8 55.4L44.3 53.4L51.5 53.0L63.7 52.6Q67.3 52.5 68.0 52.0Q76.9 49.0 75.1 55.5Q74.6 57.2 73.1 57.9Q71.7 58.6 69.4 58.5L62.7 58.2Q59.4 58.1 51.6 58.9L44.4 59.7Z","M68.9 50.9Q69.1 50.3 69.4 48.6L70.5 41.5Q70.9 39.1 71.2 36.1Q71.5 33.2 71.6 31.8L71.7 29.1Q71.8 26.9 71.8 26.3Q71.8 25.6 71.9 25.4Q72.1 24.6 73.4 23.9Q74.7 23.2 75.8 23.3Q77.1 23.4 78.3 24.7Q79.5 25.9 79.9 26.6Q80.2 27.4 80.2 28.4Q80.2 28.8 80.0 29.6Q79.8 30.4 79.4 32.6Q78.9 34.7 78.4 37.1Q77.9 39.5 77.0 45.2L76.0 52.0Q75.7 53.8 75.1 55.5Q67.9 60.5 68.9 50.9Z","M43.9 78.2Q44.1 73.3 44.2 70.5Q44.2 67.7 44.3 65.5L44.4 59.7L44.3 53.4L44.6 27.0Q44.6 24.7 44.5 22.3Q44.3 19.9 44.2 18.7Q44.1 17.4 43.8 16.5Q43.6 15.6 43.6 15.4Q43.5 15.1 43.5 14.6Q43.5 14.1 43.7 13.8Q43.9 13.1 45.1 12.7Q46.3 12.2 47.4 12.2Q49.5 12.2 52.0 13.9Q54.5 15.7 54.1 18.3L53.5 20.3Q53.4 20.9 53.2 22.3L52.8 25.1Q52.6 26.5 52.5 27.7Q52.4 28.9 52.2 32.7Q52.0 36.5 52.0 37.7L51.5 53.0L51.6 58.9Q51.4 66.8 51.4 68.4L51.3 77.7Q47.1 84.9 43.9 78.2Z","M51.3 77.7L67.6 77.1Q76.5 76.8 78.9 76.5Q81.3 76.2 81.7 76.2Q84.1 76.2 85.7 78.3Q87.4 80.4 86.4 82.3Q85.5 83.8 83.8 84.0Q83.2 84.1 80.8 83.7Q78.4 83.3 63.9 83.3Q51.0 83.3 40.4 84.5Q29.8 85.7 25.4 86.8Q21.0 87.9 19.6 87.9Q17.6 87.9 15.8 86.9Q13.9 85.9 13.6 85.2Q13.2 84.5 13.2 83.7Q13.2 82.9 13.7 82.0Q14.1 81.4 14.6 81.1Q15.2 80.8 19.8 80.6Q24.4 80.4 30.8 79.6L43.9 78.2L51.3 77.7Z"],"ㄔ":["M32.7 41.8L31.3 42.1Q30.6 42.4 30.3 42.3Q30.1 42.3 29.9 42.0Q29.8 41.7 30.7 41.1L32.4 40.0Q42.3 33.5 47.5 27.1Q52.7 20.8 53.9 18.9Q55.1 17.1 56.1 15.4Q57.1 13.6 57.6 12.5Q58.1 11.3 58.5 10.7Q58.9 10.0 60.1 9.9Q61.4 9.9 63.5 11.1Q65.5 12.2 66.2 13.9Q66.8 15.7 66.8 16.7Q66.8 17.5 66.5 17.9Q66.3 18.4 65.7 18.8L64.7 19.4Q64.3 19.7 63.8 20.1Q63.3 20.5 62.6 21.1Q62.0 21.7 57.5 25.9Q52.9 30.2 48.6 33.4Q44.2 36.6 39.6 38.9Q34.9 41.2 32.7 41.8Z","M52.6 53.4Q50.8 54.5 43.1 59.2Q35.5 63.9 28.0 65.7L26.7 66.0Q26.2 66.1 26.1 65.8Q25.9 65.5 26.5 65.1L28.1 64.2Q34.7 60.2 41.1 55.5Q47.5 50.8 50.9 47.5Q54.2 44.3 58.1 40.2Q62.0 36.1 63.2 34.4Q64.4 32.6 65.1 31.5Q65.7 30.4 66.2 30.0Q66.6 29.6 67.8 29.6Q69.2 29.6 71.5 31.2Q73.8 32.8 73.9 34.2Q73.9 35.5 73.6 36.1Q73.3 36.8 72.7 37.5Q72.1 38.2 70.4 39.7Q68.7 41.2 66.2 43.2L63.8 45.2L57.3 50.2L52.6 53.4Z","M57.3 50.2Q59.1 51.9 59.7 53.0Q60.3 54.1 60.3 55.4L60.0 68.9Q60.0 71.4 60.0 73.3Q60.1 75.3 60.3 77.9Q60.4 80.5 60.6 82.0Q60.8 83.4 60.9 83.8Q60.9 84.1 60.9 84.5Q60.8 85.4 60.5 86.1Q60.1 86.8 58.9 88.5Q57.6 90.1 56.3 90.1Q55.2 90.1 54.1 88.8Q52.9 87.4 52.7 86.3Q52.5 85.1 52.5 84.4Q52.5 83.6 52.7 80.7L53.1 72.5Q53.3 68.9 53.3 66.3Q53.4 63.6 53.3 60.5Q53.2 58.4 53.1 56.6Q53.1 54.7 52.9 54.1L52.6 53.4Q53.7 49.7 57.3 50.2Z"],"ㄕ":["M70.8 37.2Q71.9 36.6 72.7 35.1Q73.4 33.6 73.7 31.6L74.7 24.2Q74.9 22.5 74.9 22.0Q74.9 21.5 74.5 21.2Q74.2 20.9 73.0 20.9L59.6 21.7L49.9 22.5L39.5 23.3Q39.0 23.4 36.9 23.7Q34.8 24.0 34.4 23.9Q33.0 23.8 31.9 22.4Q30.7 21.0 30.1 20.0Q29.5 19.0 29.4 18.4Q29.2 17.8 29.2 16.6Q29.2 15.3 32.2 15.3L37.4 15.4Q39.4 15.4 48.4 14.9Q57.4 14.4 62.3 13.9Q67.2 13.3 69.5 13.0Q71.9 12.6 73.1 12.3Q74.4 12.0 75.7 11.5Q77.0 11.0 77.4 10.9Q79.1 10.7 81.3 12.1Q83.6 13.6 83.9 15.2Q84.2 16.9 84.2 17.8Q84.2 18.7 84.0 19.4Q83.8 20.1 83.1 22.0Q82.5 23.9 82.1 25.3Q81.8 26.7 81.4 28.7L80.0 35.1Q79.7 36.6 79.7 37.0C75.7 43.5 71.0 42.6 70.8 37.2Z","M40.3 40.3Q44.7 40.0 46.1 39.9L67.3 37.9Q69.7 37.7 70.8 37.2C73.1 35.8 78.0 36.0 79.7 37.0Q79.7 37.4 80.0 38.1Q80.2 38.9 80.3 39.2Q80.4 39.6 80.4 40.2Q80.4 41.1 80.0 42.0Q79.7 42.8 78.7 43.7Q77.8 44.6 73.5 44.8L67.6 45.1Q54.5 45.8 38.5 48.3C34.1 47.5 32.2 39.6 40.3 40.3Z","M38.5 48.3Q37.7 54.7 37.1 58.7Q36.4 62.7 34.9 67.1Q33.5 71.5 32.6 73.3Q31.8 75.2 30.4 77.3Q29.1 79.5 27.3 81.6Q25.5 83.8 22.4 85.9Q19.2 88.0 17.9 88.5L16.7 89.0Q16.2 89.2 15.8 89.1Q15.4 89.0 16.1 88.1L17.2 87.0Q18.3 85.9 19.7 83.9Q21.1 82.0 22.5 79.6Q24.0 77.3 27.1 69.8Q30.2 62.4 30.6 57.4Q30.9 52.4 30.9 50.8L30.8 47.6Q30.8 46.7 30.8 45.3Q30.9 44.0 31.2 43.0Q31.5 41.9 32.8 41.4Q34.1 40.9 35.0 40.8Q41.0 39.1 38.5 48.3Z"],"ㄖ":["M19.4 84.7Q19.1 84.1 19.1 83.1Q19.0 82.2 19.0 80.5L18.9 38.7Q18.8 34.1 18.7 30.7Q18.5 27.3 17.9 25.2Q17.2 23.0 17.1 22.5Q17.0 21.9 17.0 20.8Q17.0 19.9 17.1 19.3Q17.2 18.7 17.8 17.4Q18.3 16.2 19.1 15.8Q20.0 15.4 20.7 15.3L23.5 15.2C29.3 13.5 26.1 25.4 27.1 23.2Q26.8 23.6 26.8 24.2Q26.7 24.8 26.7 25.8L26.4 43.5Q26.3 47.2 26.3 55.1Q26.3 63.1 26.4 66.0L26.6 75.9Q26.6 77.3 26.9 78.5C29.8 87.3 24.6 92.7 19.4 84.7Z","M26.7 14.9L40.6 13.8Q42.1 13.7 49.0 13.3Q55.8 12.9 60.9 12.1Q66.0 11.4 69.3 10.7Q72.5 10.1 73.3 10.0Q75.2 10.0 78.1 11.6Q80.9 13.2 82.0 16.4Q83.0 19.6 83.0 20.5Q83.0 21.2 82.7 21.9L82.3 22.8Q82.1 23.4 81.9 24.7Q81.7 26.0 81.6 27.1L80.8 35.9Q80.4 40.3 80.3 43.3Q80.2 46.3 80.0 50.3Q79.9 54.2 79.9 55.0Q79.9 55.7 80.0 59.8L80.4 78.7Q80.4 80.2 80.2 81.6Q79.9 83.1 79.6 83.8Q79.3 84.6 78.3 86.3Q77.3 87.9 76.3 89.0Q75.3 90.1 73.4 90.0Q72.8 90.0 72.4 89.8Q72.0 89.6 71.7 89.4L69.9 87.4Q64.3 81.4 69.6 78.4Q70.4 78.1 70.8 77.4Q71.3 76.7 71.5 75.8Q71.6 74.9 71.7 73.9Q71.8 72.8 71.8 72.0L72.7 26.5Q72.7 22.2 72.2 21.2Q71.6 20.1 70.6 19.5Q69.5 18.9 66.3 19.0L58.0 19.3Q49.7 19.6 39.1 21.0Q28.4 22.5 27.8 22.7C20.1 23.0 18.4 16.2 26.7 14.9Z","M37.9 39.7L36.0 36.9Q35.7 36.5 35.8 36.1Q35.8 35.8 36.7 36.0L37.7 36.4Q38.1 36.5 39.9 37.5Q41.7 38.5 42.4 38.9Q43.1 39.3 47.2 42.3Q51.3 45.3 54.4 48.5Q57.6 51.6 58.1 52.9Q58.6 54.1 58.6 55.1Q58.6 56.0 58.2 57.3Q56.9 61.6 54.3 61.6Q52.4 61.7 51.3 60.2Q50.3 58.7 48.8 56.2Q47.4 53.7 45.2 50.3Q42.9 46.9 40.7 43.8Q38.5 40.6 37.9 39.7Z","M66.4 86.6L54.9 86.9Q50.9 87.0 46.9 87.3Q42.9 87.5 36.7 88.3Q30.5 89.1 28.9 89.3Q27.3 89.6 27.0 89.6C19.0 88.6 17.7 81.0 28.1 80.2Q29.1 80.7 30.5 80.7L34.3 80.4L67.2 78.7Q68.9 78.6 69.6 78.4C83.3 79.2 76.5 87.9 66.4 86.6Z"],"ㄗ":["M36.2 21.5Q36.0 21.4 35.5 21.4L33.3 21.6Q32.3 21.7 30.6 21.9Q28.9 22.2 25.2 22.8Q21.4 23.4 19.9 23.4Q18.1 23.4 17.2 22.9Q16.4 22.3 15.4 21.0Q14.5 19.7 14.5 18.1Q14.5 17.5 15.0 16.6Q15.4 15.8 18.9 15.6L25.6 15.3Q28.6 15.2 37.3 14.4Q45.9 13.6 56.8 12.9L64.4 12.4Q67.2 12.2 68.4 12.0Q69.6 11.8 71.1 11.4Q72.5 11.1 73.9 11.1Q76.1 11.2 77.5 11.7Q78.9 12.2 82.4 14.5Q85.9 16.7 85.4 20.6Q85.3 21.5 84.9 22.6L83.8 24.8Q83.3 26.0 82.9 27.2Q82.4 28.5 81.0 33.4Q79.5 38.2 76.8 46.3Q74.1 54.5 70.2 57.4Q66.4 60.3 64.5 61.2Q62.6 62.0 61.1 62.0Q60.4 62.0 59.9 61.7Q59.4 61.4 58.1 59.4Q56.8 57.3 53.1 53.3L51.6 51.6Q51.2 51.3 51.3 50.8Q51.4 50.4 52.2 50.7L54.6 51.8Q56.8 52.9 59.3 52.9Q63.0 53.0 64.6 51.7Q66.3 50.3 67.3 48.4Q68.4 46.5 70.2 41.6Q72.1 36.6 73.3 32.0Q74.6 27.4 74.8 25.3Q75.0 23.2 75.0 22.2Q75.0 21.0 74.6 20.5Q74.3 19.9 73.4 19.3Q72.5 18.8 64.6 18.9Q52.7 19.2 45.2 20.2L36.2 21.5Z","M45.2 20.2L44.8 42.5Q44.7 49.0 44.6 51.4Q44.6 53.8 44.8 62.3L45.0 78.9Q45.0 80.4 45.0 82.2Q44.9 84.0 44.2 85.4Q43.6 86.8 42.7 87.9Q41.7 89.0 40.6 89.0Q39.5 89.0 38.2 87.4Q36.8 85.8 36.4 83.6Q36.1 81.3 36.0 80.6Q36.0 79.9 36.2 78.1Q36.2 77.5 36.4 74.6Q36.5 71.7 36.5 71.0L36.6 66.2L36.8 55.5Q36.8 53.5 36.8 46.2Q36.9 38.8 36.8 36.7L36.7 33.5L36.6 27.4L36.4 22.7Q36.4 21.7 36.2 21.5Q38.6 16.4 45.2 20.2Z"],"ㄘ":["M46.3 30.6L62.3 29.2Q68.8 28.7 73.6 28.1Q78.3 27.5 79.1 27.4Q81.2 27.4 83.8 28.3Q86.5 29.3 86.9 30.0Q87.3 30.7 87.3 31.3Q87.3 31.9 87.0 32.7Q86.0 34.4 83.9 34.7Q83.3 34.8 81.5 34.6Q79.7 34.4 75.6 34.5L66.9 34.8Q56.7 35.3 45.4 36.3L38.7 36.9L27.3 39.1Q25.5 39.4 23.8 39.8Q22.1 40.3 21.0 40.6Q20.0 40.8 19.0 40.8Q16.7 40.9 14.6 39.6Q12.5 38.3 12.6 36.0Q12.7 34.3 14.6 33.8Q16.5 33.4 17.7 33.3Q18.9 33.2 22.1 33.1Q25.4 32.9 29.8 32.3L40.0 31.1L46.3 30.6Z","M40.0 31.1L40.9 24.1Q41.2 22.0 41.3 20.8Q41.3 19.6 41.5 17.1Q41.6 14.6 41.6 13.2Q41.6 11.9 41.9 10.6Q42.1 9.3 44.5 9.2Q46.3 9.2 48.0 10.2Q49.7 11.2 50.0 12.5Q50.4 13.7 50.4 14.4Q50.4 15.2 50.1 16.0Q50.0 16.2 49.3 17.7Q48.6 19.2 48.4 20.4Q48.1 21.5 47.6 24.3L46.3 30.6L45.4 36.3L42.9 49.2Q42.7 50.1 42.6 51.2Q42.6 52.3 42.8 52.8Q42.9 53.5 43.4 53.9Q43.9 54.2 44.5 54.2Q45.1 54.1 47.1 53.8L56.6 52.4Q66.8 50.9 68.5 50.9Q71.2 51.0 73.5 53.0Q75.9 55.0 76.5 56.0Q77.1 56.9 77.1 57.7Q77.2 58.4 76.3 60.1Q76.0 60.8 74.7 63.7Q73.4 66.6 71.4 69.9Q69.4 73.1 65.7 77.7Q62.0 82.3 57.9 85.6Q53.9 88.8 48.2 90.4L46.7 90.8Q46.2 91.0 46.1 90.8Q45.9 90.6 45.9 90.4Q45.9 90.1 46.2 89.6Q46.8 88.8 48.0 87.8L50.4 85.8Q56.5 80.9 60.6 74.8Q64.8 68.8 66.4 65.6Q67.9 62.3 68.4 60.7Q68.9 59.1 68.9 58.3Q68.9 56.6 67.2 56.8L47.4 59.4Q44.2 59.8 41.5 60.6Q38.7 61.5 38.4 61.5Q37.6 61.5 36.3 60.7Q35.1 60.0 34.6 58.6Q34.2 57.3 34.1 56.7Q34.1 56.1 34.3 55.7Q34.4 55.4 34.9 54.5Q35.5 53.6 35.7 52.8Q35.9 52.0 36.7 47.6L38.7 36.9L40.0 31.1Z"],"ㄙ":["M77.3 76.0L59.1 78.5L42.3 81.2Q33.7 82.6 31.6 83.1Q29.5 83.6 25.0 85.0Q20.6 86.5 18.8 86.4Q17.1 86.4 15.9 85.7Q14.6 85.0 12.6 82.9Q10.7 80.8 10.7 78.7Q10.7 77.7 11.1 77.0Q11.6 76.3 14.2 73.6Q16.7 70.9 22.6 61.6Q28.4 52.2 31.9 46.0Q35.4 39.8 38.5 33.2Q41.5 26.5 42.9 23.0Q44.3 19.6 45.1 16.9Q45.8 14.3 46.1 13.5Q46.4 12.7 47.1 12.0Q47.9 11.4 49.7 11.4Q51.0 11.5 52.4 12.1Q53.7 12.7 55.7 14.6Q57.7 16.5 58.3 17.7Q58.9 18.9 58.9 19.8Q58.9 20.7 58.2 22.0Q57.8 22.7 56.9 24.1Q56.0 25.4 54.2 28.0Q52.4 30.6 51.8 31.6Q51.2 32.5 46.1 40.4Q41.0 48.4 40.7 49.0L30.6 65.8Q28.8 68.8 28.0 70.3Q27.2 71.9 26.7 73.1Q26.1 74.3 26.5 74.8Q26.8 75.2 27.4 75.3Q28.1 75.4 30.4 75.1L75.9 70.5Q83.7 72.8 77.3 76.0Z","M75.9 70.5L72.1 59.2Q71.6 57.6 71.5 57.2Q71.5 56.7 72.0 56.4Q72.4 56.0 73.6 56.9L76.2 59.1Q79.0 61.3 80.4 62.6Q81.7 63.8 84.1 66.5Q86.5 69.2 87.9 71.9Q89.2 74.5 89.3 77.9Q89.4 81.2 88.9 84.0Q88.0 88.6 85.7 88.6Q84.2 88.7 82.9 87.5Q81.5 86.2 79.8 82.0L77.3 76.0L75.9 70.5Z"],"ㄚ":["M46.4 49.2Q45.8 48.1 44.3 46.5Q42.8 44.9 39.6 41.4Q36.4 38.0 34.4 35.9L27.2 28.5L22.7 23.7Q19.7 20.7 18.8 19.7Q18.0 18.7 18.0 17.6Q17.9 16.6 18.5 15.6Q19.1 14.5 20.6 13.7Q22.0 12.9 23.5 12.9Q25.6 13.0 27.2 14.6Q28.9 16.2 31.9 20.3L38.1 28.6Q43.1 35.3 50.9 43.4Q54.3 52.4 46.4 49.2Z","M50.9 43.4Q55.5 38.2 58.7 33.7L63.9 26.6Q64.8 25.3 66.4 22.7Q67.9 20.2 68.8 18.5Q69.7 16.9 70.4 14.8Q71.1 12.6 71.9 11.3Q72.8 9.9 75.3 9.9Q76.6 10.0 78.3 10.8Q79.9 11.7 81.0 13.6Q82.1 15.4 82.0 16.6Q82.0 17.6 81.5 18.4Q81.0 19.1 80.0 20.1Q79.1 21.0 76.6 23.6Q74.1 26.2 73.2 27.3L66.8 35.0L62.0 40.7Q60.5 42.6 58.7 45.2C52.5 55.9 46.8 48.2 50.9 43.4Z","M56.4 49.6Q55.7 51.4 55.8 55.2L56.0 74.2Q56.0 78.2 56.2 80.6Q56.4 83.0 56.3 83.8Q56.3 85.0 55.9 86.0Q55.5 87.0 54.6 88.5Q53.7 90.1 52.5 90.1Q51.1 90.1 49.4 88.1Q47.7 86.2 47.2 84.4Q46.6 82.7 46.7 79.5L46.9 73.3L47.3 56.0Q47.3 53.6 47.1 52.0Q47.0 50.3 46.4 49.2C48.7 40.9 54.1 41.1 56.4 49.6Z"],"ㄛ":["M49.9 22.3L30.8 24.8Q27.4 25.3 24.0 25.9Q20.6 26.5 19.6 26.5Q17.3 26.5 15.3 25.4Q13.2 24.2 12.5 22.9Q11.7 21.6 11.7 20.8Q11.7 20.4 12.1 19.7Q12.5 19.0 15.8 18.8L21.2 18.6L30.2 17.9L41.9 16.8L61.4 15.1L72.4 14.1Q76.2 13.8 79.1 13.3Q82.0 12.7 82.5 12.7Q84.6 12.7 86.0 14.2Q87.5 15.8 87.9 16.9Q88.3 18.0 88.3 18.6Q88.1 19.6 87.6 19.9Q87.1 20.3 85.8 20.3L74.3 20.5Q67.4 20.7 58.8 21.6L49.9 22.3Z","M58.8 21.6L58.4 36.3L58.1 43.0Q58.1 44.6 57.8 45.3Q57.5 46.1 56.7 46.6Q56.0 47.2 51.9 47.4L46.5 47.6Q41.8 47.9 38.1 49.2Q34.4 50.5 32.7 53.4Q31.1 56.3 30.6 58.1Q30.1 59.9 30.0 62.5Q30.0 65.1 31.4 68.1Q33.8 73.4 39.6 76.7Q45.4 80.0 52.7 80.0Q58.8 80.0 63.2 78.2Q67.6 76.5 69.9 74.8Q72.2 73.2 73.3 72.2L77.1 68.6Q78.9 67.1 80.7 67.1Q82.0 67.1 83.4 67.9Q84.7 68.7 84.7 70.4Q84.7 72.2 83.8 73.9Q83.1 75.1 80.4 77.9Q77.8 80.6 70.4 84.0Q63.0 87.4 52.9 87.4Q38.2 87.4 31.1 80.9Q24.0 74.4 22.8 69.8Q21.5 65.2 21.5 62.1Q21.4 58.9 22.2 56.0Q23.8 49.4 29.2 45.8Q34.6 42.1 42.7 41.0L46.3 40.5Q48.0 40.3 48.8 39.6Q49.6 39.0 49.9 36.2Q50.1 33.4 50.1 31.7L49.9 22.3Q53.3 17.8 58.8 21.6Z"],"ㄜ":["M55.6 27.9L74.1 26.3L81.3 25.7Q84.3 25.5 85.1 26.0Q86.0 26.6 86.5 27.4Q87.0 28.2 87.1 29.5Q87.1 30.9 86.3 31.4Q85.5 31.9 84.0 32.0L74.1 32.7Q73.6 32.7 62.8 33.6L55.9 34.2L48.7 35.0L35.3 36.5Q30.7 37.1 25.0 38.3Q19.3 39.5 18.7 39.4Q16.4 39.4 14.6 37.6Q12.9 35.8 12.9 34.8Q12.9 33.7 13.1 33.3Q13.8 32.3 17.8 31.9L25.1 31.1L48.5 28.4L55.6 27.9Z","M48.5 28.4L48.5 22.9Q48.5 22.2 48.4 19.7Q48.2 17.3 48.1 16.3Q48.0 15.3 47.7 14.1Q47.4 12.9 47.4 12.5Q47.6 10.6 50.7 10.6Q52.9 10.7 54.0 11.4Q55.2 12.1 55.6 12.8Q56.1 13.5 56.1 14.5Q56.1 15.4 55.9 17.5Q55.7 19.6 55.7 21.3L55.6 27.9L55.9 34.2L55.4 50.2Q55.4 51.3 54.8 52.4Q54.2 53.5 48.9 53.8L45.1 54.1Q42.7 54.2 39.2 55.0Q35.7 55.8 33.5 59.8Q31.3 63.9 31.3 67.0Q31.3 70.3 33.2 73.7Q35.2 77.1 39.8 79.8Q44.5 82.4 52.1 82.3Q55.2 82.3 58.8 81.8Q62.4 81.2 65.8 79.9Q69.3 78.5 71.9 76.7L75.9 73.8Q79.0 71.8 80.5 72.7Q82.0 73.7 82.1 75.0Q82.2 76.2 81.6 77.8Q80.9 79.1 79.4 81.1Q77.9 83.0 70.2 86.2Q62.6 89.3 52.2 89.4Q36.4 89.6 29.6 82.1Q22.9 74.6 22.9 67.0Q22.9 63.1 24.3 60.0Q25.7 56.9 28.9 53.9Q32.2 50.9 35.6 50.1Q39.1 49.3 41.9 49.0L45.8 48.4Q46.9 48.3 47.5 47.5Q48.1 46.7 48.3 43.0L48.7 35.0L48.5 28.4Z"],"ㄝ":["M34.5 42.9L62.3 39.9L69.1 39.5L77.3 39.0Q79.6 38.9 81.5 38.5Q83.5 38.2 84.1 38.2Q86.1 38.2 88.5 39.9Q90.9 41.6 90.9 44.0Q90.9 44.9 90.3 45.9Q89.7 46.9 87.2 46.7L81.3 46.1Q77.2 45.7 68.7 46.0L61.8 46.3Q45.3 48.1 34.6 49.6L27.6 50.4L20.6 51.6Q17.1 52.1 15.5 52.2Q14.0 52.4 12.5 51.5Q11.0 50.7 10.1 49.0Q9.1 47.3 9.1 46.6Q9.0 45.8 9.3 45.3Q9.8 44.1 11.8 44.0L16.7 44.2Q19.1 44.3 22.0 44.0L27.5 43.4L34.5 42.9Z","M62.3 39.9L62.0 28.7Q62.0 28.0 61.7 23.4Q61.4 18.9 61.1 17.3Q60.8 15.7 60.9 15.0Q61.0 12.0 63.7 11.8Q64.8 11.8 66.6 12.7Q68.4 13.6 69.5 15.2Q70.7 16.8 71.1 17.9Q71.4 19.0 71.3 20.5Q71.3 21.5 70.8 24.6Q70.2 27.7 69.9 31.8L69.1 39.5L68.7 46.0L67.6 58.3Q67.6 58.9 66.9 62.3Q66.3 65.7 65.9 66.8Q65.5 67.9 64.4 69.6Q63.3 71.2 62.5 71.2Q62.0 71.2 61.5 70.3Q61.1 69.5 61.2 66.9L61.6 52.7L61.8 46.3L62.3 39.9Z","M27.5 43.4L26.8 31.8Q26.7 30.1 26.4 27.5Q26.0 25.0 25.8 23.9Q25.6 22.8 25.2 21.3Q24.7 19.8 24.6 19.1Q24.6 18.5 24.9 17.2Q25.3 15.9 27.8 15.9Q32.8 16.0 34.0 18.1Q35.2 20.3 35.4 21.9L35.1 29.8L34.5 42.9L34.6 49.6L34.5 55.8Q34.5 56.9 34.8 60.9L35.1 65.2Q35.2 67.3 35.4 69.1Q35.6 70.9 36.3 73.8Q36.9 76.6 37.9 78.2Q38.9 79.8 40.6 80.8Q42.3 81.8 46.1 81.7L56.8 81.6Q57.6 81.6 62.3 81.4Q67.0 81.2 68.1 81.0Q69.2 80.9 71.0 80.6Q72.8 80.3 74.1 79.8Q75.4 79.4 75.7 79.3Q76.4 79.2 77.9 79.6Q79.5 79.9 80.7 81.4Q81.9 82.9 81.9 83.8Q81.9 85.0 80.2 86.3Q78.5 87.5 65.9 88.0Q53.2 88.5 45.8 88.3Q39.6 88.0 37.3 86.8Q35.1 85.7 33.5 83.4Q31.9 81.2 31.0 78.0Q30.1 74.8 29.7 72.9Q29.4 71.0 29.1 68.0Q28.8 65.0 28.7 63.9L27.6 50.4L27.5 43.4Z"],"ㄞ":["M46.1 18.7L34.8 19.9Q26.0 20.9 23.3 21.6L20.9 22.3Q19.4 22.7 18.5 22.7Q17.4 22.7 16.7 22.2Q15.9 21.8 14.7 20.7Q13.4 19.5 13.1 18.9Q12.8 18.3 12.8 17.7Q12.8 17.1 13.3 16.3Q14.1 14.9 15.9 14.8Q16.2 14.8 17.6 14.9Q19.0 15.0 20.1 14.9L26.2 14.4L68.1 11.6Q70.1 11.5 72.9 11.2Q75.7 10.9 77.5 10.5Q79.4 10.1 79.8 10.0Q82.4 9.8 84.2 10.8Q86.0 11.9 86.6 12.8Q87.1 13.6 87.1 14.9Q87.2 16.2 86.6 17.0Q86.2 17.6 85.5 17.8Q84.8 18.0 83.4 17.9L75.6 17.4Q73.9 17.3 66.4 17.7L55.1 18.3L46.1 18.7Z","M52.1 41.5L65.1 40.0Q69.1 39.5 71.6 38.9Q74.1 38.2 74.8 38.2Q78.3 37.8 80.9 40.8Q83.5 43.8 83.5 45.9Q83.5 46.6 83.3 47.4L82.8 48.7Q82.2 50.0 81.9 52.1L81.2 56.8Q80.7 60.0 79.6 63.9Q78.5 67.7 76.3 72.7Q74.1 77.6 70.7 80.9Q67.3 84.2 65.1 85.9Q62.9 87.7 61.7 88.3L59.6 89.5Q58.3 90.2 57.9 90.1Q57.5 90.0 57.5 89.8Q57.4 89.6 58.0 88.9L58.9 87.7L61.0 85.4Q63.5 82.7 66.3 78.0Q69.1 73.2 70.6 68.2Q72.0 63.1 72.5 60.4Q73.0 57.7 73.3 55.1Q73.6 52.5 73.8 50.9Q74.0 49.3 73.8 48.6Q73.1 45.7 68.5 46.0L63.0 46.4L50.3 47.6L42.3 48.5L31.3 50.7Q28.4 51.3 27.4 51.5Q26.5 51.8 23.9 52.5Q21.3 53.3 19.8 53.8Q18.3 54.3 17.8 54.3Q16.9 54.3 15.1 52.6Q13.3 51.0 13.5 49.2Q13.5 48.6 14.0 47.7L14.8 46.3Q15.9 44.2 16.6 41.4Q17.2 38.6 17.4 37.5Q17.6 36.5 17.9 34.3Q18.2 32.1 18.4 30.9Q18.5 29.6 18.6 28.9Q18.6 28.1 18.9 27.6Q19.2 27.1 20.3 27.2Q21.5 27.4 23.6 28.6Q25.6 29.8 26.3 30.5Q26.9 31.3 26.9 32.0Q26.9 32.7 26.4 33.9Q25.6 35.2 25.4 35.9Q25.2 36.5 24.9 38.0Q24.7 39.5 24.5 41.0Q24.3 42.6 24.1 43.8Q24.0 45.1 24.2 45.5Q24.4 45.9 24.7 46.0Q25.1 46.1 26.7 45.7L30.4 44.8Q31.9 44.5 44.1 42.4L52.1 41.5Z","M55.1 18.3Q54.8 22.1 54.5 24.6Q54.3 27.1 53.8 31.6Q53.3 36.1 52.9 37.9L52.1 41.5L50.3 47.6Q49.2 51.1 48.3 53.5Q47.4 56.0 43.8 63.1Q40.1 70.2 32.8 77.1Q25.4 83.9 19.6 86.5L16.8 87.8Q16.2 88.0 15.9 87.7Q15.6 87.4 16.3 86.7L17.9 85.4Q22.6 81.2 28.0 74.5Q33.4 67.7 36.4 61.7Q39.5 55.7 40.4 53.3L42.3 48.5L44.1 42.4Q45.2 36.8 45.4 35.3Q45.6 33.9 45.9 31.0Q46.1 28.0 46.3 26.3Q46.4 24.5 46.4 22.8Q46.3 21.1 46.3 20.3L46.1 18.7Q49.3 15.5 55.1 18.3Z"],"ㄟ":["M35.5 30.1L33.7 24.8Q33.0 22.8 32.7 22.5Q32.3 22.2 31.5 22.2Q30.3 22.1 27.6 22.7Q25.0 23.3 24.0 23.8Q23.0 24.2 20.4 25.6Q17.8 27.1 16.5 27.0Q14.4 27.0 13.2 25.0Q11.9 22.9 11.6 21.9Q11.4 20.9 11.4 19.7Q11.4 19.3 11.6 19.0Q11.7 18.8 12.1 18.7Q12.6 18.6 13.7 18.6Q14.8 18.6 17.9 18.3Q21.1 18.0 25.8 16.6Q30.5 15.2 32.6 14.3Q34.6 13.3 35.5 13.2Q37.4 13.1 38.3 14.4Q39.2 15.8 40.3 20.7Q41.3 25.6 43.8 31.9Q46.4 38.1 50.7 45.2Q55.0 52.3 59.0 57.8Q63.0 63.3 67.5 67.3Q72.1 71.4 75.2 73.9Q78.4 76.4 80.4 77.7L85.4 81.0L88.0 82.9Q88.6 83.4 88.5 84.1Q88.5 84.7 87.4 84.8L84.5 85.1L81.3 85.4L79.0 85.7Q77.8 85.9 75.8 86.4Q73.9 86.9 73.3 86.8Q71.9 86.8 70.3 85.6Q68.6 84.4 67.8 83.4L62.9 78.2Q60.7 75.8 57.2 71.1Q53.7 66.4 50.4 61.3Q47.1 56.3 45.3 52.9Q43.4 49.5 40.4 42.9Q37.4 36.2 35.5 30.1Z"],"ㄠ":["M40.4 58.2L23.2 49.0L21.0 48.0Q19.4 47.2 19.0 45.9Q18.5 44.6 18.6 44.0Q18.6 43.0 19.4 42.1Q20.1 41.1 22.9 38.9Q25.7 36.7 29.2 33.2Q32.6 29.7 36.4 25.5Q40.2 21.4 43.0 17.4Q45.9 13.4 46.5 12.4Q47.2 11.4 48.1 10.4Q49.0 9.5 51.0 10.6Q52.9 11.7 53.8 13.7Q54.8 15.7 54.9 16.7Q54.9 17.7 54.5 18.4Q54.1 19.2 52.4 20.6L50.2 22.4L45.5 26.3L31.8 39.3Q30.6 40.4 29.9 41.4Q29.2 42.3 29.2 43.0Q29.2 43.7 30.0 44.5Q30.8 45.3 34.6 47.1L45.8 52.6Q49.0 59.6 40.4 58.2Z","M45.8 52.6L53.6 45.1Q55.2 43.5 60.9 37.0Q66.5 30.6 67.4 29.0Q68.4 27.5 68.7 27.1Q69.1 26.7 69.8 26.5Q71.2 26.2 73.6 28.3Q75.9 30.4 76.0 32.4Q76.1 34.5 75.7 35.5Q75.1 36.7 73.4 38.1L70.1 40.4Q68.7 41.4 66.6 43.3Q64.5 45.1 60.1 49.2Q55.7 53.3 47.9 60.4Q40.1 67.6 36.0 72.0L32.4 75.8Q30.8 77.5 31.0 78.1Q31.2 78.7 33.2 78.4L40.2 77.6L69.7 73.9Q78.8 75.9 71.5 79.6Q57.1 81.7 43.9 84.4L38.0 85.6Q34.5 86.3 31.6 87.0Q28.7 87.6 26.4 88.5Q24.2 89.5 23.5 89.5Q22.8 89.5 22.2 89.2Q21.7 88.9 19.9 86.8Q18.2 84.7 17.8 83.9Q17.3 83.0 17.3 81.9Q17.2 80.9 17.3 80.6Q17.4 80.4 18.0 79.8L26.4 72.3L40.4 58.2L45.8 52.6Z","M69.7 73.9L66.5 63.1Q66.3 62.1 66.5 61.8Q66.8 61.5 67.6 62.1L70.2 64.5Q73.3 67.4 76.6 71.7Q79.9 75.9 81.3 79.1Q82.8 82.3 82.8 83.8Q82.7 85.1 82.2 86.2Q81.7 87.2 80.4 88.6Q79.1 90.0 77.8 90.0Q76.0 90.0 74.7 87.8Q73.3 85.5 72.7 83.4L71.5 79.6L69.7 73.9Z"],"ㄡ":["M51.2 49.2L55.9 43.1Q57.0 41.6 59.0 38.3Q61.0 35.1 61.6 34.1Q62.1 33.1 63.4 30.5Q64.7 28.0 65.1 26.9L66.5 23.1Q67.1 21.3 67.1 20.3Q67.1 19.3 66.7 18.9Q66.3 18.5 64.2 18.6L43.0 20.1Q40.9 20.3 37.3 20.8Q33.7 21.2 30.4 21.9Q27.2 22.7 26.3 22.9Q25.4 23.2 25.0 23.2Q24.2 23.3 22.7 22.5Q21.3 21.7 20.3 20.7Q19.3 19.7 18.6 18.9Q17.9 18.0 17.8 17.3Q17.6 16.6 18.3 16.1Q19.1 15.6 22.2 15.4L29.5 15.2Q33.7 15.1 53.1 13.4L61.2 12.7Q66.0 12.2 68.5 11.4Q71.0 10.6 71.8 10.5Q74.3 10.4 77.5 13.8Q80.8 17.2 81.1 19.2Q81.4 21.2 80.9 22.5Q80.7 23.2 80.3 23.6L78.1 25.1Q77.3 25.7 76.7 26.6Q76.0 27.5 73.6 30.9Q71.3 34.3 66.5 41.1L57.4 53.8L53.2 59.1Q49.6 63.1 47.3 65.3Q45.0 67.6 40.4 71.4Q35.8 75.2 30.7 78.3Q25.6 81.3 21.1 83.0Q16.6 84.8 14.4 85.1L11.2 85.7Q10.2 85.9 9.9 85.6Q9.7 85.3 9.9 85.0Q10.0 84.7 10.7 84.3L13.7 82.6Q24.6 76.5 30.1 71.6Q35.6 66.8 39.3 63.1Q42.9 59.5 43.5 58.9L47.4 54.2L51.2 49.2Z","M47.4 54.2L30.1 40.6Q28.0 38.9 27.0 38.2L24.0 36.1Q23.3 35.6 22.7 35.2Q22.0 34.9 22.0 34.5Q21.9 34.2 22.1 33.9Q22.3 33.7 23.1 33.7Q24.0 33.7 25.0 34.0L27.5 35.0Q32.8 36.9 51.2 49.2L57.4 53.8L69.1 62.3Q76.0 67.2 79.0 69.2Q82.0 71.2 83.8 72.7Q85.7 74.2 87.3 76.4Q89.0 78.5 89.5 81.7Q90.0 85.0 90.0 86.9Q90.1 88.8 89.4 89.1Q88.8 89.5 88.1 89.5Q85.7 89.6 82.0 86.1L75.3 79.9Q72.8 77.6 65.9 71.0Q59.1 64.4 53.2 59.1L47.4 54.2Z"],"ㄢ":["M61.5 33.6L59.3 36.4Q58.1 37.9 57.0 37.8Q56.7 37.8 56.5 37.7Q56.3 37.6 56.2 37.3Q56.0 37.1 56.2 36.2Q56.3 35.4 56.8 34.6L61.0 25.6Q62.3 23.1 63.0 20.8Q63.8 18.5 63.7 17.5Q63.6 16.5 61.8 16.6Q61.0 16.6 58.1 17.0L52.5 17.6L36.0 20.1Q29.0 21.2 26.9 21.6Q24.9 22.0 24.3 21.9Q22.5 21.9 19.3 20.1Q16.1 18.3 16.2 16.4Q16.2 15.9 16.5 15.4Q16.9 15.0 17.9 15.0L18.9 15.1L26.8 14.7Q28.8 14.6 36.5 13.9Q44.2 13.3 49.8 12.4L57.0 11.4Q61.0 10.8 63.7 10.0Q66.5 9.1 67.2 9.1Q69.0 9.1 72.0 10.9Q75.1 12.7 75.9 14.1Q76.7 15.4 76.7 16.0Q76.6 16.8 75.7 17.9Q74.7 18.9 72.8 20.8Q70.9 22.7 67.1 27.1Q63.3 31.5 61.5 33.6Z","M60.1 84.8L57.5 87.4Q55.6 89.2 53.4 90.5Q51.1 91.7 50.7 91.0Q50.2 90.2 50.2 89.8Q50.2 89.3 50.5 88.8L51.4 87.8L55.5 82.2Q59.5 77.0 64.0 68.9Q68.5 60.7 69.8 58.4Q71.2 56.2 71.8 54.9Q72.3 53.6 72.6 52.6Q72.8 51.6 72.8 51.2Q72.8 50.7 72.4 50.0Q72.0 49.3 70.8 48.9Q69.7 48.5 68.5 48.6L60.6 49.3Q51.6 50.1 42.0 51.6Q32.4 53.1 29.9 53.7Q27.4 54.2 25.6 54.7Q23.9 55.2 23.6 55.2Q23.0 55.3 21.7 54.6Q20.4 53.9 19.7 52.2Q19.0 50.5 19.1 49.8Q19.1 49.5 19.3 49.1Q19.4 48.7 19.8 48.3L21.1 46.9Q23.6 43.8 25.5 35.8L28.1 25.0Q28.3 24.2 28.6 23.8Q28.9 23.5 29.6 23.4Q30.9 23.3 32.4 24.4Q33.9 25.6 34.3 26.4Q34.7 27.1 34.7 27.8Q34.7 28.5 34.0 30.3L30.1 40.7Q28.3 45.4 28.5 46.0Q28.8 47.0 29.7 47.1Q30.6 47.2 32.7 46.9L41.7 45.7L68.4 42.5Q73.6 41.9 74.4 41.9Q75.2 42.0 76.4 42.6Q77.7 43.2 79.5 44.7Q81.2 46.1 82.5 47.5Q83.8 48.9 83.8 50.0Q83.8 51.0 83.6 52.0Q83.2 52.9 82.2 54.7Q81.3 56.6 73.6 67.8Q66.0 79.0 60.1 84.8Z"],"ㄣ":["M49.1 87.6L52.7 84.1Q57.9 78.8 60.7 75.1Q63.5 71.3 66.0 67.6Q68.5 63.8 69.4 62.2Q70.3 60.6 72.0 57.2Q73.8 53.8 74.4 52.3L75.4 49.5Q76.0 48.0 75.9 47.2Q75.9 46.5 75.4 46.1Q75.0 45.8 73.6 45.8L67.5 46.1Q57.9 46.6 46.3 47.9Q34.7 49.2 30.1 50.1Q25.5 50.9 23.0 51.7Q20.4 52.4 19.7 52.4Q17.4 52.5 14.7 49.9Q12.0 47.3 12.0 45.8Q12.0 45.5 12.2 45.1L12.9 43.7Q13.2 42.9 13.6 40.4Q14.1 37.9 14.2 36.7Q14.4 35.4 14.6 32.8Q14.9 30.3 14.9 28.2L15.2 20.3Q15.2 20.2 15.0 17.3Q14.9 14.3 14.9 13.5Q14.9 10.6 17.1 10.4Q19.1 10.3 21.1 11.6Q23.2 12.9 23.8 13.9Q24.3 14.9 24.4 15.7Q24.4 16.5 24.2 17.7Q23.5 21.2 23.3 22.6Q23.1 24.0 22.8 26.7Q22.6 29.3 22.5 30.9L21.9 40.9Q21.8 42.5 22.2 43.1Q22.7 43.7 26.2 43.3L32.6 42.6Q44.9 41.3 52.0 40.3L60.2 39.3Q70.6 38.0 74.9 36.8Q79.3 35.6 79.9 35.6Q82.0 35.5 84.9 38.7Q87.8 41.9 87.9 43.7Q88.0 45.5 87.8 46.0Q87.6 46.3 87.5 46.5L85.9 48.4Q85.3 49.0 84.6 50.1Q83.9 51.2 83.5 52.0Q83.0 52.8 80.0 58.3Q77.0 63.8 71.9 70.5Q66.8 77.2 63.8 79.8Q60.8 82.4 57.5 84.9Q54.1 87.3 51.5 88.5L49.3 89.4Q48.9 89.6 48.5 89.7Q48.2 89.7 48.1 89.6Q48.0 89.5 47.9 89.4Q47.9 89.2 47.8 89.1Q47.8 88.9 49.1 87.6Z"],"ㄤ":["M43.6 44.3L34.2 45.7L29.3 46.8Q25.2 47.6 24.2 47.9Q23.2 48.2 22.7 48.2Q20.4 48.3 19.2 46.1Q17.9 44.0 18.0 42.9Q18.0 41.5 18.9 41.2Q19.8 40.9 20.8 40.9L23.6 41.1Q24.6 41.1 27.5 40.7L44.4 38.8L51.7 37.8L60.3 37.0Q63.3 36.7 70.0 35.7Q76.7 34.8 77.5 34.7Q81.1 34.7 82.2 36.4Q83.3 38.2 83.3 39.0Q83.2 39.7 82.5 41.1Q81.8 42.5 79.7 42.4L75.7 42.1Q68.4 41.7 57.2 42.7L52.7 43.4L50.6 43.8L43.6 44.3Z","M44.4 38.8Q45.0 36.8 45.2 35.8Q45.5 34.8 45.8 32.4Q46.2 30.0 46.3 28.4Q46.5 26.8 46.6 23.7Q46.8 20.6 46.8 19.2Q46.8 18.3 46.6 16.4Q46.5 14.6 46.3 13.6Q46.1 12.6 46.1 12.0Q46.1 11.5 46.4 10.9Q46.9 10.1 48.3 10.0Q49.7 10.0 52.2 10.8Q54.7 11.6 55.2 12.6Q55.8 13.6 55.8 14.2Q55.9 14.9 55.7 16.1Q54.7 20.4 54.4 22.1Q54.1 23.8 53.7 26.5Q53.2 29.1 52.8 31.6L51.7 37.8L50.6 43.8Q48.5 50.1 47.1 53.1Q45.8 56.1 43.3 60.6Q40.8 65.1 38.9 67.8Q37.1 70.5 34.1 73.9Q31.1 77.3 27.2 81.1Q23.2 84.8 15.9 87.8L13.3 88.8Q12.4 89.2 12.1 89.1Q11.7 88.9 11.6 88.5Q11.6 88.2 12.2 87.6L14.1 86.1Q21.4 80.3 27.0 73.0Q32.6 65.7 34.3 63.0Q35.9 60.3 38.4 55.8Q40.8 51.3 41.2 50.3L43.6 44.3L44.4 38.8Z","M57.2 42.7Q59.7 45.8 60.0 46.9Q60.3 47.9 60.3 48.8Q60.2 49.6 60.0 51.4Q59.7 53.2 59.4 55.7L58.9 59.8Q58.4 63.1 58.3 66.2L57.6 77.3Q57.4 79.0 57.7 80.3Q58.0 81.6 59.2 82.5Q60.3 83.4 65.5 83.3L69.4 83.3Q71.1 83.3 74.0 83.0Q76.8 82.7 79.6 82.1Q82.4 81.4 83.4 81.3Q84.4 81.2 85.1 81.5Q85.7 81.7 87.0 82.8Q88.2 83.9 88.3 85.3Q88.4 86.6 87.2 87.6Q85.4 89.1 76.8 89.6Q68.2 90.0 64.5 90.0Q59.0 90.0 56.2 89.2Q53.3 88.4 51.7 85.7Q50.1 83.1 50.4 79.6L52.7 43.4Q53.9 41.6 57.2 42.7Z"],"ㄥ":["M42.3 83.2L26.7 84.3Q25.1 84.4 23.3 84.6Q21.4 84.9 19.8 85.3Q18.2 85.8 17.8 85.9Q16.5 86.0 15.5 85.5Q14.5 85.0 13.2 83.7Q11.9 82.5 11.4 81.7Q10.9 80.9 10.9 79.9Q10.9 78.7 12.1 77.3L13.8 75.3Q15.5 73.1 18.2 68.5L21.7 62.5L28.2 50.7Q30.1 47.3 33.6 40.6Q37.1 33.8 38.5 30.7L42.7 21.5L44.3 17.8Q45.8 14.9 46.6 14.5Q47.4 14.2 48.1 14.2Q49.8 14.4 51.6 16.0Q53.4 17.7 54.1 19.2Q54.7 20.6 54.7 21.8Q54.7 23.1 54.3 23.9Q53.9 24.7 50.9 29.5L24.7 71.8L22.5 75.3Q21.5 77.4 24.4 77.3L41.9 76.8Q45.8 76.7 53.3 76.1Q60.8 75.5 65.7 75.0Q70.5 74.5 74.1 73.6Q77.8 72.6 78.9 72.5Q82.6 72.3 85.8 74.8Q89.1 77.3 89.1 79.3Q89.0 80.0 88.4 81.0Q87.7 82.0 85.5 82.0L73.6 81.8Q70.9 81.7 65.0 82.1Q59.1 82.5 52.1 82.8Q45.1 83.0 42.3 83.2Z"],"ㄦ":["M11.6 86.2L14.7 82.5Q16.4 80.5 18.8 76.8Q21.3 73.2 23.0 69.8Q24.6 66.5 26.1 62.0Q27.6 57.6 28.2 54.1Q28.8 50.5 29.1 47.9Q29.4 45.3 29.7 41.5Q29.9 37.7 30.1 33.5Q30.2 29.3 30.2 26.2Q30.1 23.5 29.9 22.5Q29.7 21.5 29.4 20.2Q29.1 18.8 28.6 17.6Q28.1 16.4 28.1 15.5Q28.0 14.5 30.1 14.5Q31.6 14.6 35.2 15.3Q38.7 16.1 39.5 17.5Q40.3 18.9 40.4 19.8Q40.4 20.7 40.0 24.8L39.5 30.7Q39.3 32.2 38.9 36.1Q38.4 40.0 37.8 45.0Q37.2 49.9 36.7 52.8Q36.1 55.8 35.2 59.6Q34.2 63.4 33.1 65.8Q32.1 68.3 30.2 71.6Q28.2 75.0 25.0 78.5Q21.8 82.1 14.2 86.5L12.3 87.6Q11.6 88.0 11.3 87.8Q10.9 87.6 11.0 87.3Q11.0 87.0 11.6 86.2Z","M62.7 33.0L61.2 69.6Q61.0 71.8 61.4 73.7Q61.7 75.5 62.3 76.4Q63.0 77.4 64.6 77.9Q66.1 78.3 69.4 78.1L73.9 77.9Q75.0 77.8 77.8 77.4Q80.7 77.0 82.1 76.6Q83.5 76.3 84.2 76.3Q86.6 76.5 87.9 78.7Q89.1 80.8 89.0 82.1Q88.8 83.5 87.1 84.9Q85.5 86.2 75.2 86.7L68.2 87.0Q65.7 87.1 62.6 86.6Q59.4 86.2 57.7 85.2Q55.9 84.1 54.9 82.3Q53.9 80.5 53.4 78.1Q53.0 75.7 53.1 73.5L54.2 25.6Q54.2 23.8 54.0 21.1Q53.9 18.4 53.9 17.5Q53.9 16.7 53.8 16.3L53.4 14.0Q53.6 12.3 55.3 12.2Q56.9 12.2 59.6 13.7Q62.3 15.1 63.0 16.4Q63.7 17.8 63.8 18.8Q63.8 19.8 63.6 21.4Q63.4 22.4 63.1 27.4L62.7 33.0Z"],"ㄧ":["M22.8 47.8L30.5 47.0Q45.0 45.6 58.2 44.4L69.9 43.4Q70.6 43.3 74.8 42.8Q79.0 42.3 80.8 42.3Q83.4 42.4 85.1 43.1Q86.8 43.8 88.2 45.2Q89.6 46.6 90.3 48.1Q91.0 49.7 90.8 50.9Q90.6 52.1 89.5 53.1Q88.3 54.2 85.4 53.9L78.3 53.2Q72.5 52.7 69.9 52.7Q67.3 52.6 58.8 52.9Q50.2 53.2 39.5 54.2Q28.8 55.2 24.3 55.9Q19.8 56.6 18.6 56.9L17.0 57.5Q15.9 57.8 15.1 57.7Q13.9 57.7 12.9 57.2Q11.8 56.6 10.8 55.0Q9.9 53.4 9.5 52.4Q9.1 51.4 9.1 50.3Q9.1 49.2 9.8 48.6Q10.5 48.0 12.2 48.0L15.9 48.1Q18.7 48.2 22.8 47.8Z"],"ㄨ":["M54.9 45.6L58.7 40.5Q59.9 38.9 61.9 35.6Q63.9 32.4 65.4 29.3Q67.0 26.3 67.9 23.5Q68.9 20.6 69.2 19.1Q69.6 17.5 69.6 16.2Q69.7 14.9 69.9 13.3Q70.2 11.7 73.3 11.5Q75.3 11.4 77.1 13.0Q79.0 14.6 79.6 15.7Q80.3 16.9 80.6 18.0Q80.9 19.1 81.0 19.8Q81.0 20.6 80.3 21.9Q80.0 22.5 78.9 24.2Q77.8 25.9 74.9 31.1Q72.0 36.3 70.9 38.0Q69.7 39.7 66.5 44.3L61.9 50.9L57.1 57.7Q46.6 68.4 40.8 73.3Q35.1 78.2 28.4 81.2Q21.8 84.2 13.5 85.6L11.3 86.0Q10.4 86.2 10.2 85.6Q10.0 85.1 11.6 84.3L14.4 82.9Q22.3 79.0 32.3 70.5Q42.2 61.9 50.2 51.1L54.9 45.6Z","M50.2 51.1Q44.7 46.3 40.2 42.4Q35.8 38.5 21.0 26.4L18.5 24.3Q18.2 24.1 18.1 23.8Q17.9 23.5 18.1 23.1Q18.4 22.8 19.6 23.3L22.9 24.7Q26.9 26.4 36.0 32.4Q45.1 38.3 54.9 45.6L61.9 50.9Q64.8 53.3 71.3 58.8Q77.8 64.2 80.8 66.9Q83.8 69.5 85.8 71.9Q87.8 74.3 88.7 76.5Q89.6 78.6 89.7 80.5Q89.7 82.5 89.3 84.3Q88.8 86.7 87.5 88.0Q86.1 89.4 83.7 87.8Q82.2 86.8 80.7 84.9L77.7 81.2Q63.8 64.5 62.6 63.4L57.1 57.7L50.2 51.1Z"],"ㄩ":["M76.1 77.3Q75.3 77.0 74.5 77.0L72.1 77.1L64.2 77.7L49.5 79.2Q44.0 79.8 41.3 80.2Q38.5 80.5 33.3 81.4Q28.1 82.3 26.6 83.0Q25.2 83.6 23.5 84.6Q21.7 85.6 20.7 85.7Q19.6 85.9 17.0 84.1Q14.4 82.6 13.2 81.6Q12.0 80.7 11.5 79.8Q11.0 78.9 11.0 78.2Q11.0 77.5 11.1 76.5Q11.2 74.9 11.4 73.7Q11.5 72.5 11.6 71.4L12.8 37.9Q12.8 34.5 12.9 32.9Q12.9 31.4 12.8 29.0Q12.6 27.0 12.3 25.5Q12.0 24.1 11.9 22.6Q11.8 21.2 14.6 20.8Q15.5 20.7 18.9 21.6Q22.3 22.5 23.3 24.2Q24.2 25.8 24.3 26.7Q24.3 27.7 24.1 29.4Q23.9 30.8 23.7 34.1Q23.5 37.4 23.3 40.4L21.8 71.2Q21.7 73.2 22.5 74.3Q23.3 75.3 29.5 74.5L50.3 72.0L77.8 68.8Q86.6 72.8 76.1 77.3Z","M77.8 68.8L77.8 59.6Q77.9 53.9 77.8 50.2L77.4 42.9Q77.0 35.1 76.8 33.1Q76.7 31.2 76.2 27.9Q75.7 24.6 75.1 22.2Q74.5 19.8 74.4 18.8Q74.3 17.8 74.7 17.0Q75.1 16.1 76.8 15.3Q78.5 14.4 80.4 14.4Q82.2 14.4 83.9 15.3Q85.6 16.2 86.3 17.5Q87.1 18.8 87.4 20.7Q87.6 22.7 87.7 25.9Q87.8 29.0 87.9 32.1L88.3 59.3L88.4 66.1Q88.4 68.6 88.5 69.7Q88.5 70.8 88.8 73.2Q89.0 75.5 89.0 76.6Q88.9 78.5 88.2 80.8Q87.5 83.0 84.3 82.9Q83.6 82.9 83.0 82.6Q82.4 82.4 81.4 81.5L78.0 78.5Q76.8 77.5 76.1 77.3Q70.4 71.4 77.8 68.8Z"]};
+/* [emoji, word, the symbol inside the word, what to say for the symbol] */
+/* [圖, 例字, 例字注音]；例字讀音也是教育部筆順網的真人錄音 */
+const ZYINFO={'ㄅ':['🎒','包','ㄅㄠ'],'ㄆ':['🍼','瓶','ㄆㄧㄥˊ'],'ㄇ':['🐱','貓','ㄇㄠ'],'ㄈ':['🐝','蜂','ㄈㄥ'],'ㄉ':['🥚','蛋','ㄉㄢˋ'],'ㄊ':['🐰','兔','ㄊㄨˋ'],'ㄋ':['🐮','牛','ㄋㄧㄡˊ'],'ㄌ':['🦌','鹿','ㄌㄨˋ'],'ㄍ':['🐶','狗','ㄍㄡˇ'],'ㄎ':['👖','褲','ㄎㄨˋ'],'ㄏ':['🌸','花','ㄏㄨㄚ'],'ㄐ':['🐔','雞','ㄐㄧ'],'ㄑ':['⚽','球','ㄑㄧㄡˊ'],'ㄒ':['⭐','星','ㄒㄧㄥ'],'ㄓ':['🐷','豬','ㄓㄨ'],'ㄔ':['🚗','車','ㄔㄜ'],'ㄕ':['📕','書','ㄕㄨ'],'ㄖ':['☀️','日','ㄖˋ'],'ㄗ':['👄','嘴','ㄗㄨㄟˇ'],'ㄘ':['🌿','草','ㄘㄠˇ'],'ㄙ':['☂️','傘','ㄙㄢˇ'],'ㄧ':['👕','衣','ㄧ'],'ㄨ':['🐸','蛙','ㄨㄚ'],'ㄩ':['🐟','魚','ㄩˊ'],'ㄚ':['🦆','鴨','ㄧㄚ'],'ㄛ':['🍲','鍋','ㄍㄨㄛ'],'ㄜ':['🦢','鵝','ㄜˊ'],'ㄝ':['🍃','葉','ㄧㄝˋ'],'ㄞ':['❤️','愛','ㄞˋ'],'ㄟ':['🥤','杯','ㄅㄟ'],'ㄠ':['🐦','鳥','ㄋㄧㄠˇ'],'ㄡ':['✋','手','ㄕㄡˇ'],'ㄢ':['⛰️','山','ㄕㄢ'],'ㄣ':['☁️','雲','ㄩㄣˊ'],'ㄤ':['🍬','糖','ㄊㄤˊ'],'ㄥ':['💡','燈','ㄉㄥ'],'ㄦ':['👂','耳','ㄦˇ']};
+const LEVELS=[
+ {id:'n1',t:'num',c:['1','2','3']},{id:'n2',t:'num',c:['4','5','6','7']},{id:'n3',t:'num',c:['8','9','0']},
+ {id:'z1',t:'zy',c:['ㄅ','ㄆ','ㄇ','ㄈ']},{id:'z2',t:'zy',c:['ㄉ','ㄊ','ㄋ','ㄌ']},{id:'z3',t:'zy',c:['ㄍ','ㄎ','ㄏ']},{id:'z4',t:'zy',c:['ㄐ','ㄑ','ㄒ']},
+ {id:'z5',t:'zy',c:['ㄓ','ㄔ','ㄕ','ㄖ']},{id:'z6',t:'zy',c:['ㄗ','ㄘ','ㄙ']},{id:'z7',t:'zy',c:['ㄧ','ㄨ','ㄩ']},{id:'z8',t:'zy',c:['ㄚ','ㄛ','ㄜ','ㄝ']},
+ {id:'z9',t:'zy',c:['ㄞ','ㄟ','ㄠ','ㄡ']},{id:'z10',t:'zy',c:['ㄢ','ㄣ','ㄤ','ㄥ','ㄦ']},
+ {id:'n4',t:'num',c:['6','8','6','8'],icon:'6 8',label:'特訓',slow:true,open:true},
+ {id:'g1',t:'geo',c:[],icon:'🇹🇼🇯🇵🇰🇷',label:'臺灣和鄰居',q:'flag',pool:['TWN','JPN','KOR','CHN','PHL','VNM'],view:[755,85,170,150]},
+ {id:'g2',t:'geo',c:[],icon:'🇹🇭🇮🇳🇲🇳',label:'亞洲',q:'flag',pool:['THA','IND','IDN','MNG','SAU','MYS'],view:[575,55,350,220]},
+ {id:'g3',t:'geo',c:[],icon:'🇬🇧🇫🇷🇮🇹',label:'歐洲',q:'flag',pool:['GBR','FRA','DEU','ITA','ESP','NLD','CHE','GRC'],view:[455,50,155,100]},
+ {id:'g4',t:'geo',c:[],icon:'🇺🇸🇨🇦🇧🇷',label:'美洲',q:'flag',pool:['USA','CAN','MEX','BRA','ARG','PER'],view:[10,15,420,380]},
+ {id:'g5',t:'geo',c:[],icon:'🇪🇬🇰🇪🇦🇺',label:'非洲和大洋洲',q:'flag',pool:['EGY','KEN','ZAF','MAR','AUS','NZL'],view:[430,110,570,275]},
+ {id:'g6',t:'geo',c:[],icon:'🗺️',label:'找找在哪裡',q:'where',pool:['USA','CAN','BRA','AUS','CHN','IND','RUS','EGY','JPN','ARG'],view:[0,0,1000,394]},
+ {id:'g7',t:'geo',c:[],icon:'🏙️',label:'首都大挑戰',q:'capital',pool:['TWN','JPN','KOR','THA','GBR','FRA','ITA','USA','AUS','EGY'],view:[0,0,1000,394]}
+];
+const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆'];
+const COLORS=['#ff6b81','#3fa2f7','#4fb865','#f29e00','#7a6cf0','#ff8c42'];
+const strokesOf=ch=>NUM[ch]?NUM[ch].s:ZY[ch];
+const isNum=ch=>!!NUM[ch];
+const P2D={};function outlinesOf(ch){if(!ZYO[ch])return null;if(!P2D[ch])P2D[ch]=ZYO[ch].map(o=>new Path2D(o));return P2D[ch];}
+function paintStroke(ch,i,col,w){const o=outlinesOf(ch);if(o){cx.fillStyle=col;cx.fill(o[i]);}else line(strokesOf(ch)[i],w,col);}
+
+/* ---------- saved state ---------- */
+const KEY='kaikai-writing-v1';
+let S={name:'愷愷',tol:'easy',voice:true,gender:'F',passport:{},solo:true,unlock:false,stars:{},stickers:[]};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+/* ---------- sound & voice ---------- */
+let AC=null;
+function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}return AC;}
+function tone(freqs,dur,type,vol){const ac=audio();if(!ac)return;const t0=ac.currentTime;freqs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;const st=t0+i*dur*0.9;g.gain.setValueAtTime(0.0001,st);g.gain.exponentialRampToValueAtTime(vol||0.18,st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,st+dur);o.connect(g).connect(ac.destination);o.start(st);o.stop(st+dur+0.05);});}
+const sfx={ok:()=>tone([660,880],0.12,'triangle'),bad:()=>tone([300,240],0.16,'sine',0.12),char:()=>tone([523,659,784,1047],0.13,'triangle'),win:()=>tone([523,659,784,659,784,1047],0.14,'triangle',0.2)};
+let zhVoice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();zhVoice=vs.find(v=>/zh[-_]TW/i.test(v.lang))||vs.find(v=>/zh/i.test(v.lang))||null;}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}
+function say(text){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.8;u.pitch=1.15;speechSynthesis.speak(u);}catch(e){}}
+/* 注音真人讀音：教育部《國字標準字體筆順學習網》，F=女聲、M=男聲，編號 1–37 對應 ㄅ–ㄩ */
+const BUF={};let curSrc=null;
+function moeFile(ch){return (S.gender==='M'?'M':'F')+(ch.codePointAt(0)-12548);}
+function moeBuf(f){if(!BUF[f]){BUF[f]=fetch('snd/'+f+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>new Promise((res,rej)=>{const ac=audio();if(!ac)return rej();ac.decodeAudioData(ab,res,rej);}));BUF[f].catch(()=>{delete BUF[f];});}return BUF[f];}
+function playMoe(ch){return playFile(moeFile(ch));}
+function hzFile(ch){const h=isNum(ch)?NUMINFO[ch][1]:ZYINFO[ch][1];return 'c'+h.codePointAt(0);}
+function playFile(f){return moeBuf(f).then(buf=>new Promise(res=>{const ac=audio();if(curSrc){try{curSrc.stop();}catch(e){}}const s=ac.createBufferSource();s.buffer=buf;s.connect(ac.destination);let done=false;const fin=()=>{if(!done){done=true;res();}};s.onended=fin;setTimeout(fin,buf.duration*1000+200);s.start();curSrc=s;}));}
+function preload(chars){chars.forEach(c=>{if(!isNum(c))moeBuf(moeFile(c));moeBuf(hzFile(c));});}
+function sayChar(ch){if(!S.voice)return;try{speechSynthesis.cancel();}catch(e){}
+ if(isNum(ch)){playFile(hzFile(ch)).then(()=>new Promise(r=>setTimeout(r,300))).then(()=>say(NUMTIP[ch])).catch(()=>say(NUMINFO[ch][1]+'，'+NUMTIP[ch]));return;}
+ playMoe(ch).then(()=>new Promise(r=>setTimeout(r,350))).then(()=>playFile(hzFile(ch))).catch(()=>say(ZYINFO[ch][1]));}
+
+/* ---------- geometry ---------- */
+const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+function plen(p){let L=0;for(let i=1;i<p.length;i++)L+=d(p[i-1],p[i]);return L;}
+function resample(p,n){const L=plen(p);if(L===0)return Array(n).fill(p[0]);const out=[p[0]];const step=L/(n-1);let acc=0,i=1,prev=p[0];
+ while(out.length<n-1&&i<p.length){const seg=d(prev,p[i]);if(acc+seg>=step){const t=(step-acc)/seg;const q=[prev[0]+(p[i][0]-prev[0])*t,prev[1]+(p[i][1]-prev[1])*t];out.push(q);prev=q;acc=0;}else{acc+=seg;prev=p[i];i++;}}
+ while(out.length<n)out.push(p[p.length-1]);return out;}
+function partial(p,f){if(f>=1)return p;const L=plen(p)*f;const out=[p[0]];let acc=0;for(let i=1;i<p.length;i++){const seg=d(p[i-1],p[i]);if(acc+seg>=L){const t=(L-acc)/(seg||1);out.push([p[i-1][0]+(p[i][0]-p[i-1][0])*t,p[i-1][1]+(p[i][1]-p[i-1][1])*t]);return out;}acc+=seg;out.push(p[i]);}return out;}
+function judge(drawn,target,boost){
+ const base={easy:15,normal:12,hard:9}[S.tol]||12;const tol=base+boost;const N=32;
+ const a=resample(drawn,N),b=resample(target,N);let avg=0,rev=0;for(let i=0;i<N;i++){avg+=d(a[i],b[i]);rev+=d(a[i],b[N-1-i]);}avg/=N;rev/=N;
+ const tl=plen(target),ratio=plen(drawn)/tl,short=tl<26;
+ const lenOk=short?(ratio>0.25&&ratio<3.2):(ratio>0.5&&ratio<1.8);
+ const startD=d(a[0],b[0]),endD=d(a[N-1],b[N-1]);
+ if(avg<tol&&startD<tol*1.8&&endD<tol*2.1&&lenOk)return {ok:true};
+ if(rev<tol&&rev<avg)return {ok:false,why:'reverse'};
+ if(startD>=tol*1.8)return {ok:false,why:'start'};
+ if(!lenOk&&ratio<1)return {ok:false,why:'short'};
+ return {ok:false,why:'shape'};
+}
+
+/* ---------- board drawing ---------- */
+const cv=document.getElementById('board'),cx=cv.getContext('2d');
+let K=1,SIZE=300;
+function sizeBoard(){const st=document.getElementById('stage');const r=st.getBoundingClientRect();const side=document.querySelector('.side');
+ const portrait=getComputedStyle(st).flexDirection==='column';let s;
+ if(portrait){s=Math.min(r.width,r.height-side.getBoundingClientRect().height-14);}else{s=Math.min(r.height,r.width-side.getBoundingClientRect().width-20);}
+ s=Math.max(220,Math.floor(Math.min(s,720)));SIZE=s;const dpr=window.devicePixelRatio||1;cv.style.width=s+'px';cv.style.height=s+'px';cv.width=Math.round(s*dpr);cv.height=Math.round(s*dpr);K=s/100;cx.setTransform(dpr*K,0,0,dpr*K,0,0);draw();}
+function line(p,w,col,dash){if(!p||p.length<1)return;cx.save();cx.lineWidth=w;cx.strokeStyle=col;cx.lineCap='round';cx.lineJoin='round';if(dash)cx.setLineDash(dash);cx.beginPath();cx.moveTo(p[0][0],p[0][1]);if(p.length===1)cx.lineTo(p[0][0]+0.01,p[0][1]);for(let i=1;i<p.length;i++)cx.lineTo(p[i][0],p[i][1]);cx.stroke();cx.restore();}
+function arrowHead(p){const n=p.length;if(n<2)return;let a=p[n-1],b=p[n-2];for(let i=n-2;i>=0&&d(a,p[i])<4;i--)b=p[i];const ang=Math.atan2(a[1]-b[1],a[0]-b[0]);cx.save();cx.fillStyle='#ff6b81';cx.translate(a[0],a[1]);cx.rotate(ang);cx.beginPath();cx.moveTo(4.5,0);cx.lineTo(-3.5,-4);cx.lineTo(-3.5,4);cx.closePath();cx.fill();cx.restore();}
+function grid(){cx.fillStyle='#fffaf0';cx.fillRect(0,0,100,100);cx.save();cx.strokeStyle='#f0b4aa';cx.lineWidth=0.7;cx.setLineDash([2.2,2.2]);cx.beginPath();cx.moveTo(50,4);cx.lineTo(50,96);cx.moveTo(4,50);cx.lineTo(96,50);cx.stroke();cx.setLineDash([]);cx.lineWidth=1.1;cx.strokeRect(3,3,94,94);cx.restore();}
+const G={lvl:null,ci:0,round:0,si:0,mist:0,fail:0,ink:null,busy:false,demo:null,showHint:true};
+/* 路上的小星星：要依序經過 */
+const CPC={};
+function curCps(){const ch=G.lvl.c[G.ci],s=strokesOf(ch)[G.si];if(!s)return [];const key=ch+'/'+G.si;if(CPC[key])return CPC[key];const L=plen(s);const n=L<26?1:Math.max(2,Math.min(6,Math.round(L/22)));const out=[];for(let j=1;j<=n;j++){const q=partial(s,j/n);out.push(q[q.length-1]);}return CPC[key]=out.filter((q,i)=>!out.slice(i+1).some(r=>d(q,r)<8));}
+function cpR(){return ({easy:13,normal:10,hard:8}[S.tol]||10)+(G.round===1?3:0);}
+function cpCheck(q){if(!G.lvl)return;const c=curCps();if(G.cpi<c.length&&d(q,c[G.cpi])<cpR()){G.cpi++;tone([700+G.cpi*90],0.07,'triangle',0.07);}}
+function starPath(x,y,r){cx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*0.45:r;cx.lineTo(x+rr*Math.cos(a),y+rr*Math.sin(a));}cx.closePath();}
+function drawCps(){const c=curCps(),big=G.lvl.slow?4.6:3.6;c.forEach((q,j)=>{const lit=G.ink&&j<G.cpi;starPath(q[0],q[1],big);cx.fillStyle=lit?'#ffc23d':'#ffffff';cx.fill();cx.lineWidth=0.8;cx.strokeStyle='#f29e00';cx.stroke();});}
+function draw(){
+ cx.clearRect(0,0,100,100);grid();if(!G.lvl)return;
+ const ch=G.lvl.c[G.ci],ss=strokesOf(ch),solo=G.round===1;
+ const guideAlpha=solo?0.18:1;
+ cx.globalAlpha=guideAlpha;ss.forEach((s,i)=>paintStroke(ch,i,'#e7e0d2',11));cx.globalAlpha=1;
+ for(let i=0;i<G.si;i++)paintStroke(ch,i,COLORS[i%COLORS.length],9);
+ if(G.demo){const {k,f}=G.demo;for(let i=0;i<k;i++)paintStroke(ch,i,COLORS[i%COLORS.length],9);const part=partial(ss[k],f);const ol=outlinesOf(ch);if(ol){cx.save();cx.clip(ol[k]);line(part,20,COLORS[k%COLORS.length]);cx.restore();}else line(part,9,COLORS[k%COLORS.length]);const tip=part[part.length-1];cx.fillStyle='#25314a';cx.beginPath();cx.arc(tip[0],tip[1],3.2,0,7);cx.fill();return;}
+ if(G.si<ss.length&&(G.showHint)){const s=ss[G.si];line(s,1.6,'#ff6b81',[2.4,2.6]);arrowHead(s);cx.fillStyle='#4fb865';cx.beginPath();cx.arc(s[0][0],s[0][1],4.6,0,7);cx.fill();cx.fillStyle='#fff';cx.font='800 6px "Baloo 2",sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(String(G.si+1),s[0][0],s[0][1]+0.4);drawCps();}
+ if(G.ink)line(G.ink,8,'#25314a');
+}
+
+/* ---------- demo animation ---------- */
+function playDemo(from,only){return new Promise(res=>{const ch=G.lvl.c[G.ci],ss=strokesOf(ch);G.busy=true;let k=from||0;const end=only?k+1:ss.length;let t0=null;
+ const step=ts=>{if(!G.demo&&t0!==null){res();return;}if(t0===null)t0=ts;const dur=Math.max(450,plen(ss[k])*(G.lvl.slow?28:16));const f=Math.min(1,(ts-t0)/dur);G.demo={k,f};draw();
+  if(f>=1){k++;t0=null;if(k>=end){setTimeout(()=>{G.demo=null;G.busy=false;draw();res();},280);return;}G.demo={k,f:0};setTimeout(()=>requestAnimationFrame(step),220);return;}requestAnimationFrame(step);};
+ G.demo={k,f:0};requestAnimationFrame(step);});}
+
+/* ---------- input ---------- */
+let pid=null;
+function pt(e){const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*100];}
+cv.addEventListener('pointerdown',e=>{if(G.busy||!G.lvl||pid!==null)return;audio();pid=e.pointerId;cv.setPointerCapture(pid);G.ink=[pt(e)];G.cpi=0;draw();e.preventDefault();});
+cv.addEventListener('pointermove',e=>{if(e.pointerId!==pid||!G.ink)return;const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];evs.forEach(ev=>{const q=pt(ev);if(d(q,G.ink[G.ink.length-1])>0.6)G.ink.push(q);cpCheck(q);});draw();e.preventDefault();});
+function up(e){if(e.pointerId!==pid)return;pid=null;const ink=G.ink;G.ink=null;if(!ink||plen(ink)<2.5){draw();return;}finishStroke(ink);}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{if(e.pointerId===pid){pid=null;G.ink=null;draw();}});
+document.addEventListener('touchmove',e=>{if(e.target===cv)e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+
+/* ---------- coach text ---------- */
+const bubble=document.getElementById('bubble');
+function coach(msg,kind){bubble.textContent=msg;bubble.className='bubble'+(kind?' '+kind:'');}
+const praise=()=>{const n=S.name||'你';const a=['好棒！','漂亮！','對了！','太厲害了！','寫得好整齊！',n+'好棒！','完全正確！'];return a[Math.floor(Math.random()*a.length)];};
+
+/* ---------- game flow ---------- */
+function finishStroke(ink){const ch=G.lvl.c[G.ci],ss=strokesOf(ch);const r=judge(ink,ss[G.si],G.round===1?3:0);{const nc=curCps().length;if(r.ok&&G.cpi<nc-(nc>2?1:0)){r.ok=false;r.why='stars';}}
+ if(r.ok){sfx.ok();G.si++;G.fail=0;G.showHint=G.round===0;sparkle(ss[G.si-1]);
+  if(G.si>=ss.length){draw();charDone();return;}coach(praise()+' 第 '+(G.si+1)+' 筆'+(G.round===0?'從綠色圓點開始。':'在哪裡呢？'),'good');draw();return;}
+ sfx.bad();G.mist++;G.fail++;G.showHint=true;const b=document.getElementById('boardwrap');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+ const m={reverse:'方向反了喔，跟著紅色箭頭走。',start:'從綠色圓點開始寫喔。',short:'再寫長一點點，寫到箭頭那裡。',stars:'要經過路上每一顆星星喔！',shape:'差一點點！沿著灰色的路再寫一次。'}[r.why];
+ let m2=m;if(ch==='8'&&(r.why==='short'||r.why==='stars'))m2='8 不是兩個圈圈喔！寫到中間不要停，繼續滑下去再繞回來。';if(ch==='6'&&r.why!=='short')m2='6 不是蘋果喔！從最上面的綠色圓點開始，溜滑梯滑下來，再轉一個小圈圈。';if(m2!==m)say(m2);coach(m2,'bad');draw();if(G.fail>=2){G.fail=0;setTimeout(()=>{coach('星星老師再寫一次給你看。');playDemo(G.si,true).then(()=>{coach('換你囉！從綠色圓點開始。');});},500);}
+}
+function charDone(){sfx.char();const ch=G.lvl.c[G.ci];
+ if(G.round===0&&S.solo){coach(praise()+' 現在不看底稿，自己寫一次！','good');G.busy=true;setTimeout(()=>{G.round=1;G.si=0;G.showHint=false;G.busy=false;renderTop();draw();coach('自己寫寫看！忘記了就按「看示範」。');},1300);return;}
+ coach(praise()+' 「'+ch+'」完成了！','good');burst(40);G.busy=true;setTimeout(()=>{G.busy=false;nextChar();},1400);}
+function nextChar(){if(G.ci<G.lvl.c.length-1){G.ci++;startChar();}else levelDone();}
+function startChar(){G.round=0;G.si=0;G.fail=0;G.showHint=true;G.demo=null;G.ink=null;const ch=G.lvl.c[G.ci];
+ if(isNum(ch)){picBig.textContent=NUMINFO[ch][0];picWord.innerHTML=NUMINFO[ch][2];}else{const z=ZYINFO[ch];picBig.textContent=z[0];picWord.innerHTML='<span class="hz">'+z[1]+'</span><span class="bp">'+[...z[2]].map(c=>c===ch?'<em>'+c+'</em>':c).join('')+'</span>';}
+ renderTop();draw();coach(isNum(ch)?NUMTIP[ch]:'看星星老師寫「'+ch+'」，一共 '+strokesOf(ch).length+' 筆。');sayChar(ch);
+ setTimeout(()=>{if(G.lvl&&G.lvl.c[G.ci]===ch&&G.si===0&&!G.busy)playDemo(0).then(()=>{if(G.si===0)coach('換你寫！從綠色圓點 1 開始。');});},700);}
+const picBig=document.getElementById('picBig'),picWord=document.getElementById('picWord');
+function renderTop(){const pr=document.getElementById('progress');pr.innerHTML='';G.lvl.c.forEach((c,i)=>{const s=document.createElement('span');s.className='chip'+(isNum(c)?' num':'')+(i<G.ci?' ok':i===G.ci?' now':'');s.textContent=c;pr.appendChild(s);});
+ const mt=document.getElementById('modeTag');mt.textContent=G.round===0?'描描看':'自己寫';mt.className='mode'+(G.round===1?' solo':'');}
+function startLevel(i){if(LEVELS[i].t==='geo'){startGeo(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
+function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/2)?3:G.mist<=per*2?2:1;const id=G.lvl.id;const first=!S.stars[id];
+ S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(G.li)){S.stickers.push(G.li);}stk=STICKERS[G.li%STICKERS.length];save();
+ sfx.win();burst(160);document.getElementById('winTitle').textContent=(S.name||'')+'過關了！';
+ document.getElementById('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');
+ document.getElementById('winSticker').textContent=stk;
+ document.getElementById('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再玩一次可以拿到更多星星。':' 三顆星，滿分！');
+ const nx=LEVELS[G.li+1];document.getElementById('winNext').hidden=!nx;say((S.name||'')+'好厲害，過關了！');document.getElementById('winOv').hidden=false;}
+
+/* ---------- map ---------- */
+const LOCK='<svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open)return true;const same=LEVELS.filter(x=>x.t===L.t);const k=same.indexOf(L);return k===0||!!S.stars[same[k-1].id];}
+function renderMap(){document.getElementById('titleName').textContent=S.name||'我';
+ let total=0;Object.values(S.stars).forEach(v=>total+=v);document.getElementById('starTotal').textContent=total;
+ const map=document.getElementById('map');map.innerHTML='';
+ [['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地']].forEach(([t,name,b])=>{const isl=document.createElement('div');isl.className='island '+t;isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
+  let nextMarked=false;LEVELS.forEach((L,i)=>{if(L.t!==t)return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
+   let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}btn.className=cls;
+   const no=LEVELS.filter(x=>x.t===t).indexOf(L)+1;
+   btn.innerHTML='<span class="no">'+no+'</span><span class="chars">'+(L.icon||L.c.join(t==='num'?' ':''))+'</span>'+(L.label?'<span class="lbl">'+L.label+'</span>':'')+(open?'<span class="stars">'+[0,1,2].map(k=>k<st?'<b>★</b>':'★').join('')+'</span>':LOCK);
+   btn.setAttribute('aria-label','第'+no+'關 '+(L.label||L.c.join(' '))+(open?'':'，還沒解鎖'));
+   btn.onclick=()=>{audio();if(!open){sfx.bad();btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');return;}startLevel(i);};row.appendChild(btn);});
+  isl.appendChild(row);map.appendChild(isl);});}
+function show(w){document.getElementById('mapScreen').hidden=w!=='map';document.getElementById('playScreen').hidden=w!=='play';document.getElementById('geoScreen').hidden=w!=='geo';if(w!=='geo'){GZ.tok++;GZ.L=null;}if(w==='map'){G.lvl=null;G.demo=null;try{speechSynthesis.cancel();}catch(e){}renderMap();}}
+
+/* ---------- buttons ---------- */
+const $=id=>document.getElementById(id);
+$('backMap').onclick=()=>show('map');
+$('btnSay').onclick=()=>{audio();if(G.lvl)sayChar(G.lvl.c[G.ci]);};
+$('btnDemo').onclick=()=>{if(!G.lvl||G.busy)return;audio();const keep=G.si;G.si=0;playDemo(0).then(()=>{G.si=keep;G.showHint=true;draw();coach('換你囉！第 '+(keep+1)+' 筆從綠色圓點開始。');});};
+$('btnRedo').onclick=()=>{if(!G.lvl||G.busy)return;G.si=0;G.showHint=true;G.ink=null;draw();coach('重新開始，從第 1 筆寫起。');};
+$('btnSkip').onclick=()=>{if(!G.lvl||G.busy)return;G.mist+=2;nextChar();};
+$('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
+$('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
+$('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
+$('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(i);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
+$('openParent').onclick=()=>{$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('parentOv').hidden=false;};
+$('setName').oninput=e=>{S.name=e.target.value.trim();save();};
+$('setTol').onchange=e=>{S.tol=e.target.value;save();};
+$('setVoice').onchange=e=>{S.voice=e.target.checked;save();};
+$('setGender').onchange=e=>{S.gender=e.target.value;save();if(S.voice)playMoe('ㄅ').catch(()=>{});};
+$('setSolo').onchange=e=>{S.solo=e.target.checked;save();};
+$('setUnlock').onchange=e=>{S.unlock=e.target.checked;save();};
+$('resetBtn').onclick=e=>{const b=e.currentTarget;if(!b.dataset.arm){b.dataset.arm='1';b.textContent='再按一次確定清除';return;}S.stars={};S.stickers=[];save();b.dataset.arm='';b.textContent='已清除';};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{$(b.dataset.close).hidden=true;renderMap();});
+window.addEventListener('resize',()=>{if(G.lvl)sizeBoard();});
+
+/* ---------- confetti / sparkles ---------- */
+const fx=$('fx'),fc=fx.getContext('2d');let parts=[],running=false;
+function fxSize(){const dpr=window.devicePixelRatio||1;fx.width=innerWidth*dpr;fx.height=innerHeight*dpr;fc.setTransform(dpr,0,0,dpr,0,0);}fxSize();window.addEventListener('resize',fxSize);
+function loop(){fc.clearRect(0,0,innerWidth,innerHeight);parts=parts.filter(p=>p.life>0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life--;p.r+=p.vr;fc.save();fc.globalAlpha=Math.min(1,p.life/30);fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;if(p.star){fc.font='bold '+p.s*2+'px sans-serif';fc.fillText('★',-p.s,p.s);}else fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore();});
+ if(parts.length)requestAnimationFrame(loop);else running=false;}
+function go(){if(!running){running=true;requestAnimationFrame(loop);}}
+function burst(n){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;for(let i=0;i<n;i++)parts.push({x:innerWidth/2+(Math.random()-.5)*innerWidth*.6,y:-10-Math.random()*innerHeight*.3,vx:(Math.random()-.5)*4,vy:2+Math.random()*3,g:0.08,life:120+Math.random()*60,r:Math.random()*6,vr:(Math.random()-.5)*.3,s:8+Math.random()*8,c:COLORS[i%COLORS.length]});go();}
+function sparkle(stroke){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const r=cv.getBoundingClientRect();const e=stroke[stroke.length-1];const x=r.left+e[0]*K,y=r.top+e[1]*K;for(let i=0;i<10;i++){const a=Math.random()*Math.PI*2,v=2+Math.random()*3;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:0.05,life:36,r:0,vr:0.1,s:7,c:'#ffc23d',star:true});}go();}
+
+/* ---------- 地球島 ---------- */
+/* [名稱, 首都, 國旗, 小圖]；地圖：Natural Earth（公有領域） */
+const CT={TWN:['臺灣','臺北','🇹🇼','🧋','Taiwan','Taipei'],JPN:['日本','東京','🇯🇵','🗻','Japan','Tokyo'],KOR:['韓國','首爾','🇰🇷','🥢','South Korea','Seoul'],CHN:['中國','北京','🇨🇳','🐼','China','Beijing'],PHL:['菲律賓','馬尼拉','🇵🇭','🏝️','the Philippines','Manila'],VNM:['越南','河內','🇻🇳','🛵','Vietnam','Hanoi'],
+ THA:['泰國','曼谷','🇹🇭','🐘','Thailand','Bangkok'],IND:['印度','新德里','🇮🇳','🍛','India','New Delhi'],IDN:['印尼','雅加達','🇮🇩','🌋','Indonesia','Jakarta'],MNG:['蒙古','烏蘭巴托','🇲🇳','🐎','Mongolia','Ulaanbaatar'],SAU:['沙烏地阿拉伯','利雅德','🇸🇦','🐪','Saudi Arabia','Riyadh'],MYS:['馬來西亞','吉隆坡','🇲🇾','🌴','Malaysia','Kuala Lumpur'],
+ GBR:['英國','倫敦','🇬🇧','💂','the United Kingdom','London'],FRA:['法國','巴黎','🇫🇷','🥐','France','Paris'],DEU:['德國','柏林','🇩🇪','🥨','Germany','Berlin'],ITA:['義大利','羅馬','🇮🇹','🍕','Italy','Rome'],ESP:['西班牙','馬德里','🇪🇸','💃','Spain','Madrid'],NLD:['荷蘭','阿姆斯特丹','🇳🇱','🌷','the Netherlands','Amsterdam'],CHE:['瑞士','伯恩','🇨🇭','🏔️','Switzerland','Bern'],GRC:['希臘','雅典','🇬🇷','🏛️','Greece','Athens'],
+ USA:['美國','華盛頓','🇺🇸','🗽','the United States','Washington, D.C.'],CAN:['加拿大','渥太華','🇨🇦','🍁','Canada','Ottawa'],MEX:['墨西哥','墨西哥城','🇲🇽','🌮','Mexico','Mexico City'],BRA:['巴西','巴西利亞','🇧🇷','⚽','Brazil','Brasília'],ARG:['阿根廷','布宜諾斯艾利斯','🇦🇷','🐄','Argentina','Buenos Aires'],PER:['秘魯','利馬','🇵🇪','🦙','Peru','Lima'],
+ EGY:['埃及','開羅','🇪🇬','🐫','Egypt','Cairo'],KEN:['肯亞','奈洛比','🇰🇪','🦒','Kenya','Nairobi'],ZAF:['南非','普利托利亞','🇿🇦','🦁','South Africa','Pretoria'],MAR:['摩洛哥','拉巴特','🇲🇦','🕌','Morocco','Rabat'],AUS:['澳洲','坎培拉','🇦🇺','🦘','Australia','Canberra'],NZL:['紐西蘭','威靈頓','🇳🇿','🥝','New Zealand','Wellington'],RUS:['俄羅斯','莫斯科','🇷🇺','🪆','Russia','Moscow']};
+/* 英文名稱前的 the 只在唸的時候用，畫面上不顯示 */
+const enShow=s=>s.replace(/^the /,'').replace(/^./,c=>c.toUpperCase());
+const REGV={NA:[20,15,345,200],SA:[225,180,190,215],EUA:[450,20,490,255],AS:[575,55,350,220],EA:[755,85,170,150],AF:[425,110,260,250],OC:[785,185,215,205]};
+const REGOF={"USA":"NA","CAN":"NA","MEX":"NA","BRA":"SA","ARG":"SA","PER":"SA","AUS":"OC","NZL":"OC","CHN":"AS","IND":"AS","RUS":"EUA","EGY":"AF","JPN":"EA"};
+let enVoice=null;function pickEn(){try{const vs=speechSynthesis.getVoices();enVoice=vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}catch(e){}}
+try{pickEn();speechSynthesis.addEventListener('voiceschanged',pickEn);}catch(e){}
+/* 唸中文再唸英文；回傳的 Promise 在英文唸完（或逾時）才結束 */
+function sayPair(zh,en){GZ.last=[zh,en];if(!S.voice)return Promise.resolve();return new Promise(done=>{let fin=false;const end=()=>{if(!fin){fin=true;done();}};
+ try{speechSynthesis.cancel();const id=(GZ.sp=(GZ.sp||0)+1);const u=new SpeechSynthesisUtterance(zh);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.85;u.pitch=1.1;
+  let sent=false;const goEn=()=>{if(sent||GZ.sp!==id)return;sent=true;if(!en){end();return;}const v=new SpeechSynthesisUtterance(en);v.lang='en-US';if(enVoice)v.voice=enVoice;v.rate=0.82;v.onend=end;v.onerror=end;speechSynthesis.speak(v);setTimeout(end,Math.max(2500,en.length*160));};
+  u.onend=goEn;u.onerror=goEn;setTimeout(()=>{if(!speechSynthesis.speaking)goEn();},Math.max(2500,zh.length*330));setTimeout(end,zh.length*330+en.length*160+6000);speechSynthesis.speak(u);}catch(e){end();}});}
+const GZ={L:null,qs:[],qi:0,mist:0,fail:0,lock:true,q:null,tok:0};
+let WORLD=null,VB=[0,0,1000,394],MK=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function loadWorld(){if(WORLD)return Promise.resolve(WORLD);return fetch('world.json').then(r=>{if(!r.ok)throw 0;return r.json();}).then(j=>{WORLD=j;let h='';for(const k in j)h+='<path data-a="'+k+'" d="'+j[k]+'"/>';$('wland').innerHTML=h;return j;});}
+function setView(v,ms){const from=VB.slice(),t0=performance.now(),svg=$('world');ms=ms||700;const step=t=>{const k=Math.min(1,(t-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;VB=from.map((x,i)=>x+(v[i]-x)*e);svg.setAttribute('viewBox',VB.join(' '));if(k<1)requestAnimationFrame(step);else markRing();};requestAnimationFrame(step);}
+function mark(a,cls){document.querySelectorAll('#wland path.hi,#wland path.ok').forEach(p=>p.classList.remove('hi','ok'));MK=a?[a,cls]:null;if(a){const p=document.querySelector('#wland path[data-a="'+a+'"]');if(p){p.classList.add(cls);p.parentNode.appendChild(p);}}markRing();}
+function markRing(){const m=$('wmark');m.innerHTML='';if(!MK)return;const p=document.querySelector('#wland path[data-a="'+MK[0]+'"]');if(!p)return;const b=p.getBBox(),s=VB[2]/1000,r=Math.max(b.width,b.height)/2;if(r<18*s)m.innerHTML='<circle class="'+MK[1]+'" cx="'+(b.x+b.width/2)+'" cy="'+(b.y+b.height/2)+'" r="'+(r+9*s)+'"/>';}
+function gCoach(t,k){const b=$('gBubble');b.textContent=t;b.className='bubble'+(k?' '+k:'');}
+function startGeo(i){G.li=i;G.lvl=null;const L=LEVELS[i];GZ.tok++;
+ const p=shuffle(L.pool.slice()),qs=[];for(let k=0;qs.length<6;k++){if(k&&k%p.length===0)shuffle(p);qs.push(p[k%p.length]);}
+ show('geo');GZ.L=L;GZ.mist=0;GZ.qi=0;GZ.qs=qs;GZ.lock=true;
+ $('geoTag').textContent={flag:'找國旗',where:'在哪裡',capital:'首都'}[L.q];$('gOpts').innerHTML='';$('gFlag').textContent='🌏';$('gText').textContent=L.label;gCoach('地圖準備中……');geoProg();
+ const tk=GZ.tok;loadWorld().then(()=>{if(GZ.tok!==tk)return;mark(null);VB=[0,0,1000,394];$('world').setAttribute('viewBox',VB.join(' '));setView(L.view,900);setTimeout(()=>{if(GZ.tok===tk)nextQ();},500);}).catch(()=>gCoach('地圖載入失敗，請確認網路，再回地圖重進一次。','bad'));}
+function geoProg(){const pr=$('geoProg');pr.innerHTML='';GZ.qs.forEach((a,i)=>{const s=document.createElement('span');s.className='chip'+(i<GZ.qi?' ok':i===GZ.qi?' now':'');s.textContent=i<GZ.qi?CT[a][2]:String(i+1);pr.appendChild(s);});}
+function geoPrompt(){const q=GZ.q,c=CT[q.a];if(q.type==='flag')return '哪一個是'+c[0]+'的國旗？';if(q.type==='where')return c[0]+'在哪裡？在地圖上點點看！';return c[0]+'的首都是哪裡？';}
+function nextQ(){if(!GZ.L)return;if(GZ.qi>=GZ.qs.length){geoDone();return;}const a=GZ.qs[GZ.qi],L=GZ.L,c=CT[a];GZ.q={a,type:L.q,opts:[]};GZ.fail=0;GZ.lock=false;geoProg();
+ const box=$('gOpts');box.innerHTML='';box.className='gopts'+(L.q==='capital'?' txt':'');
+ if(L.q==='where'){mark(null);$('gFlag').textContent=c[2];setView(REGV[REGOF[a]]||L.view,900);}else{mark(a,'hi');$('gFlag').textContent=L.q==='flag'?'❓':c[2];
+  const others=shuffle(L.pool.filter(x=>x!==a)).slice(0,2);GZ.q.opts=shuffle([a].concat(others));
+  GZ.q.opts.forEach(o=>{const b=document.createElement('button');b.className='gopt';if(L.q==='flag')b.textContent=CT[o][2];else b.innerHTML=CT[o][1]+'<small class="en">'+CT[o][5]+'</small>';b.setAttribute('aria-label',L.q==='flag'?CT[o][0]+'的國旗':CT[o][1]);b.onclick=()=>geoAnswer(o,b);box.appendChild(b);});}
+ $('gText').innerHTML=geoPrompt()+'<small class="en">'+enShow(c[4])+'</small>';gCoach(L.q==='where'?'點一下地圖上的國家。':L.q==='flag'?'地圖上閃閃發亮的就是'+c[0]+'喔。':'想一想，'+c[0]+'的首都是哪一個城市？');
+ let t=geoPrompt();if(L.q==='capital')t+=' 是'+GZ.q.opts.map(o=>CT[o][1]).join('、')+'？';if(L.q==='capital'){const en=GZ.q.opts.map(o=>CT[o][5]);sayPair(t,enShow(c[4])+'. '+en.join('. ')+'.');}else sayPair(t,enShow(c[4])+'.');}
+function geoAnswer(o,btn){if(GZ.lock)return;audio();const q=GZ.q,c=CT[q.a];
+ if(o===q.a){GZ.lock=true;sfx.char();mark(q.a,'ok');if(btn)btn.classList.add('right');$('gFlag').textContent=c[2];
+  $('gText').innerHTML='<button class="sayb" data-zh="'+c[0]+'" data-en="'+enShow(c[4])+'">'+c[0]+' '+c[3]+'<small class="en">'+enShow(c[4])+' 🔊</small></button><button class="sayb cap" data-zh="首都，'+c[1]+'" data-en="'+c[5]+'"><small>首都：'+c[1]+'　<span class="en">'+c[5]+'</span> 🔊</small></button>';S.passport=S.passport||{};S.passport[q.a]=1;save();
+  gCoach(praise()+' 蓋上'+c[0]+'的護照章！','good');const spoken=q.type==='capital'?sayPair('答對了！'+c[1],c[5]+'.'):sayPair('答對了！'+c[0],enShow(c[4])+'.');GZ.qi++;const tk=GZ.tok,t0=Date.now();spoken.then(()=>{const wait=Math.max(700,2200-(Date.now()-t0));setTimeout(()=>{if(GZ.tok===tk)nextQ();},wait);});return;}
+ sfx.bad();GZ.mist++;GZ.fail++;let msg;
+ if(btn){btn.disabled=true;btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');}
+ if(q.type==='flag')msg='這是'+CT[o][0]+'的國旗喔，再找找'+c[0]+'！';
+ else if(q.type==='capital')msg=CT[o][1]+'不是喔，再想想看！';
+ else{msg=o&&CT[o]?'這裡是'+CT[o][0]+'喔，再找找'+c[0]+'！':'不是這裡喔，再找找看！';if(GZ.fail>=2){mark(q.a,'hi');msg+=' 看看閃閃發亮的地方。';}}
+ gCoach(msg,'bad');sayPair(msg,o&&CT[o]?(q.type==='capital'?CT[o][5]:enShow(CT[o][4]))+'.':'');}
+$('world').addEventListener('pointerup',e=>{if(!GZ.L||GZ.lock||!GZ.q||GZ.q.type!=='where')return;const svg=$('world');const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const P=pt.matrixTransform(svg.getScreenCTM().inverse());
+ const tp=document.querySelector('#wland path[data-a="'+GZ.q.a+'"]');const hitA=e.target&&e.target.dataset?e.target.dataset.a:null;
+ let ok=hitA===GZ.q.a;if(!ok){const R=30;for(const [dx,dy] of [[0,0],[R,0],[-R,0],[0,R],[0,-R],[R*.7,R*.7],[-R*.7,R*.7],[R*.7,-R*.7],[-R*.7,-R*.7],[R/2,0],[-R/2,0],[0,R/2],[0,-R/2]]){const el=document.elementFromPoint(e.clientX+dx,e.clientY+dy);if(el&&el.dataset&&el.dataset.a===GZ.q.a){ok=true;break;}}}if(!ok&&tp){const b=tp.getBBox();if(b.width*b.height<900){const pad=16*VB[2]/1000;ok=P.x>=b.x-pad&&P.x<=b.x+b.width+pad&&P.y>=b.y-pad&&P.y<=b.y+b.height+pad;}}
+ geoAnswer(ok?GZ.q.a:hitA,null);});
+function geoDone(){GZ.lock=true;const stars=GZ.mist<=1?3:GZ.mist<=3?2:1;const L=GZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(G.li))S.stickers.push(G.li);save();
+ sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+'環遊成功！';$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
+ $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+' 去貼紙簿看看你的護照章吧！';const nx=LEVELS[G.li+1];$('winNext').hidden=!nx;say((S.name||'')+'好厲害，環遊成功！');$('winOv').hidden=false;}
+$('geoBack').onclick=()=>show('map');
+$('gText').addEventListener('click',e=>{const b=e.target.closest('.sayb');if(!b)return;audio();sayPair(b.dataset.zh,b.dataset.en);});
+$('gSay').onclick=()=>{audio();if(GZ.last)sayPair(GZ.last[0],GZ.last[1]);};
+$('openBook').addEventListener('click',()=>{const b=$('passport');b.innerHTML='';Object.keys(CT).forEach(a=>{const s=document.createElement('div');const got=S.passport&&S.passport[a];s.className='slot'+(got?' got':'');s.textContent=got?CT[a][2]:'?';s.title=got?CT[a][0]+' '+enShow(CT[a][4]):'';if(got){s.style.cursor='pointer';s.onclick=()=>{audio();sayPair(CT[a][0]+'，首都是'+CT[a][1],enShow(CT[a][4])+'. '+CT[a][5]+'.');};}b.appendChild(s);});});
+
+renderMap();
+})();
+</script>
