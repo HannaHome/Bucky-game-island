@@ -291,9 +291,16 @@ const LEVELS=[
  {id:'g4',t:'geo',c:[],icon:'🇺🇸🇨🇦🇧🇷',label:'美洲',q:'flag',pool:['USA','CAN','MEX','BRA','ARG','PER'],view:[10,15,420,380]},
  {id:'g5',t:'geo',c:[],icon:'🇪🇬🇰🇪🇦🇺',label:'非洲和大洋洲',q:'flag',pool:['EGY','KEN','ZAF','MAR','AUS','NZL'],view:[430,110,570,275]},
  {id:'g6',t:'geo',c:[],icon:'🗺️',label:'找找在哪裡',q:'where',pool:['USA','CAN','BRA','AUS','CHN','IND','RUS','EGY','JPN','ARG'],view:[0,0,1000,394]},
- {id:'g7',t:'geo',c:[],icon:'🏙️',label:'首都大挑戰',q:'capital',pool:['TWN','JPN','KOR','THA','GBR','FRA','ITA','USA','AUS','EGY'],view:[0,0,1000,394]}
+ {id:'g7',t:'geo',c:[],icon:'🏙️',label:'首都大挑戰',q:'capital',pool:['TWN','JPN','KOR','THA','GBR','FRA','ITA','USA','AUS','EGY'],view:[0,0,1000,394]},
+ {id:'g8',t:'geo',c:[],icon:'🇹🇷🇳🇵🇰🇭',label:'亞洲 2',q:'flag',pool:['TUR','NPL','PAK','KHM','LAO','MMR','BGD','KAZ','IRN','ARE'],view:[555,50,370,225]},
+ {id:'g9',t:'geo',c:[],icon:'🇳🇴🇸🇪🇫🇮',label:'歐洲 2',q:'flag',pool:['PRT','IRL','NOR','SWE','FIN','DNK','POL','AUT','BEL','CZE','HUN','ISL','UKR'],view:[415,15,205,135]},
+ {id:'g10',t:'geo',c:[],icon:'🇨🇱🇨🇴🇨🇺',label:'美洲 2',q:'flag',pool:['CHL','COL','CUB','VEN','ECU','URY','PAN','JAM','CRI'],view:[10,15,420,380]},
+ {id:'g11',t:'geo',c:[],icon:'🇳🇬🇬🇭🇫🇯',label:'非洲和大洋洲 2',q:'flag',pool:['NGA','ETH','GHA','TZA','MDG','DZA','CMR','PNG','FJI'],view:[430,100,570,290]},
+ {id:'g12',t:'geo',c:[],icon:'🧭',label:'找找在哪裡 2',q:'where',pool:['MEX','ARG','ZAF','SAU','MNG','KAZ','IDN','TUR','FRA','ESP','NGA','PER','NOR','IRN'],view:[0,0,1000,394]},
+ {id:'g13',t:'geo',c:[],icon:'🏰',label:'首都大挑戰 2',q:'capital',pool:['DEU','ESP','NLD','CAN','BRA','KEN','PHL','VNM','PRT','NOR','SWE','CHL','TUR','CUB'],view:[0,0,1000,394]},
+ {id:'g14',t:'geo',c:[],icon:'🏆',label:'全世界國旗大考驗',q:'flag',pool:'ALL',view:[0,0,1000,394]}
 ];
-const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆'];
+const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆','🎡','🚁','🗽','🏰','🐧','🦜','🚢'];
 const COLORS=['#ff6b81','#3fa2f7','#4fb865','#f29e00','#7a6cf0','#ff8c42'];
 const strokesOf=ch=>NUM[ch]?NUM[ch].s:ZY[ch];
 const isNum=ch=>!!NUM[ch];
@@ -479,10 +486,16 @@ const CT={TWN:['臺灣','臺北','🇹🇼','🧋','Taiwan','Taipei'],JPN:['日�
  GBR:['英國','倫敦','🇬🇧','💂','the United Kingdom','London'],FRA:['法國','巴黎','🇫🇷','🥐','France','Paris'],DEU:['德國','柏林','🇩🇪','🥨','Germany','Berlin'],ITA:['義大利','羅馬','🇮🇹','🍕','Italy','Rome'],ESP:['西班牙','馬德里','🇪🇸','💃','Spain','Madrid'],NLD:['荷蘭','阿姆斯特丹','🇳🇱','🌷','the Netherlands','Amsterdam'],CHE:['瑞士','伯恩','🇨🇭','🏔️','Switzerland','Bern'],GRC:['希臘','雅典','🇬🇷','🏛️','Greece','Athens'],
  USA:['美國','華盛頓','🇺🇸','🗽','the United States','Washington, D.C.'],CAN:['加拿大','渥太華','🇨🇦','🍁','Canada','Ottawa'],MEX:['墨西哥','墨西哥城','🇲🇽','🌮','Mexico','Mexico City'],BRA:['巴西','巴西利亞','🇧🇷','⚽','Brazil','Brasília'],ARG:['阿根廷','布宜諾斯艾利斯','🇦🇷','🐄','Argentina','Buenos Aires'],PER:['秘魯','利馬','🇵🇪','🦙','Peru','Lima'],
  EGY:['埃及','開羅','🇪🇬','🐫','Egypt','Cairo'],KEN:['肯亞','奈洛比','🇰🇪','🦒','Kenya','Nairobi'],ZAF:['南非','普利托利亞','🇿🇦','🦁','South Africa','Pretoria'],MAR:['摩洛哥','拉巴特','🇲🇦','🕌','Morocco','Rabat'],AUS:['澳洲','坎培拉','🇦🇺','🦘','Australia','Canberra'],NZL:['紐西蘭','威靈頓','🇳🇿','🥝','New Zealand','Wellington'],RUS:['俄羅斯','莫斯科','🇷🇺','🪆','Russia','Moscow']};
+Object.assign(CT,{TUR:['土耳其','安卡拉','🇹🇷','🎈','Turkey','Ankara'],NPL:['尼泊爾','加德滿都','🇳🇵','🏔️','Nepal','Kathmandu'],PAK:['巴基斯坦','伊斯蘭瑪巴德','🇵🇰','🏏','Pakistan','Islamabad'],KHM:['柬埔寨','金邊','🇰🇭','🛕','Cambodia','Phnom Penh'],LAO:['寮國','永珍','🇱🇦','🛶','Laos','Vientiane'],MMR:['緬甸','奈比多','🇲🇲','🌅','Myanmar','Naypyidaw'],BGD:['孟加拉','達卡','🇧🇩','🐅','Bangladesh','Dhaka'],KAZ:['哈薩克','阿斯塔納','🇰🇿','🦅','Kazakhstan','Astana'],IRN:['伊朗','德黑蘭','🇮🇷','🏺','Iran','Tehran'],ARE:['阿拉伯聯合大公國','阿布達比','🇦🇪','🏙️','the United Arab Emirates','Abu Dhabi'],
+ PRT:['葡萄牙','里斯本','🇵🇹','🐓','Portugal','Lisbon'],IRL:['愛爾蘭','都柏林','🇮🇪','☘️','Ireland','Dublin'],NOR:['挪威','奧斯陸','🇳🇴','⛷️','Norway','Oslo'],SWE:['瑞典','斯德哥爾摩','🇸🇪','❄️','Sweden','Stockholm'],FIN:['芬蘭','赫爾辛基','🇫🇮','🎅','Finland','Helsinki'],DNK:['丹麥','哥本哈根','🇩🇰','🧜‍♀️','Denmark','Copenhagen'],POL:['波蘭','華沙','🇵🇱','🎹','Poland','Warsaw'],AUT:['奧地利','維也納','🇦🇹','🎻','Austria','Vienna'],BEL:['比利時','布魯塞爾','🇧🇪','🧇','Belgium','Brussels'],CZE:['捷克','布拉格','🇨🇿','🏰','the Czech Republic','Prague'],HUN:['匈牙利','布達佩斯','🇭🇺','🌶️','Hungary','Budapest'],ISL:['冰島','雷克雅維克','🇮🇸','🧊','Iceland','Reykjavik'],UKR:['烏克蘭','基輔','🇺🇦','🌻','Ukraine','Kyiv'],
+ CHL:['智利','聖地牙哥','🇨🇱','🗿','Chile','Santiago'],COL:['哥倫比亞','波哥大','🇨🇴','☕','Colombia','Bogotá'],CUB:['古巴','哈瓦那','🇨🇺','🚙','Cuba','Havana'],VEN:['委內瑞拉','卡拉卡斯','🇻🇪','🏞️','Venezuela','Caracas'],ECU:['厄瓜多','基多','🇪🇨','🐢','Ecuador','Quito'],URY:['烏拉圭','蒙特維多','🇺🇾','🧉','Uruguay','Montevideo'],PAN:['巴拿馬','巴拿馬城','🇵🇦','🚢','Panama','Panama City'],JAM:['牙買加','京斯敦','🇯🇲','🏃','Jamaica','Kingston'],CRI:['哥斯大黎加','聖荷西','🇨🇷','🦥','Costa Rica','San José'],
+ NGA:['奈及利亞','阿布加','🇳🇬','🥁','Nigeria','Abuja'],ETH:['衣索比亞','阿迪斯阿貝巴','🇪🇹','🥘','Ethiopia','Addis Ababa'],GHA:['迦納','阿克拉','🇬🇭','🍫','Ghana','Accra'],TZA:['坦尚尼亞','杜篤瑪','🇹🇿','🦓','Tanzania','Dodoma'],MDG:['馬達加斯加','安塔那那利佛','🇲🇬','🐒','Madagascar','Antananarivo'],DZA:['阿爾及利亞','阿爾及爾','🇩🇿','🏜️','Algeria','Algiers'],CMR:['喀麥隆','雅溫德','🇨🇲','⚽','Cameroon','Yaoundé'],PNG:['巴布亞紐幾內亞','莫士比港','🇵🇬','🦜','Papua New Guinea','Port Moresby'],FJI:['斐濟','蘇瓦','🇫🇯','🏖️','Fiji','Suva']});
+LEVELS.forEach(L=>{if(L.pool==='ALL')L.pool=Object.keys(CT);});
 /* 英文名稱前的 the 只在唸的時候用，畫面上不顯示 */
 const enShow=s=>s.replace(/^the /,'').replace(/^./,c=>c.toUpperCase());
 const REGV={NA:[20,15,345,200],SA:[225,180,190,215],EUA:[450,20,490,255],AS:[575,55,350,220],EA:[755,85,170,150],AF:[425,110,260,250],OC:[785,185,215,205]};
 const REGOF={"USA":"NA","CAN":"NA","MEX":"NA","BRA":"SA","ARG":"SA","PER":"SA","AUS":"OC","NZL":"OC","CHN":"AS","IND":"AS","RUS":"EUA","EGY":"AF","JPN":"EA"};
+REGV.EU=[440,25,195,135];Object.assign(REGOF,{MEX:'NA',ARG:'SA',PER:'SA',ZAF:'AF',NGA:'AF',SAU:'AS',MNG:'AS',KAZ:'AS',IDN:'AS',IRN:'AS',TUR:'EU',FRA:'EU',ESP:'EU',NOR:'EU'});
 let enVoice=null;function pickEn(){try{const vs=speechSynthesis.getVoices();enVoice=vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}catch(e){}}
 try{pickEn();speechSynthesis.addEventListener('voiceschanged',pickEn);}catch(e){}
 /* 唸中文再唸英文；回傳的 Promise 在英文唸完（或逾時）才結束 */
