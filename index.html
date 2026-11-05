@@ -447,6 +447,8 @@ function paintStroke(ch,i,col,w){const o=outlinesOf(ch);if(o){cx.fillStyle=col;c
 const KEY='kaikai-writing-v1';
 let S={name:'愷愷',tol:'easy',voice:true,gender:'F',passport:{},solo:true,unlock:false,stars:{},stickers:[]};
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw));}catch(e){}
+/* 貼紙改用關卡代號記錄（舊版用順序編號，自動轉換） */
+S.stickers=(S.stickers||[]).map(x=>typeof x==='number'?(LEVELS[x]&&LEVELS[x].id):x).filter((x,i,a)=>x&&a.indexOf(x)===i);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
 /* ---------- sound & voice ---------- */
@@ -561,7 +563,7 @@ function renderTop(){const pr=document.getElementById('progress');pr.innerHTML='
  const mt=document.getElementById('modeTag');mt.textContent=G.round===0?'描描看':'自己寫';mt.className='mode'+(G.round===1?' solo':'');}
 function startLevel(i){if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
 function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/2)?3:G.mist<=per*2?2:1;const id=G.lvl.id;const first=!S.stars[id];
- S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(G.li)){S.stickers.push(G.li);}stk=STICKERS[G.li%STICKERS.length];save();
+ S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(LEVELS[G.li].id)){S.stickers.push(LEVELS[G.li].id);}stk=STICKERS[G.li%STICKERS.length];save();
  sfx.win();burst(160);document.getElementById('winTitle').textContent=(S.name||'')+'過關了！';
  document.getElementById('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');
  document.getElementById('winSticker').textContent=stk;
@@ -594,7 +596,7 @@ $('btnSkip').onclick=()=>{if(!G.lvl||G.busy)return;G.mist+=2;nextChar();};
 $('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
 $('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
 $('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
-$('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(i);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
+$('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(L.id);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
 $('openParent').onclick=()=>{$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('parentOv').hidden=false;};
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
 $('setTol').onchange=e=>{S.tol=e.target.value;save();};
@@ -675,7 +677,7 @@ $('world').addEventListener('pointerup',e=>{if(!GZ.L||GZ.lock||!GZ.q||GZ.q.type!
  const tp=document.querySelector('#wland path[data-a="'+GZ.q.a+'"]');const hitA=e.target&&e.target.dataset?e.target.dataset.a:null;
  let ok=hitA===GZ.q.a;if(!ok){const R=30;for(const [dx,dy] of [[0,0],[R,0],[-R,0],[0,R],[0,-R],[R*.7,R*.7],[-R*.7,R*.7],[R*.7,-R*.7],[-R*.7,-R*.7],[R/2,0],[-R/2,0],[0,R/2],[0,-R/2]]){const el=document.elementFromPoint(e.clientX+dx,e.clientY+dy);if(el&&el.dataset&&el.dataset.a===GZ.q.a){ok=true;break;}}}if(!ok&&tp){const b=tp.getBBox();if(b.width*b.height<900){const pad=16*VB[2]/1000;ok=P.x>=b.x-pad&&P.x<=b.x+b.width+pad&&P.y>=b.y-pad&&P.y<=b.y+b.height+pad;}}
  geoAnswer(ok?GZ.q.a:hitA,null);});
-function geoDone(){GZ.lock=true;const stars=GZ.mist<=1?3:GZ.mist<=3?2:1;const L=GZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(G.li))S.stickers.push(G.li);save();
+function geoDone(){GZ.lock=true;const stars=GZ.mist<=1?3:GZ.mist<=3?2:1;const L=GZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(LEVELS[G.li].id))S.stickers.push(LEVELS[G.li].id);save();
  sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+'環遊成功！';$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
  $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+' 去貼紙簿看看你的護照章吧！';const nx=LEVELS[G.li+1];$('winNext').hidden=!nx;say((S.name||'')+'好厲害，環遊成功！');$('winOv').hidden=false;}
 $('geoBack').onclick=()=>show('map');
@@ -715,7 +717,7 @@ function rAnswer(oi,btn){if(RZ.lock)return;audio();const q=RZ.S.q[RZ.qi],tk=RZ.t
  if(q.h>=0){const e=sentEl(q.h);if(e){e.classList.add('hint');e.scrollIntoView({block:'nearest',behavior:'smooth'});}
   rCoach('再讀讀看亮起來的這一句，答案就在裡面喔！','bad');speakSeq([{t:'再讀讀看這一句'},{t:RZ.S.st[q.h]}],tk);}
  else{rCoach('想一想，這個故事主要在說誰和誰呢？','bad');speakSeq([{t:'想一想，這個故事主要在說誰和誰呢？'}],tk);}}
-function readDone(){RZ.lock=true;const stars=RZ.mist===0?3:RZ.mist<=2?2:1;const L=RZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(G.li))S.stickers.push(G.li);save();
+function readDone(){RZ.lock=true;const stars=RZ.mist===0?3:RZ.mist<=2?2:1;const L=RZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(LEVELS[G.li].id))S.stickers.push(LEVELS[G.li].id);save();
  sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+'讀完了！';$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
  $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再讀一次可以拿到更多星星。':' 三顆星，好會讀！');const nx=LEVELS[G.li+1];$('winNext').hidden=!nx||nx.t!=='read';say((S.name||'')+'好會讀故事！');$('winOv').hidden=false;}
 $('readBack').onclick=()=>show('map');
