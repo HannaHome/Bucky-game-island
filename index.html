@@ -109,6 +109,17 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .form input[type=checkbox]{width:26px;height:26px;accent-color:var(--leaf)}
 .note{font-size:14px!important;text-align:left}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+.pinp{max-width:min(400px,100%)}
+.pindots{display:flex;justify-content:center;gap:14px;margin:14px 0 6px;min-height:28px;font-family:var(--f-num);font-size:30px;font-weight:800}
+.pindots i{width:22px;height:22px;border-radius:50%;border:3px solid var(--muted);display:block}
+.pindots i.on{background:var(--ink);border-color:var(--ink)}
+.pindots .ans{min-width:90px;border-bottom:3px solid var(--muted);text-align:center;line-height:1.1}
+.pinmsg{min-height:1.5em;font-weight:700}
+.pinmsg.bad{color:#c43c52!important}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:6px auto 0}
+.pad button{min-height:62px;border-radius:18px;background:#f2f5fa;font-family:var(--f-num);font-size:28px;font-weight:800;box-shadow:0 4px 0 var(--line)}
+.pad button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+@media (max-height:520px){.pad button{min-height:44px;font-size:22px}.pad{gap:6px}.pindots{margin:6px 0 2px}}
 .xfer{border-top:2px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
 .xfer h4{margin:0;font-size:19px}
 .xfer textarea{font:15px/1.4 ui-monospace,Menlo,monospace;width:100%;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;color:var(--ink);word-break:break-all;resize:vertical;-webkit-user-select:text;user-select:text}
@@ -389,9 +400,18 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn leaf" id="xLoad">匯入並合併</button></div>
       <p class="note" id="xMsg" role="status"></p>
     </div>
-    <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="resetBtn">清除進度</button></div>
+    <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="resetBtn">清除進度</button><button class="btn" id="pinChange">更改家長密碼</button></div>
   </div>
   <div class="row"><button class="btn sun" data-close="parentOv">完成</button></div>
+</div></div>
+
+<div class="overlay" id="pinOv" hidden><div class="panel pinp">
+  <h3 id="pinTitle">家長密碼</h3>
+  <p id="pinSub"></p>
+  <div class="pindots" id="pinDots" aria-live="polite"></div>
+  <p class="pinmsg" id="pinMsg" role="status"></p>
+  <div class="pad" id="pinPad"></div>
+  <div class="row"><button class="btn" id="pinCancel">取消</button><button class="btn" id="pinForgot">忘記密碼</button></div>
 </div></div>
 
 <canvas id="fx"></canvas>
@@ -612,7 +632,7 @@ $('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
 $('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
 $('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
 $('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(L.id);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
-$('openParent').onclick=()=>{$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');$('parentOv').hidden=false;};
+function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');$('parentOv').hidden=false;}
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
 $('setTol').onchange=e=>{S.tol=e.target.value;save();};
 $('setVoice').onchange=e=>{S.voice=e.target.checked;save();};
@@ -760,6 +780,27 @@ $('xLoad').onclick=async()=>{let o;try{o=await readCode($('xIn').value);}catch(e
  const ids=new Set(LEVELS.map(L=>L.id));(o.k||[]).forEach(k=>{if(ids.has(k)&&!S.stickers.includes(k))S.stickers.push(k);});
  S.passport=S.passport||{};(o.p||[]).forEach(a=>{if(typeof CT!=='undefined'&&CT[a])S.passport[a]=1;});
  if(!S.name&&o.n)S.name=String(o.n).slice(0,8);save();renderMap();$('xIn').value='';xMsg('合併完成！現在有：'+tally()+'。','ok');sfx.win();};
+
+/* ---------- 家長密碼 ---------- */
+const PIN={mode:'',buf:'',first:'',ans:'',fails:0};
+function pinRender(){const d=$('pinDots');if(PIN.mode==='math'){d.innerHTML='<span class="ans">'+(PIN.buf||'&nbsp;')+'</span>';}else{d.innerHTML=[0,1,2,3].map(i=>'<i class="'+(i<PIN.buf.length?'on':'')+'"></i>').join('');}}
+function pinSet(mode,msg,bad){PIN.mode=mode;PIN.buf='';const T={set1:['設定家長密碼','請輸入 4 位數字。之後打開家長設定，都要輸入這組密碼。'],set2:['再輸入一次','確認剛剛的 4 位數字密碼。'],enter:['家長密碼','請輸入 4 位數字密碼。'],math:['忘記密碼','請回答下面的乘法題，答對就能重新設定密碼。']}[mode];
+ $('pinTitle').textContent=T[0];$('pinSub').textContent=mode==='math'?T[1]+'　'+PIN.q:T[1];const m=$('pinMsg');m.textContent=msg||'';m.className='pinmsg'+(bad?' bad':'');$('pinForgot').hidden=mode!=='enter';pinRender();}
+function pinDone(){$('pinOv').hidden=true;openSettings();}
+function pinKey(k){if(k==='del'){PIN.buf=PIN.buf.slice(0,-1);pinRender();return;}
+ const max=PIN.mode==='math'?PIN.ans.length:4;if(PIN.buf.length>=max)return;PIN.buf+=k;pinRender();if(PIN.buf.length<max)return;
+ setTimeout(()=>{const v=PIN.buf;
+  if(PIN.mode==='set1'){PIN.first=v;pinSet('set2');}
+  else if(PIN.mode==='set2'){if(v===PIN.first){S.pin=v;save();pinDone();}else pinSet('set1','兩次輸入的不一樣，請重新設定。',true);}
+  else if(PIN.mode==='enter'){if(v===S.pin){PIN.fails=0;pinDone();}else{PIN.fails++;const p=$('pinDots');p.classList.remove('shake');void p.offsetWidth;p.classList.add('shake');pinSet('enter','密碼不對'+(PIN.fails>=2?'。忘記了可以按「忘記密碼」。':'，再試一次。'),true);}}
+  else if(PIN.mode==='math'){if(v===PIN.ans){delete S.pin;save();pinSet('set1','答對了！請設定新的密碼。');}else pinSet('math','答案不對，再算算看。',true);}
+ },150);}
+function pinOpen(mode){const pad=$('pinPad');if(!pad.childElementCount){['1','2','3','4','5','6','7','8','9','','0','del'].forEach(k=>{const b=document.createElement('button');if(!k){b.style.visibility='hidden';b.disabled=true;}b.textContent=k==='del'?'⌫':k;if(k==='del')b.setAttribute('aria-label','刪除');b.onclick=()=>pinKey(k);pad.appendChild(b);});}
+ PIN.fails=0;pinSet(mode);$('pinOv').hidden=false;}
+$('openParent').onclick=()=>{audio();pinOpen(S.pin?'enter':'set1');};
+$('pinCancel').onclick=()=>{$('pinOv').hidden=true;};
+$('pinForgot').onclick=()=>{const a=6+Math.floor(Math.random()*4),b=6+Math.floor(Math.random()*4);PIN.q=a+' × '+b+' = ?';PIN.ans=String(a*b);pinSet('math');};
+$('pinChange').onclick=()=>{$('parentOv').hidden=true;pinOpen('set1');};
 
 renderMap();
 })();
