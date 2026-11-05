@@ -1,0 +1,46 @@
+# 每次推送到 main，自動把遊戲發布到 GitHub Pages
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # index.html 是給 Claude 用的版本（沒有 <head>），這裡補上完整的網頁開頭
+      - name: Build site
+        run: |
+          mkdir _site
+          cp -r snd world.json _site/
+          {
+            printf '%s\n' '<!doctype html>' '<html lang="zh-Hant">' '<head>' \
+              '<meta charset="utf-8">' \
+              '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' \
+              '<style>body{margin:0}</style>'
+            cat index.html
+            printf '%s\n' '</html>'
+          } > _site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
