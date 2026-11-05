@@ -109,6 +109,26 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .form input[type=checkbox]{width:26px;height:26px;accent-color:var(--leaf)}
 .note{font-size:14px!important;text-align:left}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+.panel{position:relative}
+.xclose{position:sticky;top:0;float:right;margin:-12px -12px 0 8px;width:48px;height:48px;border-radius:50%;background:#f2f5fa;font-size:22px;font-weight:800;color:var(--ink);box-shadow:0 3px 0 var(--line);z-index:3;display:grid;place-items:center}
+.xclose:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.isltabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.itab{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:20px;background:rgba(255,255,255,.55);box-shadow:0 4px 0 var(--line);text-align:left;min-width:0;border:3px solid transparent}
+.itab .badge{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;font-size:22px;font-weight:800}
+.itab.num .badge{background:var(--sun-deep);font-family:var(--f-num);font-size:26px}
+.itab.zy .badge{background:var(--leaf-deep)}
+.itab.geo .badge{background:#2f7fd0}
+.itab.read .badge{background:#e2694e}
+.itab .itx{display:flex;flex-direction:column;min-width:0}
+.itab b{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.itab small{font-size:13px;font-weight:700;color:var(--muted);font-family:var(--f-num)}
+.itab.on{background:var(--card)}
+.itab.num.on{border-color:var(--sun-deep);background:#fff3cf}
+.itab.zy.on{border-color:var(--leaf-deep);background:#e3f6dc}
+.itab.geo.on{border-color:#2f7fd0;background:#dcefff}
+.itab.read.on{border-color:#e2694e;background:#ffe9e2}
+@media (max-width:600px){.isltabs{gap:6px}.itab{flex-direction:column;gap:4px;padding:8px 4px;text-align:center}.itab .itx{align-items:center}.itab b{font-size:14px}.itab small{font-size:11px}.itab .badge{width:34px;height:34px;font-size:18px}}
+@media (max-height:520px){.itab{padding:6px 10px}.itab .badge{width:32px;height:32px;font-size:18px}.itab b{font-size:15px}}
 .pinp{max-width:min(400px,100%)}
 .pindots{display:flex;justify-content:center;gap:14px;margin:14px 0 6px;min-height:28px;font-family:var(--f-num);font-size:30px;font-weight:800}
 .pindots i{width:22px;height:22px;border-radius:50%;border:3px solid var(--muted);display:block}
@@ -297,6 +317,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <button class="btn" id="openBook">貼紙簿</button>
       <button class="btn round" id="openParent" aria-label="家長設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
     </div>
+    <div class="isltabs" id="islTabs" role="tablist" aria-label="選擇島嶼"></div>
     <div class="map" id="map"></div>
   </section>
 
@@ -372,7 +393,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="row"><button class="btn" id="winMap">回地圖</button><button class="btn" id="winAgain">再玩一次</button><button class="btn leaf" id="winNext">下一關</button></div>
 </div></div>
 
-<div class="overlay" id="bookOv" hidden><div class="panel">
+<div class="overlay" id="bookOv" hidden><div class="panel"><button class="xclose" data-close="bookOv" aria-label="關閉">✕</button>
   <h3>貼紙簿</h3><p>每過一關，就能拿到一張新貼紙！</p>
   <div class="book" id="book"></div>
   <h3 style="margin-top:22px">我的護照</h3><p>在地球島答對的國家，會蓋上一個國旗章。</p>
@@ -380,7 +401,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="row"><button class="btn sun" data-close="bookOv">關閉</button></div>
 </div></div>
 
-<div class="overlay" id="parentOv" hidden><div class="panel">
+<div class="overlay" id="parentOv" hidden><div class="panel"><button class="xclose" data-close="parentOv" aria-label="關閉">✕</button>
   <h3>家長設定</h3>
   <div class="form">
     <label for="setName">小朋友的名字<input type="text" id="setName" maxlength="8"></label>
@@ -405,7 +426,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="row"><button class="btn sun" data-close="parentOv">完成</button></div>
 </div></div>
 
-<div class="overlay" id="pinOv" hidden><div class="panel pinp">
+<div class="overlay" id="pinOv" hidden><div class="panel pinp"><button class="xclose" data-close="pinOv" aria-label="關閉">✕</button>
   <h3 id="pinTitle">家長密碼</h3>
   <p id="pinSub"></p>
   <div class="pindots" id="pinDots" aria-live="polite"></div>
@@ -596,7 +617,7 @@ function startChar(){G.round=0;G.si=0;G.fail=0;G.showHint=true;G.demo=null;G.ink
 const picBig=document.getElementById('picBig'),picWord=document.getElementById('picWord');
 function renderTop(){const pr=document.getElementById('progress');pr.innerHTML='';G.lvl.c.forEach((c,i)=>{const s=document.createElement('span');s.className='chip'+(isNum(c)?' num':'')+(i<G.ci?' ok':i===G.ci?' now':'');s.textContent=c;pr.appendChild(s);});
  const mt=document.getElementById('modeTag');mt.textContent=G.round===0?'描描看':'自己寫';mt.className='mode'+(G.round===1?' solo':'');}
-function startLevel(i){if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
+function startLevel(i){S.tab=LEVELS[i].t;save();if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
 function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/2)?3:G.mist<=per*2?2:1;const id=G.lvl.id;const first=!S.stars[id];
  S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(LEVELS[G.li].id)){S.stickers.push(LEVELS[G.li].id);}stk=STICKERS[G.li%STICKERS.length];save();
  sfx.win();burst(160);document.getElementById('winTitle').textContent=(S.name||'')+'過關了！';
@@ -611,7 +632,13 @@ function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open)return 
 function renderMap(){document.getElementById('titleName').textContent=S.name||'我';
  let total=0;Object.values(S.stars).forEach(v=>total+=v);document.getElementById('starTotal').textContent=total;
  const map=document.getElementById('map');map.innerHTML='';
- [['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地'],['read','故事島','讀']].forEach(([t,name,b])=>{const isl=document.createElement('div');isl.className='island '+t;isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
+ const ISL=[['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地'],['read','故事島','讀']];
+ if(!ISL.some(x=>x[0]===S.tab))S.tab='num';
+ const tabs=$('islTabs');tabs.innerHTML='';ISL.forEach(([t,name,b])=>{const ls=LEVELS.filter(L=>L.t===t);let got=0;ls.forEach(L=>got+=S.stars[L.id]||0);
+  const bt=document.createElement('button');bt.className='itab '+t+(t===S.tab?' on':'');bt.setAttribute('role','tab');bt.setAttribute('aria-selected',t===S.tab);
+  bt.innerHTML='<span class="badge">'+b+'</span><span class="itx"><b>'+name+'</b><small>★ '+got+' / '+ls.length*3+'</small></span>';
+  bt.onclick=()=>{audio();S.tab=t;save();renderMap();$('map').scrollTop=0;};tabs.appendChild(bt);});
+ ISL.forEach(([t,name,b])=>{if(t!==S.tab)return;const isl=document.createElement('div');isl.className='island '+t;isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
   let nextMarked=false;LEVELS.forEach((L,i)=>{if(L.t!==t)return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
    let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}btn.className=cls;
    const no=LEVELS.filter(x=>x.t===t).indexOf(L)+1;
@@ -641,6 +668,7 @@ $('setSolo').onchange=e=>{S.solo=e.target.checked;save();};
 $('setUnlock').onchange=e=>{S.unlock=e.target.checked;save();};
 $('resetBtn').onclick=e=>{const b=e.currentTarget;if(!b.dataset.arm){b.dataset.arm='1';b.textContent='再按一次確定清除';return;}S.stars={};S.stickers=[];save();b.dataset.arm='';b.textContent='已清除';};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{$(b.dataset.close).hidden=true;renderMap();});
+['bookOv','parentOv','pinOv'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target.id===id){$(id).hidden=true;renderMap();}}));
 window.addEventListener('resize',()=>{if(G.lvl)sizeBoard();});
 
 /* ---------- confetti / sparkles ---------- */
