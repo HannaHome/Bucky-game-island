@@ -363,6 +363,41 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #board{box-shadow:0 8px 0 rgba(37,49,74,.12),0 0 0 6px rgba(255,255,255,.7)}
 @media (max-width:600px){.hello{width:42px;height:42px}.island::after{font-size:34px;right:14px}}
 @media (max-height:520px){.hello{width:40px;height:40px}.island::after{font-size:30px}.wave{height:26px;background-size:90px 26px}}
+
+/* ===== 互動：星星老師 ===== */
+.mascot{overflow:visible;cursor:pointer;touch-action:manipulation}
+.mascot .e-h,.mascot .e-s,.mascot .e-z,.mascot .m-h,.mascot .m-s,.mascot .m-z{display:none}
+.mascot.happy .e-n,.mascot.happy .m-n,.mascot.sleepy .e-n,.mascot.sleepy .m-n,.mascot.oops .m-n{display:none}
+.mascot.happy .e-h,.mascot.happy .m-h,.mascot.oops .e-s,.mascot.oops .m-s,.mascot.sleepy .e-z,.mascot.sleepy .m-z{display:inline}
+.coach .mascot{width:76px;height:76px;flex:none}
+.coach .mascot.happy,.hello .mascot.happy{animation:jumpspin .9s cubic-bezier(.3,1.4,.5,1)}
+.coach .mascot.oops{animation:tilt .6s ease-in-out}
+.coach .mascot.talk{animation:nod .45s ease-in-out}
+.coach .mascot.wave,.hello .mascot.wave{animation:wave .6s ease-in-out 4}
+.coach .mascot.sleepy{animation:snooze 2.6s ease-in-out}
+@keyframes jumpspin{0%{transform:none}30%{transform:translateY(-22px) scale(1.12) rotate(-12deg)}65%{transform:translateY(-22px) scale(1.12) rotate(372deg)}100%{transform:rotate(360deg)}}
+@keyframes tilt{0%,100%{transform:none}20%{transform:rotate(-16deg) translateX(-4px)}45%{transform:rotate(12deg) translateX(4px)}70%{transform:rotate(-6deg)}}
+@keyframes nod{50%{transform:translateY(3px) scale(1.04,.96)}}
+@keyframes snooze{0%,100%{transform:none}50%{transform:rotate(-8deg) translateY(4px)}}
+.hello .mascot{width:100%;height:100%}
+@media (max-width:600px){.coach .mascot{width:52px;height:52px}}
+@media (max-height:520px){.coach .mascot{width:42px;height:42px}}
+/* ===== 互動：闖關小路 ===== */
+.stones{display:grid;gap:30px 22px;position:relative;padding-top:38px}
+.stones .stone{width:auto;z-index:1}
+.road{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
+.road path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.r-bg{stroke:rgba(255,255,255,.85);stroke-width:22}
+.r-dot{stroke:#e3c98f;stroke-width:5;stroke-dasharray:1 13}
+.r-done{stroke:#ffcf4d;stroke-width:9;stroke-dasharray:14 10;animation:march 1.2s linear infinite}
+@keyframes march{to{stroke-dashoffset:-24}}
+.avatar{position:absolute;z-index:2;width:0;height:0;transition:left .75s cubic-bezier(.4,0,.2,1),top .75s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.avatar .kid{position:absolute;left:-22px;top:-44px;font-size:40px;line-height:1;animation:bob 1.4s ease-in-out infinite;filter:drop-shadow(0 3px 0 rgba(37,49,74,.18))}
+.avatar .tag{position:absolute;left:50%;top:-58px;translate:-50% 0;background:var(--berry);color:#fff;font-size:12px;font-weight:800;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.avatar.hop .kid{animation:avhop .75s ease-in-out}
+@keyframes avhop{0%,100%{transform:none}50%{transform:translateY(-34px) rotate(-12deg)}}
+.stone.next::before{content:none}
+@media (max-height:520px){.stones{gap:24px 18px;padding-top:34px}.avatar .kid{font-size:32px;left:-17px;top:-36px}.avatar .tag{top:-48px}}
 </style>
 
 <div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
@@ -622,18 +657,30 @@ const G={lvl:null,ci:0,round:0,si:0,mist:0,fail:0,ink:null,busy:false,demo:null,
 const CPC={};
 function curCps(){const ch=G.lvl.c[G.ci],s=strokesOf(ch)[G.si];if(!s)return [];const key=ch+'/'+G.si;if(CPC[key])return CPC[key];const L=plen(s);const n=L<26?1:Math.max(2,Math.min(6,Math.round(L/22)));const out=[];for(let j=1;j<=n;j++){const q=partial(s,j/n);out.push(q[q.length-1]);}return CPC[key]=out.filter((q,i)=>!out.slice(i+1).some(r=>d(q,r)<8));}
 function cpR(){return ({easy:13,normal:10,hard:8}[S.tol]||10)+(G.round===1?3:0);}
-function cpCheck(q){if(!G.lvl)return;const c=curCps();if(G.cpi<c.length&&d(q,c[G.cpi])<cpR()){G.cpi++;tone([700+G.cpi*90],0.07,'triangle',0.07);}}
+function cpCheck(q){if(!G.lvl)return;const c=curCps();if(G.cpi<c.length&&d(q,c[G.cpi])<cpR()){G.cpi++;tone([700+G.cpi*90],0.07,'triangle',0.07);cpBurst(c[G.cpi-1]);}}
 function starPath(x,y,r){cx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*0.45:r;cx.lineTo(x+rr*Math.cos(a),y+rr*Math.sin(a));}cx.closePath();}
 function drawCps(){const c=curCps(),big=G.lvl.slow?4.6:3.6;c.forEach((q,j)=>{const lit=G.ink&&j<G.cpi;starPath(q[0],q[1],big);cx.fillStyle=lit?'#ffc23d':'#ffffff';cx.fill();cx.lineWidth=0.8;cx.strokeStyle='#f29e00';cx.stroke();});}
+/* 彩虹魔法筆跡 */
+function inkDraw(p){if(p.length<2){line(p,8,'hsl(340,85%,60%)');return;}cx.save();cx.lineCap='round';cx.lineJoin='round';cx.lineWidth=8;
+ for(let i=1;i<p.length;i++){cx.strokeStyle='hsl('+((i*5)%360)+',88%,58%)';cx.beginPath();cx.moveTo(p[i-1][0],p[i-1][1]);cx.lineTo(p[i][0],p[i][1]);cx.stroke();}
+ const t=p[p.length-1];cx.fillStyle='#fff';cx.beginPath();cx.arc(t[0],t[1],2.2,0,7);cx.fill();cx.restore();}
+let sparkN=0;
+function inkSpark(ev){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if((sparkN++)%3)return;const a=Math.random()*Math.PI*2,v=0.6+Math.random()*1.4;
+ parts.push({x:ev.clientX,y:ev.clientY,vx:Math.cos(a)*v,vy:Math.sin(a)*v-0.6,g:0.04,life:26,r:0,vr:0.15,s:4+Math.random()*4,c:'hsl('+((sparkN*17)%360)+',90%,62%)',star:true});go();}
+function cpBurst(q){if(!q||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const r=cv.getBoundingClientRect(),x=r.left+q[0]*K,y=r.top+q[1]*K;
+ for(let i=0;i<9;i++){const a=i/9*Math.PI*2,v=2.2+Math.random();parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:0.05,life:30,r:0,vr:0.2,s:6,c:'#ffc23d',star:true});}go();}
+/* 寫對的那一筆「蹦」一下 */
+function boingScale(){const t=(performance.now()-G.boing.t0)/420;return t>=1?1:1+0.14*Math.sin(Math.PI*t)*(1-t*0.4);}
+function startBoing(i){G.boing={i,t0:performance.now()};const loop=()=>{if(!G.boing)return;draw();if(performance.now()-G.boing.t0<440)requestAnimationFrame(loop);else{G.boing=null;draw();}};requestAnimationFrame(loop);}
 function draw(){
  cx.clearRect(0,0,100,100);grid();if(!G.lvl)return;
  const ch=G.lvl.c[G.ci],ss=strokesOf(ch),solo=G.round===1;
  const guideAlpha=solo?0.18:1;
  cx.globalAlpha=guideAlpha;ss.forEach((s,i)=>paintStroke(ch,i,'#e7e0d2',11));cx.globalAlpha=1;
- for(let i=0;i<G.si;i++)paintStroke(ch,i,COLORS[i%COLORS.length],9);
+ for(let i=0;i<G.si;i++){const bo=G.boing&&G.boing.i===i?boingScale():1;if(bo!==1){const c=strokesOf(ch)[i];let mx=0,my=0;c.forEach(q=>{mx+=q[0];my+=q[1];});mx/=c.length;my/=c.length;cx.save();cx.translate(mx,my);cx.scale(bo,bo);cx.translate(-mx,-my);paintStroke(ch,i,COLORS[i%COLORS.length],9);cx.restore();}else paintStroke(ch,i,COLORS[i%COLORS.length],9);}
  if(G.demo){const {k,f}=G.demo;for(let i=0;i<k;i++)paintStroke(ch,i,COLORS[i%COLORS.length],9);const part=partial(ss[k],f);const ol=outlinesOf(ch);if(ol){cx.save();cx.clip(ol[k]);line(part,20,COLORS[k%COLORS.length]);cx.restore();}else line(part,9,COLORS[k%COLORS.length]);const tip=part[part.length-1];cx.fillStyle='#25314a';cx.beginPath();cx.arc(tip[0],tip[1],3.2,0,7);cx.fill();return;}
  if(G.si<ss.length&&(G.showHint)){const s=ss[G.si];line(s,1.6,'#ff6b81',[2.4,2.6]);arrowHead(s);cx.fillStyle='#4fb865';cx.beginPath();cx.arc(s[0][0],s[0][1],4.6,0,7);cx.fill();cx.fillStyle='#fff';cx.font='800 6px "Baloo 2",sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(String(G.si+1),s[0][0],s[0][1]+0.4);drawCps();}
- if(G.ink)line(G.ink,8,'#25314a');
+ if(G.ink)inkDraw(G.ink);
 }
 
 /* ---------- demo animation ---------- */
@@ -646,7 +693,7 @@ function playDemo(from,only){return new Promise(res=>{const ch=G.lvl.c[G.ci],ss=
 let pid=null;
 function pt(e){const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*100];}
 cv.addEventListener('pointerdown',e=>{if(G.busy||!G.lvl||pid!==null)return;audio();pid=e.pointerId;cv.setPointerCapture(pid);G.ink=[pt(e)];G.cpi=0;draw();e.preventDefault();});
-cv.addEventListener('pointermove',e=>{if(e.pointerId!==pid||!G.ink)return;const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];evs.forEach(ev=>{const q=pt(ev);if(d(q,G.ink[G.ink.length-1])>0.6)G.ink.push(q);cpCheck(q);});draw();e.preventDefault();});
+cv.addEventListener('pointermove',e=>{if(e.pointerId!==pid||!G.ink)return;const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];evs.forEach(ev=>{const q=pt(ev);if(d(q,G.ink[G.ink.length-1])>0.6)G.ink.push(q);cpCheck(q);inkSpark(ev);});draw();e.preventDefault();});
 function up(e){if(e.pointerId!==pid)return;pid=null;const ink=G.ink;G.ink=null;if(!ink||plen(ink)<2.5){draw();return;}finishStroke(ink);}
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{if(e.pointerId===pid){pid=null;G.ink=null;draw();}});
 document.addEventListener('touchmove',e=>{if(e.target===cv)e.preventDefault();},{passive:false});
@@ -659,7 +706,7 @@ const praise=()=>{const n=S.name||'你';const a=['好棒！','漂亮！','對了
 
 /* ---------- game flow ---------- */
 function finishStroke(ink){const ch=G.lvl.c[G.ci],ss=strokesOf(ch);const r=judge(ink,ss[G.si],G.round===1?3:0);{const nc=curCps().length;if(r.ok&&G.cpi<nc-(nc>2?1:0)){r.ok=false;r.why='stars';}}
- if(r.ok){sfx.ok();G.si++;G.fail=0;G.showHint=G.round===0;sparkle(ss[G.si-1]);
+ if(r.ok){sfx.ok();G.si++;G.fail=0;startBoing(G.si-1);G.showHint=G.round===0;sparkle(ss[G.si-1]);
   if(G.si>=ss.length){draw();charDone();return;}coach(praise()+' 第 '+(G.si+1)+' 筆'+(G.round===0?'從綠色圓點開始。':'在哪裡呢？'),'good');draw();return;}
  sfx.bad();G.mist++;G.fail++;G.showHint=true;const b=document.getElementById('boardwrap');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
  const m={reverse:'方向反了喔，跟著紅色箭頭走。',start:'從綠色圓點開始寫喔。',short:'再寫長一點點，寫到箭頭那裡。',stars:'要經過路上每一顆星星喔！',shape:'差一點點！沿著灰色的路再寫一次。'}[r.why];
@@ -704,7 +751,7 @@ function renderMap(){{const T=[...((S.name||'我')+'的冒險島')],C=['#ff6b81'
    btn.innerHTML='<span class="no">'+no+'</span><span class="chars">'+(L.icon||L.c.join(t==='num'?' ':''))+'</span>'+(L.label?'<span class="lbl">'+L.label+'</span>':'')+(open?'<span class="stars">'+[0,1,2].map(k=>k<st?'<b>★</b>':'★').join('')+'</span>':LOCK);
    if(st===3)btn.insertAdjacentHTML('beforeend','<span class="crown" aria-hidden="true">👑</span>');btn.setAttribute('aria-label','第'+no+'關 '+(L.label||L.c.join(' '))+(open?'':'，還沒解鎖'));
    btn.onclick=()=>{audio();if(!open){sfx.bad();btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');return;}startLevel(i);};row.appendChild(btn);});
-  isl.appendChild(row);map.appendChild(isl);});}
+  isl.appendChild(row);map.appendChild(isl);layoutRoad(row,t);});}
 function show(w){document.getElementById('mapScreen').hidden=w!=='map';document.getElementById('playScreen').hidden=w!=='play';document.getElementById('geoScreen').hidden=w!=='geo';document.getElementById('readScreen').hidden=w!=='read';if(w!=='read'){RZ.tok++;RZ.L=null;}if(w!=='geo'){GZ.tok++;GZ.L=null;}if(w==='map'){G.lvl=null;G.demo=null;try{speechSynthesis.cancel();}catch(e){}renderMap();}}
 
 /* ---------- buttons ---------- */
@@ -891,6 +938,40 @@ $('pinChange').onclick=()=>{$('parentOv').hidden=true;pinOpen('set1');};
 
 /* 泡泡換新的話時「啵」一下 */
 try{const mo=new MutationObserver(ms=>ms.forEach(m=>{const el=m.target.nodeType===1?m.target:m.target.parentElement;const b=el&&el.closest('.bubble');if(b){b.classList.remove('popsay');void b.offsetWidth;b.classList.add('popsay');}}));document.querySelectorAll('.bubble').forEach(b=>mo.observe(b,{childList:true,characterData:true,subtree:true}));}catch(e){}
+/* ---------- 星星老師：表情和動作 ---------- */
+const MASCOT='<svg class="mascot" viewBox="0 0 60 60" role="img" aria-label="星星老師"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/>'
+ +'<circle class="e-n" cx="24" cy="27" r="2.6" fill="#25314a"/><circle class="e-n" cx="36" cy="27" r="2.6" fill="#25314a"/>'
+ +'<path class="e-h" d="M21 28.5q3-4.5 6 0M33 28.5q3-4.5 6 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+ +'<path class="e-s" d="M20.5 22.2l6 2M39.5 22.2l-6 2" stroke="#25314a" stroke-width="2" fill="none" stroke-linecap="round"/>'
+ +'<path class="e-z" d="M21 27.5h6M33 27.5h6" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+ +'<circle cx="19.5" cy="32" r="2.4" fill="#ff9aa8"/><circle cx="40.5" cy="32" r="2.4" fill="#ff9aa8"/>'
+ +'<path class="m-n" d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+ +'<path class="m-h" d="M24 33h12q-.6 7.5-6 7.5T24 33z" fill="#c2405a" stroke="#25314a" stroke-width="1.6" stroke-linejoin="round"/>'
+ +'<path class="m-s" d="M25.5 37.5q4.5-4 9 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+ +'<ellipse class="m-z" cx="30" cy="36.5" rx="2.6" ry="3.4" fill="#c2405a"/></svg>';
+document.querySelectorAll('.coach svg,.hello svg').forEach(el=>{el.outerHTML=MASCOT;});
+function mood(m,st,ms){if(!m)return;['happy','oops','talk','wave','sleepy'].forEach(c=>m.classList.remove(c));void m.getBoundingClientRect();m.classList.add(st);clearTimeout(m._mt);m._mt=setTimeout(()=>m.classList.remove(st),ms||1300);}
+try{const mo2=new MutationObserver(ms=>ms.forEach(r=>{const el=r.target.nodeType===1?r.target:r.target.parentElement;const b=el&&el.closest('.bubble');if(!b)return;const m=b.parentElement.querySelector('.mascot');
+ mood(m,b.classList.contains('good')?'happy':b.classList.contains('bad')?'oops':'talk',b.classList.contains('good')?1300:1000);}));document.querySelectorAll('.bubble').forEach(b=>mo2.observe(b,{childList:true,characterData:true,subtree:true}));}catch(e){}
+document.querySelectorAll('.mascot').forEach(m=>m.addEventListener('pointerdown',e=>{e.stopPropagation();audio();tone([880,1175,1568],0.08,'triangle',0.12);mood(m,'happy',1100);}));
+let lastAct=Date.now();document.addEventListener('pointerdown',()=>{lastAct=Date.now();},true);
+setInterval(()=>{const id=['playScreen','geoScreen','readScreen'].find(x=>!$(x).hidden);if(!id||!$('winOv').hidden)return;if(Date.now()-lastAct>15000){mood($(id).querySelector('.mascot'),Math.random()<.5?'sleepy':'wave',2600);lastAct=Date.now()-6000;}},1000);
+
+/* ---------- 闖關小路 ---------- */
+const AV={};
+function layoutRoad(row,t){const stones=[...row.querySelectorAll('.stone')];if(!stones.length)return;const gx=22,minW=innerHeight<=520?104:118;
+ const cols=Math.max(2,Math.min(stones.length,Math.floor((row.clientWidth+gx)/(minW+gx))));row.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
+ stones.forEach((b,i)=>{const r=Math.floor(i/cols),c=i%cols;b.style.gridRow=String(r+1);b.style.gridColumn=String(r%2?cols-c:c+1);});
+ const pts=stones.map(b=>[b.offsetLeft+b.offsetWidth/2,b.offsetTop+b.offsetHeight/2]);
+ const target=Math.max(0,stones.findIndex(b=>b.classList.contains('next')));const tgt=stones.some(b=>b.classList.contains('next'))?target:stones.reduce((a,b,i)=>b.classList.contains('done')?i:a,0);
+ const d=(a,z)=>pts.slice(a,z+1).map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('');
+ const W=row.scrollWidth,H=row.scrollHeight;let svg='<svg class="road" width="'+W+'" height="'+H+'" aria-hidden="true"><path class="r-bg" d="'+d(0,pts.length-1)+'"/><path class="r-dot" d="'+d(0,pts.length-1)+'"/>';
+ if(tgt>0)svg+='<path class="r-done" d="'+d(0,tgt)+'"/>';svg+='</svg>';row.insertAdjacentHTML('afterbegin',svg);
+ const av=document.createElement('div');av.className='avatar';av.setAttribute('aria-hidden','true');av.innerHTML='<span class="kid">🧒</span><span class="tag">'+((S.name||'我').slice(0,4))+'</span>';row.appendChild(av);
+ const place=k=>{const b=stones[k];av.style.left=(b.offsetLeft+b.offsetWidth/2)+'px';av.style.top=(b.offsetTop)+'px';};
+ const prev=AV[t];AV[t]=tgt;if(prev!==undefined&&prev!==tgt&&stones[prev]){av.style.transition='none';place(prev);void av.offsetWidth;requestAnimationFrame(()=>{av.style.transition='';av.classList.add('hop');place(tgt);tone([523,784],0.09,'triangle',0.1);setTimeout(()=>av.classList.remove('hop'),800);});}else place(tgt);}
+let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(!$('mapScreen').hidden)renderMap();},150);});
+
 renderMap();
 })();
 </script>
