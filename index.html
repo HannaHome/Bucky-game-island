@@ -3,7 +3,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="冒險島">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Chiron+GoRound+TC:wght@500;700;900&display=swap">
 <style>
 /* Layout: one-screen game. Map of two islands (數字島 / 注音森林) with level stones, then a big 習字格 board beside a picture card. Single bright daytime look, by choice. */
 :root{
@@ -11,7 +11,7 @@
   --grid:#f0b4aa; --guide:#e7e0d2; --sun:#ffc23d; --sun-deep:#f29e00; --leaf:#4fb865; --leaf-deep:#2f8f47;
   --berry:#ff6b81; --card:#ffffff; --lock:#c9d3e3; --line:#dbe6f2;
   --f-num:"Baloo 2","Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif;
-  --f-ui:ui-rounded,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-ui:"Chiron GoRound TC",ui-rounded,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
@@ -305,13 +305,72 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .island.num .stone .chars{font-size:22px}
   .stone .chars{font-size:21px}
 }
+
+/* ===== 活潑可愛 ===== */
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#app{position:relative;z-index:1}
+.skysun{position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;opacity:.55;
+ background:radial-gradient(circle,#ffe27a 0 34%,transparent 35%),repeating-conic-gradient(from 0deg,rgba(255,206,70,.55) 0 9deg,transparent 9deg 22deg);
+ -webkit-mask:radial-gradient(circle,#000 0 62%,transparent 70%);mask:radial-gradient(circle,#000 0 62%,transparent 70%);animation:spin 50s linear infinite}
+.cloud{position:absolute;left:0;width:130px;height:42px;background:#fff;border-radius:42px;opacity:.9;animation:drift 80s linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:54px;height:54px;top:-26px;left:20px}
+.cloud::after{width:70px;height:70px;top:-38px;right:18px}
+.c1{top:16%;animation-duration:95s;animation-delay:-20s}
+.c2{top:38%;transform:scale(.7);animation-duration:120s;animation-delay:-70s;opacity:.75}
+.c3{top:62%;animation-duration:105s;animation-delay:-45s;opacity:.8}
+.c4{top:8%;animation-duration:140s;animation-delay:-110s;opacity:.7}
+.wave{position:absolute;left:0;bottom:0;width:200%;height:38px;background-repeat:repeat-x;background-size:120px 38px;animation:waves 14s linear infinite}
+.w1{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='38'%3E%3Cpath d='M0 18 Q30 2 60 18 T120 18 V38 H0Z' fill='%2394d4f5'/%3E%3C/svg%3E");opacity:.55}
+.w2{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='38'%3E%3Cpath d='M0 24 Q30 10 60 24 T120 24 V38 H0Z' fill='%236cc0ee'/%3E%3C/svg%3E");opacity:.45;animation-duration:9s;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drift{from{translate:-220px 0}to{translate:calc(100vw + 60px) 0}}
+@keyframes waves{to{transform:translateX(-50%)}}
+.title{font-weight:900}
+.tl{display:inline-block;animation:hop 3.2s ease-in-out infinite;animation-delay:calc(var(--i)*.13s);text-shadow:0 3px 0 rgba(255,255,255,.9)}
+@keyframes hop{0%,60%,100%{transform:none}70%{transform:translateY(-7px) rotate(-5deg)}80%{transform:translateY(0) rotate(3deg)}}
+.hello{flex:none;width:56px;height:56px;animation:wave 2.6s ease-in-out infinite;transform-origin:50% 90%}
+.hello svg{width:100%;height:100%}
+@keyframes wave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg) translateY(-3px)}}
+.coach svg,.hello svg{overflow:visible}
+.coach svg{animation:bob2 2.4s ease-in-out infinite}
+@keyframes bob2{50%{transform:translateY(-4px) rotate(5deg)}}
+.coach svg circle:nth-of-type(1),.coach svg circle:nth-of-type(2),.hello svg circle:nth-of-type(1),.hello svg circle:nth-of-type(2){transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,92%,100%{transform:none}95%{transform:scaleY(.1)}}
+.coach .bubble::before{content:"";position:absolute;left:-10px;top:16px;border:10px solid transparent;border-left:0;border-right-color:var(--card)}
+.coach .bubble.bad::before{border-right-color:#ffe9ec}
+.coach .bubble.good::before{border-right-color:#e6f8e6}
+.bubble.popsay{animation:say .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes say{0%{transform:scale(.85)}100%{transform:none}}
+.map .island{background-image:radial-gradient(rgba(255,255,255,.6) 2.2px,transparent 2.8px);background-size:24px 24px;border:3px solid rgba(255,255,255,.7)}
+.island::after{content:attr(data-deco);position:absolute;right:20px;top:10px;font-size:44px;animation:float 3.6s ease-in-out infinite;pointer-events:none}
+@keyframes float{50%{transform:translateY(-8px) rotate(6deg)}}
+.stone{animation:popin .5s cubic-bezier(.2,1.5,.4,1) backwards;animation-delay:calc(var(--i,0)*55ms);transition:transform .12s}
+.stone:active{transform:scale(.93)}
+@keyframes popin{0%{transform:scale(.3);opacity:0}100%{transform:none;opacity:1}}
+.stone.next{animation:popin .5s cubic-bezier(.2,1.5,.4,1) backwards,bob 1.6s ease-in-out .6s infinite}
+.stone.next::before{content:"GO!";position:absolute;top:-12px;left:50%;translate:-50% 0;background:var(--berry);color:#fff;font-family:var(--f-num);font-weight:800;font-size:14px;padding:1px 10px;border-radius:999px;box-shadow:0 2px 0 #d94b62}
+.stone.done{background:linear-gradient(180deg,#fff 0%,#fff6d8 100%)}
+.crown{position:absolute;top:-16px;right:-8px;font-size:28px;rotate:18deg;animation:float 2.4s ease-in-out infinite}
+.btn,.itab,.gopt,.ropt,.pad button{transition:transform .1s}
+.btn:active,.itab:active,.gopt:active,.ropt:active{transform:scale(.94) translateY(2px)}
+.itab.on .badge{animation:wiggle 2.2s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-10deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-4deg)}80%{transform:none}}
+.overlay:not([hidden]) .panel{animation:panelin .42s cubic-bezier(.2,1.5,.4,1)}
+@keyframes panelin{0%{transform:scale(.6) translateY(30px);opacity:0}100%{transform:none;opacity:1}}
+.sticker{animation:pop .6s .7s backwards,float 2.6s ease-in-out 1.4s infinite}
+.slot.got{animation:popin .45s cubic-bezier(.2,1.5,.4,1) backwards}
+#board{box-shadow:0 8px 0 rgba(37,49,74,.12),0 0 0 6px rgba(255,255,255,.7)}
+@media (max-width:600px){.hello{width:42px;height:42px}.island::after{font-size:34px;right:14px}}
+@media (max-height:520px){.hello{width:40px;height:40px}.island::after{font-size:30px}.wave{height:26px;background-size:90px 26px}}
 </style>
 
+<div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
 <div id="app">
   <!-- MAP -->
   <section class="screen" id="mapScreen">
     <div class="bar">
-      <div class="title"><span id="titleName">愷愷</span>的冒險島<small>寫數字、學注音、環遊世界，收集星星和貼紙</small></div>
+      <span class="hello" aria-hidden="true"><svg viewBox="0 0 60 60"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="2.6" fill="#25314a"/><circle cx="36" cy="27" r="2.6" fill="#25314a"/><path d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="19.5" cy="32" r="2.4" fill="#ff9aa8"/><circle cx="40.5" cy="32" r="2.4" fill="#ff9aa8"/></svg></span><div class="title"><span id="titleName" aria-label="愷愷的冒險島"></span><small>寫數字、學注音、環遊世界，收集星星和貼紙</small></div>
       <div class="spacer"></div>
       <span class="pill" aria-label="星星總數"><span style="color:var(--sun-deep)">★</span><span class="n" id="starTotal">0</span></span>
       <button class="btn" id="openBook">貼紙簿</button>
@@ -629,7 +688,7 @@ function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/
 /* ---------- map ---------- */
 const LOCK='<svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open)return true;const same=LEVELS.filter(x=>x.t===L.t);const k=same.indexOf(L);return k===0||!!S.stars[same[k-1].id];}
-function renderMap(){document.getElementById('titleName').textContent=S.name||'我';
+function renderMap(){{const T=[...((S.name||'我')+'的冒險島')],C=['#ff6b81','#f29e00','#4fb865','#3fa2f7','#7a6cf0','#ff8c42','#e2694e','#2f8f47'];const tn=document.getElementById('titleName');tn.setAttribute('aria-label',T.join(''));tn.innerHTML=T.map((c,i)=>'<span class="tl" style="--i:'+i+';color:'+C[i%C.length]+'">'+c+'</span>').join('');}
  let total=0;Object.values(S.stars).forEach(v=>total+=v);document.getElementById('starTotal').textContent=total;
  const map=document.getElementById('map');map.innerHTML='';
  const ISL=[['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地'],['read','故事島','讀']];
@@ -638,12 +697,12 @@ function renderMap(){document.getElementById('titleName').textContent=S.name||'�
   const bt=document.createElement('button');bt.className='itab '+t+(t===S.tab?' on':'');bt.setAttribute('role','tab');bt.setAttribute('aria-selected',t===S.tab);
   bt.innerHTML='<span class="badge">'+b+'</span><span class="itx"><b>'+name+'</b><small>★ '+got+' / '+ls.length*3+'</small></span>';
   bt.onclick=()=>{audio();S.tab=t;save();renderMap();$('map').scrollTop=0;};tabs.appendChild(bt);});
- ISL.forEach(([t,name,b])=>{if(t!==S.tab)return;const isl=document.createElement('div');isl.className='island '+t;isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
+ ISL.forEach(([t,name,b])=>{if(t!==S.tab)return;const isl=document.createElement('div');isl.className='island '+t;isl.dataset.deco={num:'🐥',zy:'🍄',geo:'🐳',read:'🦉'}[t]||'';isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
   let nextMarked=false;LEVELS.forEach((L,i)=>{if(L.t!==t)return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
-   let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}btn.className=cls;
+   let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}if(st)cls+=' done';btn.className=cls;btn.style.setProperty('--i',String(LEVELS.filter(x=>x.t===t).indexOf(L)));
    const no=LEVELS.filter(x=>x.t===t).indexOf(L)+1;
    btn.innerHTML='<span class="no">'+no+'</span><span class="chars">'+(L.icon||L.c.join(t==='num'?' ':''))+'</span>'+(L.label?'<span class="lbl">'+L.label+'</span>':'')+(open?'<span class="stars">'+[0,1,2].map(k=>k<st?'<b>★</b>':'★').join('')+'</span>':LOCK);
-   btn.setAttribute('aria-label','第'+no+'關 '+(L.label||L.c.join(' '))+(open?'':'，還沒解鎖'));
+   if(st===3)btn.insertAdjacentHTML('beforeend','<span class="crown" aria-hidden="true">👑</span>');btn.setAttribute('aria-label','第'+no+'關 '+(L.label||L.c.join(' '))+(open?'':'，還沒解鎖'));
    btn.onclick=()=>{audio();if(!open){sfx.bad();btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');return;}startLevel(i);};row.appendChild(btn);});
   isl.appendChild(row);map.appendChild(isl);});}
 function show(w){document.getElementById('mapScreen').hidden=w!=='map';document.getElementById('playScreen').hidden=w!=='play';document.getElementById('geoScreen').hidden=w!=='geo';document.getElementById('readScreen').hidden=w!=='read';if(w!=='read'){RZ.tok++;RZ.L=null;}if(w!=='geo'){GZ.tok++;GZ.L=null;}if(w==='map'){G.lvl=null;G.demo=null;try{speechSynthesis.cancel();}catch(e){}renderMap();}}
@@ -830,6 +889,8 @@ $('pinCancel').onclick=()=>{$('pinOv').hidden=true;};
 $('pinForgot').onclick=()=>{const a=6+Math.floor(Math.random()*4),b=6+Math.floor(Math.random()*4);PIN.q=a+' × '+b+' = ?';PIN.ans=String(a*b);pinSet('math');};
 $('pinChange').onclick=()=>{$('parentOv').hidden=true;pinOpen('set1');};
 
+/* 泡泡換新的話時「啵」一下 */
+try{const mo=new MutationObserver(ms=>ms.forEach(m=>{const el=m.target.nodeType===1?m.target:m.target.parentElement;const b=el&&el.closest('.bubble');if(b){b.classList.remove('popsay');void b.offsetWidth;b.classList.add('popsay');}}));document.querySelectorAll('.bubble').forEach(b=>mo.observe(b,{childList:true,characterData:true,subtree:true}));}catch(e){}
 renderMap();
 })();
 </script>
