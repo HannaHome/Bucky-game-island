@@ -813,6 +813,17 @@ function audio(){/* iPad：讓錄音不受靜音開關影響（iOS 17 以上支�
  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
  try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume();}catch(e){}return AC;}
 /* 聲音系統被 iPad 暫停（suspended / interrupted）時先叫醒；叫不醒就改用一般的 <audio> 播放 */
+/* 離開畫面再回來：iPad 會凍結聲音系統。回來後第一次點畫面時，直接換一個新的聲音系統 */
+let AC_STALE=false;
+function unlockAudio(){try{
+ if(AC&&(AC_STALE||AC.state==='interrupted'||AC.state==='closed'||AC.state==='suspended')){const wasOn=typeof BGM!=='undefined'&&BGM.on;try{AC.close();}catch(e){}AC=null;BUF={};curSrc=null;
+  if(typeof BGM!=='undefined'){BGM.gain=null;BGM.next=0;BGM.on=false;clearInterval(BGM.timer);}AC_STALE=false;audio();if(wasOn||(typeof BGM!=='undefined'&&BGM.want))setTimeout(()=>{if(S.bgm!==false)bgmStart();},0);}
+ else audio();
+ if(AC){const b=AC.createBuffer(1,1,22050),src=AC.createBufferSource();src.buffer=b;src.connect(AC.destination);src.start(0);}
+ }catch(e){}}
+['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,unlockAudio,true));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'){AC_STALE=!!AC;try{speechSynthesis.cancel();}catch(e){}if(curEl){try{curEl.pause();}catch(e){}}}});
+window.addEventListener('pageshow',e=>{if(e.persisted)AC_STALE=!!AC;});
 function audioReady(){const ac=audio();if(!ac)return Promise.resolve(false);if(ac.state==='running')return Promise.resolve(true);
  return Promise.race([ac.resume().then(()=>ac.state==='running',()=>false),new Promise(r=>setTimeout(()=>r(ac.state==='running'),450))]);}
 let curEl=null;const REC={n:0};
@@ -846,7 +857,7 @@ function fillVoiceLists(){[['setVzh',true,'vzh'],['setVen',false,'ven']].forEach
 try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}
 function say(text){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.88;u.pitch=1;speechSynthesis.speak(u);}catch(e){}}
 /* 注音真人讀音：教育部《國字標準字體筆順學習網》，F=女聲、M=男聲，編號 1–37 對應 ㄅ–ㄩ */
-const BUF={};let curSrc=null;
+let BUF={};let curSrc=null;
 function moeFile(ch){return (S.gender==='M'?'M':'F')+(ch.codePointAt(0)-12548);}
 function moeBuf(f){if(!BUF[f]){BUF[f]=fetch('snd/'+f+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>new Promise((res,rej)=>{const ac=audio();if(!ac)return rej();ac.decodeAudioData(ab,res,rej);}));BUF[f].catch(()=>{delete BUF[f];});}return BUF[f];}
 function playMoe(ch){return playFile(moeFile(ch));}
@@ -1418,12 +1429,12 @@ function bgmSchedule(){const ac=AC;if(!ac||!BGM.on)return;const beat=60/138;
   BGM.next+=beat;BGM.step++;}}
 function bgmVol(){if(!BGM.gain||!AC)return;let v=BGM.on?0.09:0;try{if(speechSynthesis.speaking)v*=0.25;}catch(e){}if(REC.n>0)v*=0.25;if(!$('restOv').hidden)v=0;BGM.gain.gain.setTargetAtTime(v,AC.currentTime,0.15);}
 function bgmStart(){const ac=audio();if(!ac)return;if(!BGM.gain){BGM.gain=ac.createGain();BGM.gain.gain.value=0;BGM.gain.connect(ac.destination);}
- BGM.on=true;BGM.next=Math.max(BGM.next,ac.currentTime+0.1);clearInterval(BGM.timer);BGM.timer=setInterval(()=>{bgmSchedule();bgmVol();},150);bgmVol();}
+ BGM.on=true;BGM.want=false;BGM.next=Math.max(BGM.next,ac.currentTime+0.1);clearInterval(BGM.timer);BGM.timer=setInterval(()=>{bgmSchedule();bgmVol();},150);bgmVol();}
 function bgmStop(){BGM.on=false;bgmVol();clearInterval(BGM.timer);BGM.timer=setInterval(bgmVol,150);setTimeout(()=>{if(!BGM.on)clearInterval(BGM.timer);},1500);}
 function bgmBtn(){const b=$('bgmBtn');b.classList.toggle('off',S.bgm===false);b.setAttribute('aria-pressed',String(S.bgm!==false));b.title=S.bgm===false?'打開背景音樂':'關掉背景音樂';}
 $('bgmBtn').onclick=e=>{e.stopPropagation();S.bgm=S.bgm===false;save();bgmBtn();if(S.bgm)bgmStart();else bgmStop();};
 document.addEventListener('pointerdown',()=>{if(S.bgm!==false&&!BGM.on&&document.visibilityState==='visible')bgmStart();},true);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'){if(BGM.on){bgmStop();BGM.resume=true;}}else if(BGM.resume&&S.bgm!==false){BGM.resume=false;}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'){if(BGM.on){BGM.want=true;bgmStop();}}});
 bgmBtn();
 
 renderMap();
