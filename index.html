@@ -144,6 +144,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .xfer h4{margin:0;font-size:19px}
 .xfer textarea{font:15px/1.4 ui-monospace,Menlo,monospace;width:100%;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;color:var(--ink);word-break:break-all;resize:vertical;-webkit-user-select:text;user-select:text}
 .xfer .xl{font-weight:700;font-size:16px;display:block}
+#vMsg.ok{color:var(--leaf-deep);font-weight:700}#vMsg.bad{color:#c43c52;font-weight:700}
 #xMsg.ok{color:var(--leaf-deep);font-weight:700}#xMsg.bad{color:#c43c52;font-weight:700}
 
 .island.geo{background:#dcefff}
@@ -504,7 +505,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <label for="setVzh">中文語音<select id="setVzh"></select></label>
     <label for="setVen">英文語音<select id="setVen"></select></label>
     <div class="row" style="justify-content:flex-start;margin-top:-4px"><button class="btn" id="vTest">試聽語音</button></div>
-    <p class="note">建議選「跟著 iPad 的設定」，到 iPad 的「設定 → 輔助使用 → 朗讀內容 → 聲音」換語音最穩定。⭐ 是進階語音，<b>要等它下載完成</b>才能使用；選了沒聲音的話，遊戲會自動改回 iPad 預設語音。</p>
+    <p class="note" id="vMsg" role="status"></p>
+    <p class="note">網頁不會照 iPad「朗讀內容」裡選的語音唸，所以請直接在這裡選。選了會立刻試唸給你聽；⭐ 是音質較好的進階語音，要先在「設定 → 輔助使用 → 朗讀內容 → 聲音」<b>下載完成</b>才能用。</p>
     <label for="setGender">注音讀音<select id="setGender"><option value="F">女聲</option><option value="M">男聲</option></select></label>
     <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
     <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
@@ -625,7 +627,7 @@ const BADV=new Set();
 function pickVoice(){const z=voicesFor(true);zhVoice=(S.vzh&&!BADV.has(S.vzh)&&z.find(v=>v.voiceURI===S.vzh))||null;fillVoiceLists();}
 /* 語音救援：指定的語音 2 秒內沒出聲或出錯，就改用 iPad 預設語音重唸 */
 try{const _speak=speechSynthesis.speak.bind(speechSynthesis);
- speechSynthesis.speak=function(u){if(!u||!u.voice)return _speak(u);let started=false,done=false;const vu=u.voice.voiceURI;
+ speechSynthesis.speak=function(u){if(!u||!u.voice||u._probe)return _speak(u);let started=false,done=false;const vu=u.voice.voiceURI;
   const rescue=()=>{if(started||done)return;done=true;BADV.add(vu);if(zhVoice&&zhVoice.voiceURI===vu)zhVoice=null;if(enVoice&&enVoice.voiceURI===vu)enVoice=null;
    const w=new SpeechSynthesisUtterance(u.text);w.lang=u.lang;w.rate=u.rate;w.pitch=u.pitch;w.onstart=u.onstart;w.onend=u.onend;w.onerror=u.onerror;w.onboundary=u.onboundary;
    u.onend=null;u.onerror=null;u.onstart=null;try{speechSynthesis.cancel();}catch(e){}_speak(w);};
@@ -633,7 +635,7 @@ try{const _speak=speechSynthesis.speak.bind(speechSynthesis);
   setTimeout(()=>{if(!started&&!done)rescue();},2000);
   return _speak(u);};}catch(e){}
 function fillVoiceLists(){[['setVzh',true,'vzh'],['setVen',false,'ven']].forEach(([id,zh,key])=>{const el=document.getElementById(id);if(!el)return;const vs=voicesFor(zh);
- el.innerHTML='<option value="">跟著 iPad 的設定（建議）</option>'+vs.map(v=>'<option value="'+String(v.voiceURI).replace(/"/g,'&quot;')+'">'+v.name+(/premium|enhanced|進階|增強|natural/i.test(v.name+v.voiceURI)?' ⭐':'')+'</option>').join('');el.value=S[key]||'';});}
+ const LN={'en-US':'美式','en-GB':'英式','en-AU':'澳洲','en-IN':'印度','en-IE':'愛爾蘭','en-ZA':'南非','zh-TW':'台灣','zh-HK':'香港','zh-CN':'大陸'};el.innerHTML='<option value="">iPad 預設語音</option>'+vs.map(v=>'<option value="'+String(v.voiceURI).replace(/"/g,'&quot;')+'">'+v.name+'（'+(LN[String(v.lang).replace('_','-')]||v.lang)+'）'+(/premium|enhanced|進階|增強|natural/i.test(v.name+v.voiceURI)?' ⭐':'')+(BADV.has(v.voiceURI)?' ✕不能用':'')+'</option>').join('');el.value=S[key]||'';});}
 try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}
 function say(text){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.88;u.pitch=1;speechSynthesis.speak(u);}catch(e){}}
 /* 注音真人讀音：教育部《國字標準字體筆順學習網》，F=女聲、M=男聲，編號 1–37 對應 ㄅ–ㄩ */
@@ -795,8 +797,18 @@ function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('set
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
 $('setTol').onchange=e=>{S.tol=e.target.value;save();};
 $('setVoice').onchange=e=>{S.voice=e.target.checked;save();};
-$('setVzh').onchange=e=>{S.vzh=e.target.value;save();pickVoice();};
-$('setVen').onchange=e=>{S.ven=e.target.value;save();pickEn();};
+/* 選了語音就立刻試唸；2.5 秒沒出聲就判定不能用，改回預設 */
+function probeVoice(key,uri,zh){const msg=$('vMsg');const vs=voicesFor(zh);const v=vs.find(x=>x.voiceURI===uri);
+ const apply=()=>{zh?pickVoice():pickEn();fillVoiceLists();};
+ if(!uri||!v){S[key]='';save();apply();msg.textContent=uri?'找不到這個語音，已改回 iPad 預設語音。':'已改用 iPad 預設語音。';msg.className='note';return;}
+ msg.textContent='試唸中……';msg.className='note';audio();try{speechSynthesis.cancel();}catch(e){}
+ const u=new SpeechSynthesisUtterance(zh?'你好，我是星星老師。':'Hello! Japan. Tokyo.');u._probe=1;u.voice=v;u.lang=v.lang;u.rate=zh?0.9:0.9;let ok=false;
+ u.addEventListener('start',()=>{ok=true;BADV.delete(uri);S[key]=uri;save();apply();msg.textContent='✓ 「'+v.name+'」可以使用，已經換好了。';msg.className='note ok';});
+ u.addEventListener('error',e=>{if(!ok&&e.error!=='interrupted'&&e.error!=='canceled')fail();});
+ const fail=()=>{if(ok)return;ok=true;BADV.add(uri);S[key]='';save();apply();msg.textContent='✕ 「'+v.name+'」現在沒辦法用，可能還在下載。已改回 iPad 預設語音，下載完成後再選一次。';msg.className='note bad';};
+ setTimeout(fail,2500);speechSynthesis.speak(u);}
+$('setVzh').onchange=e=>probeVoice('vzh',e.target.value,true);
+$('setVen').onchange=e=>probeVoice('ven',e.target.value,false);
 $('vTest').onclick=()=>{audio();pickVoice();pickEn();if(typeof sayPair==='function'){const keep=S.voice;S.voice=true;sayPair('你好，我是星星老師！今天也一起加油喔。','Hello! Japan. Tokyo.');S.voice=keep;}};
 $('setGender').onchange=e=>{S.gender=e.target.value;save();if(S.voice)playMoe('ㄅ').catch(()=>{});};
 $('setSolo').onchange=e=>{S.solo=e.target.checked;save();};
