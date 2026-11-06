@@ -504,7 +504,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <label for="setVzh">中文語音<select id="setVzh"></select></label>
     <label for="setVen">英文語音<select id="setVen"></select></label>
     <div class="row" style="justify-content:flex-start;margin-top:-4px"><button class="btn" id="vTest">試聽語音</button></div>
-    <p class="note">名稱後面有 ⭐ 的是音質較好的進階語音。清單裡沒有的話，可以到 iPad 的「設定 → 輔助使用 → 朗讀內容 → 聲音」下載。</p>
+    <p class="note">建議選「跟著 iPad 的設定」，到 iPad 的「設定 → 輔助使用 → 朗讀內容 → 聲音」換語音最穩定。⭐ 是進階語音，<b>要等它下載完成</b>才能使用；選了沒聲音的話，遊戲會自動改回 iPad 預設語音。</p>
     <label for="setGender">注音讀音<select id="setGender"><option value="F">女聲</option><option value="M">男聲</option></select></label>
     <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
     <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
@@ -621,9 +621,19 @@ function vScore(v,zh){const n=(v.name||'')+' '+(v.voiceURI||'');let sc=0;
  if(/samantha|ava|allison|zoe|aria|jenny|google us english/i.test(n))sc+=25;
  return sc;}
 function voicesFor(zh){try{return speechSynthesis.getVoices().map(v=>[vScore(v,zh),v]).filter(x=>x[0]>=0).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);}catch(e){return [];}}
-function pickVoice(){const z=voicesFor(true);zhVoice=(S.vzh&&z.find(v=>v.voiceURI===S.vzh))||z[0]||null;fillVoiceLists();}
+const BADV=new Set();
+function pickVoice(){const z=voicesFor(true);zhVoice=(S.vzh&&!BADV.has(S.vzh)&&z.find(v=>v.voiceURI===S.vzh))||null;fillVoiceLists();}
+/* 語音救援：指定的語音 2 秒內沒出聲或出錯，就改用 iPad 預設語音重唸 */
+try{const _speak=speechSynthesis.speak.bind(speechSynthesis);
+ speechSynthesis.speak=function(u){if(!u||!u.voice)return _speak(u);let started=false,done=false;const vu=u.voice.voiceURI;
+  const rescue=()=>{if(started||done)return;done=true;BADV.add(vu);if(zhVoice&&zhVoice.voiceURI===vu)zhVoice=null;if(enVoice&&enVoice.voiceURI===vu)enVoice=null;
+   const w=new SpeechSynthesisUtterance(u.text);w.lang=u.lang;w.rate=u.rate;w.pitch=u.pitch;w.onstart=u.onstart;w.onend=u.onend;w.onerror=u.onerror;w.onboundary=u.onboundary;
+   u.onend=null;u.onerror=null;u.onstart=null;try{speechSynthesis.cancel();}catch(e){}_speak(w);};
+  u.addEventListener('start',()=>{started=true;});u.addEventListener('error',e=>{if(!started&&e.error!=='interrupted'&&e.error!=='canceled')rescue();});
+  setTimeout(()=>{if(!started&&!done)rescue();},2000);
+  return _speak(u);};}catch(e){}
 function fillVoiceLists(){[['setVzh',true,'vzh'],['setVen',false,'ven']].forEach(([id,zh,key])=>{const el=document.getElementById(id);if(!el)return;const vs=voicesFor(zh);
- el.innerHTML='<option value="">自動（挑最好聽的）</option>'+vs.map(v=>'<option value="'+String(v.voiceURI).replace(/"/g,'&quot;')+'">'+v.name+(/premium|enhanced|進階|增強|natural/i.test(v.name+v.voiceURI)?' ⭐':'')+'</option>').join('');el.value=S[key]||'';});}
+ el.innerHTML='<option value="">跟著 iPad 的設定（建議）</option>'+vs.map(v=>'<option value="'+String(v.voiceURI).replace(/"/g,'&quot;')+'">'+v.name+(/premium|enhanced|進階|增強|natural/i.test(v.name+v.voiceURI)?' ⭐':'')+'</option>').join('');el.value=S[key]||'';});}
 try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}
 function say(text){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.88;u.pitch=1;speechSynthesis.speak(u);}catch(e){}}
 /* 注音真人讀音：教育部《國字標準字體筆順學習網》，F=女聲、M=男聲，編號 1–37 對應 ㄅ–ㄩ */
@@ -822,7 +832,7 @@ const enShow=s=>s.replace(/^the /,'').replace(/^./,c=>c.toUpperCase());
 const REGV={NA:[20,15,345,200],SA:[225,180,190,215],EUA:[450,20,490,255],AS:[575,55,350,220],EA:[755,85,170,150],AF:[425,110,260,250],OC:[785,185,215,205]};
 const REGOF={"USA":"NA","CAN":"NA","MEX":"NA","BRA":"SA","ARG":"SA","PER":"SA","AUS":"OC","NZL":"OC","CHN":"AS","IND":"AS","RUS":"EUA","EGY":"AF","JPN":"EA"};
 REGV.EU=[440,25,195,135];Object.assign(REGOF,{MEX:'NA',ARG:'SA',PER:'SA',ZAF:'AF',NGA:'AF',SAU:'AS',MNG:'AS',KAZ:'AS',IDN:'AS',IRN:'AS',TUR:'EU',FRA:'EU',ESP:'EU',NOR:'EU'});
-let enVoice=null;function pickEn(){const z=voicesFor(false);enVoice=(S.ven&&z.find(v=>v.voiceURI===S.ven))||z[0]||null;}
+let enVoice=null;function pickEn(){const z=voicesFor(false);enVoice=(S.ven&&!BADV.has(S.ven)&&z.find(v=>v.voiceURI===S.ven))||null;}
 try{pickEn();speechSynthesis.addEventListener('voiceschanged',pickEn);}catch(e){}
 /* 唸中文再唸英文；回傳的 Promise 在英文唸完（或逾時）才結束 */
 function sayPair(zh,en){GZ.last=[zh,en];if(!S.voice)return Promise.resolve();return new Promise(done=>{let fin=false;const end=()=>{if(!fin){fin=true;done();}};
