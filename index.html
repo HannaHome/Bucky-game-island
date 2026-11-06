@@ -539,6 +539,16 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 .zzz{font-size:84px;animation:snooze 3s ease-in-out infinite}
 .restidea{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
 .restidea span{background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;box-shadow:0 3px 0 var(--line)}
+
+/* ===== 小角色位置：不要被石頭蓋住 ===== */
+.stones{padding-top:78px}
+.avatar{z-index:6}
+.avatar .kid{top:-56px;font-size:42px;left:-23px;transform:translateZ(0)}
+.avatar .tag{top:-74px}
+@media (max-width:600px){.stones{padding-top:72px}.avatar .kid{top:-50px;font-size:36px;left:-19px}.avatar .tag{top:-66px}}
+@media (max-height:520px){.stones{padding-top:62px}.avatar .kid{top:-44px;font-size:32px;left:-17px}.avatar .tag{top:-58px}}
+#bgmBtn{font-size:22px}
+#bgmBtn.off{opacity:.45;filter:grayscale(1)}
 </style>
 
 <div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
@@ -551,6 +561,7 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
       <span class="pill tpill" id="timePill" hidden aria-live="polite"></span>
       <span class="pill" aria-label="星星總數"><span style="color:var(--sun-deep)">★</span><span class="n" id="starTotal">0</span></span>
       <button class="btn" id="openBook">貼紙簿</button>
+      <button class="btn round" id="bgmBtn" aria-label="背景音樂">🎵</button>
       <button class="btn round" id="openParent" aria-label="家長設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
     </div>
     <div class="isltabs" id="islTabs" role="tablist" aria-label="選擇島嶼"></div>
@@ -804,7 +815,7 @@ function audio(){/* iPad：讓錄音不受靜音開關影響（iOS 17 以上支�
 /* 聲音系統被 iPad 暫停（suspended / interrupted）時先叫醒；叫不醒就改用一般的 <audio> 播放 */
 function audioReady(){const ac=audio();if(!ac)return Promise.resolve(false);if(ac.state==='running')return Promise.resolve(true);
  return Promise.race([ac.resume().then(()=>ac.state==='running',()=>false),new Promise(r=>setTimeout(()=>r(ac.state==='running'),450))]);}
-let curEl=null;
+let curEl=null;const REC={n:0};
 function htmlPlay(f){return new Promise(res=>{let done=false;const fin=()=>{if(!done){done=true;res();}};try{if(curEl){curEl.pause();}const a=new Audio('snd/'+f+'.mp3');curEl=a;a.onended=fin;a.onerror=fin;const p=a.play();if(p&&p.catch)p.catch(fin);setTimeout(fin,4000);}catch(e){fin();}});}
 function tone(freqs,dur,type,vol){const ac=audio();if(!ac)return;const t0=ac.currentTime;freqs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;const st=t0+i*dur*0.9;g.gain.setValueAtTime(0.0001,st);g.gain.exponentialRampToValueAtTime(vol||0.18,st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,st+dur);o.connect(g).connect(ac.destination);o.start(st);o.stop(st+dur+0.05);});}
 const sfx={ok:()=>tone([660,880],0.12,'triangle'),bad:()=>tone([300,240],0.16,'sine',0.12),char:()=>tone([523,659,784,1047],0.13,'triangle'),win:()=>tone([523,659,784,659,784,1047],0.14,'triangle',0.2)};
@@ -841,7 +852,7 @@ function moeBuf(f){if(!BUF[f]){BUF[f]=fetch('snd/'+f+'.mp3').then(r=>{if(!r.ok)t
 function playMoe(ch){return playFile(moeFile(ch));}
 function hzFile(ch){const h=isNum(ch)?NUMINFO[ch][1]:ZYINFO[ch][1];return 'c'+h.codePointAt(0);}
 function playFile(f){return audioReady().then(ok=>ok?webPlay(f).catch(()=>htmlPlay(f)):htmlPlay(f));}
-function webPlay(f){return moeBuf(f).then(buf=>new Promise(res=>{const ac=audio();if(curSrc){try{curSrc.stop();}catch(e){}}const s=ac.createBufferSource();s.buffer=buf;s.connect(ac.destination);let done=false;const fin=()=>{if(!done){done=true;res();}};s.onended=fin;setTimeout(fin,buf.duration*1000+200);s.start();curSrc=s;}));}
+function webPlay(f){return moeBuf(f).then(buf=>new Promise(res=>{const ac=audio();if(curSrc){try{curSrc.stop();}catch(e){}}const s=ac.createBufferSource();s.buffer=buf;s.connect(ac.destination);let done=false;REC.n++;const fin=()=>{if(!done){done=true;REC.n=Math.max(0,REC.n-1);res();}};s.onended=fin;setTimeout(fin,buf.duration*1000+200);s.start();curSrc=s;}));}
 function preload(chars){chars.forEach(c=>{if(!isNum(c))moeBuf(moeFile(c));moeBuf(hzFile(c));});}
 function sayChar(ch){if(!S.voice)return;try{speechSynthesis.cancel();}catch(e){}
  if(isNum(ch)){playFile(hzFile(ch)).then(()=>new Promise(r=>setTimeout(r,300))).then(()=>say(NUMTIP[ch])).catch(()=>say(NUMINFO[ch][1]+'，'+NUMTIP[ch]));return;}
@@ -1389,6 +1400,31 @@ setInterval(()=>{if(document.visibilityState!=='visible'||!S.limit||!$('restOv')
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')save();});
 $('restMore').onclick=()=>{audio();pinOpen(S.pin?'enter':'set1',()=>{S.bonus=(S.bonus||0)+600;save();$('restOv').hidden=true;tickTime(true);});};
 tickTime(true);
+
+/* ---------- 背景音樂：旋轉木馬圓舞曲（即時合成，音樂盒音色） ---------- */
+const BGM={on:false,gain:null,timer:0,next:0,step:0,duck:0};
+const MEL=[ // 16 小節，三拍子；每拍一個音（0＝休止），C 大調
+ [76,0,79],[84,83,79],[81,0,76],[81,79,76],[77,81,84],[81,79,77],[79,83,86],[84,0,0],
+ [79,76,79],[84,0,0],[76,81,84],[83,81,76],[77,0,81],[79,77,74],[74,79,83],[84,0,0]];
+const CH=[[48,64,67],[48,64,67],[45,64,69],[45,64,69],[41,65,69],[41,65,69],[43,62,67],[43,62,67],
+ [48,64,67],[48,64,67],[45,64,69],[45,64,69],[41,65,69],[38,65,69],[43,62,67],[48,64,67]];
+const hz=m=>440*Math.pow(2,(m-69)/12);
+function bnote(t,m,dur,vol,type){const ac=AC;const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=hz(m);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g).connect(BGM.gain);o.start(t);o.stop(t+dur+0.05);}
+function bell(t,m,vol){bnote(t,m,1.1,vol,'sine');bnote(t,m+12,0.45,vol*0.25,'sine');}
+function bgmSchedule(){const ac=AC;if(!ac||!BGM.on)return;const beat=60/138;
+ while(BGM.next<ac.currentTime+0.6){const t=BGM.next,bar=Math.floor(BGM.step/3)%16,b=BGM.step%3,ch=CH[bar];
+  if(b===0)bnote(t,ch[0],0.7,0.5,'triangle');else{bnote(t,ch[1],0.22,0.13,'triangle');bnote(t,ch[2],0.22,0.13,'triangle');}
+  const m=MEL[bar][b];if(m)bell(t,m,0.32);
+  BGM.next+=beat;BGM.step++;}}
+function bgmVol(){if(!BGM.gain||!AC)return;let v=BGM.on?0.09:0;try{if(speechSynthesis.speaking)v*=0.25;}catch(e){}if(REC.n>0)v*=0.25;if(!$('restOv').hidden)v=0;BGM.gain.gain.setTargetAtTime(v,AC.currentTime,0.15);}
+function bgmStart(){const ac=audio();if(!ac)return;if(!BGM.gain){BGM.gain=ac.createGain();BGM.gain.gain.value=0;BGM.gain.connect(ac.destination);}
+ BGM.on=true;BGM.next=Math.max(BGM.next,ac.currentTime+0.1);clearInterval(BGM.timer);BGM.timer=setInterval(()=>{bgmSchedule();bgmVol();},150);bgmVol();}
+function bgmStop(){BGM.on=false;bgmVol();clearInterval(BGM.timer);BGM.timer=setInterval(bgmVol,150);setTimeout(()=>{if(!BGM.on)clearInterval(BGM.timer);},1500);}
+function bgmBtn(){const b=$('bgmBtn');b.classList.toggle('off',S.bgm===false);b.setAttribute('aria-pressed',String(S.bgm!==false));b.title=S.bgm===false?'打開背景音樂':'關掉背景音樂';}
+$('bgmBtn').onclick=e=>{e.stopPropagation();S.bgm=S.bgm===false;save();bgmBtn();if(S.bgm)bgmStart();else bgmStop();};
+document.addEventListener('pointerdown',()=>{if(S.bgm!==false&&!BGM.on&&document.visibilityState==='visible')bgmStart();},true);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'){if(BGM.on){bgmStop();BGM.resume=true;}}else if(BGM.resume&&S.bgm!==false){BGM.resume=false;}});
+bgmBtn();
 
 renderMap();
 })();
