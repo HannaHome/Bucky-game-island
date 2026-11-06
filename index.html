@@ -496,10 +496,9 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 @media (max-height:520px){.mscene .coins .coin{scale:1.15;margin:6px 8px}.mopt.txt{font-size:20px}.mopt.pic .coin{scale:1}}
 .mopts.clockset,.mopts.pay{display:flex;flex-direction:column;gap:10px}
 .mok{min-height:64px;font-size:24px}
-.coin .cv{font:800 50px var(--f-num);fill:#5b4a2a;text-anchor:middle}
-.coin.c5 .cv,.coin.c10 .cv{fill:#4a5562}
-.coin .cy{font:700 22px var(--f-ui);fill:#5b4a2a;text-anchor:middle}
-.coin.c5 .cy,.coin.c10 .cy{fill:#4a5562}
+.coin .cv{font-family:var(--f-num);font-weight:800;text-anchor:middle}
+.coin .cy{font-family:"Noto Serif TC","PingFang TC",serif;font-weight:800;text-anchor:middle;letter-spacing:.06em}
+.coin{filter:drop-shadow(0 3px 0 rgba(37,49,74,.18))}
 .coins{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
 .coins .coin{animation:popin .45s cubic-bezier(.2,1.5,.4,1) backwards}
 .bigq{font:800 110px var(--f-num);color:#ec6aa0;line-height:1}.bigq small{font-size:40px;margin-left:6px}
@@ -509,15 +508,15 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 .wallet{width:min(520px,100%);min-height:110px;border:3px dashed #f3a6c8;border-radius:22px;background:#fff7fb;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;padding:8px}
 .wempty{color:var(--muted);font-weight:700}
 .wcoin{padding:0;border-radius:50%;animation:popin .3s cubic-bezier(.2,1.5,.4,1)}
-.wcoin .coin{width:56px!important;height:56px!important}
+.wcoin .coin{scale:.72;margin:-10px}
 .wsum{font:800 26px var(--f-ui);color:#c43c52}
 .tray{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#fff;border-radius:22px;padding:10px;box-shadow:0 5px 0 var(--line)}
 .tcoin{display:grid;place-items:center;padding:4px;border-radius:16px;min-height:80px}
 .tcoin:active{transform:scale(.9)}
-.tcoin .coin{width:64px!important;height:64px!important}
+.tcoin .coin{scale:.8;margin:-8px}
 .paybtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media (max-width:600px){.digital{font-size:64px;padding:2px 20px}.bigq{font-size:80px}.tag .ti{font-size:50px}.tag .tp{font-size:30px}.mopt.pic{min-height:104px}.clock.big{width:min(260px,100%)}.tcoin .coin{width:52px!important;height:52px!important}}
-@media (max-height:520px){.digital{font-size:56px}.clock.big{width:min(210px,100%)}.mopt.pic{min-height:84px}.clock.small{max-width:80px}.tag .ti{font-size:40px}.tag .tp{font-size:26px}.wallet{min-height:70px}.tcoin{min-height:56px}.tcoin .coin{width:46px!important;height:46px!important}}
+@media (max-width:600px){.digital{font-size:64px;padding:2px 20px}.bigq{font-size:80px}.tag .ti{font-size:50px}.tag .tp{font-size:30px}.mopt.pic{min-height:104px}.clock.big{width:min(260px,100%)}.tcoin .coin{scale:.66;margin:-12px}}
+@media (max-height:520px){.digital{font-size:56px}.clock.big{width:min(210px,100%)}.mopt.pic{min-height:84px}.clock.small{max-width:80px}.tag .ti{font-size:40px}.tag .tp{font-size:26px}.wallet{min-height:70px}.tcoin{min-height:56px}.tcoin .coin{scale:.56;margin:-16px}}
 
 /* ===== 分頁：圖示在上、名字在下 ===== */
 .isltabs .itab{flex:1 0 0;min-width:96px;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 8px;text-align:center}
@@ -1331,9 +1330,16 @@ function clockSVG(h,m,cls){const ha=((h%12)+m/60)*30,ma=m*6;let t='';for(let i=0
  let n='';for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;n+='<text x="'+(100+66*Math.sin(a)).toFixed(1)+'" y="'+(100-66*Math.cos(a)+8).toFixed(1)+'">'+i+'</text>';}
  return '<svg class="clock '+(cls||'')+'" viewBox="0 0 200 200" aria-label="時鐘 '+tText(h,m)+'"><circle cx="100" cy="100" r="95" class="cf"/>'+t+n+
   '<line class="hh" x1="100" y1="100" x2="100" y2="52" transform="rotate('+ha+' 100 100)"/><line class="mh" x1="100" y1="100" x2="100" y2="24" transform="rotate('+ma+' 100 100)"/><circle cx="100" cy="100" r="7" class="cc"/></svg>';}
-function coinSVG(v){const S2={1:[40,'#e2b35a','#b07f2a'],5:[48,'#d3dae1','#97a3af'],10:[54,'#dde3e8','#8f9aa6'],50:[62,'#f3cf55','#c79b1c']}[v];const r=S2[0];
- return '<svg class="coin c'+v+'" viewBox="0 0 140 140" style="width:'+(r*1.55)+'px;height:'+(r*1.55)+'px" aria-label="'+v+' 元"><circle cx="70" cy="70" r="64" fill="'+S2[1]+'" stroke="'+S2[2]+'" stroke-width="6"/><circle cx="70" cy="70" r="50" fill="none" stroke="'+S2[2]+'" stroke-width="2.5" stroke-dasharray="'+(v===10?'4 4':'0')+'"/>'+
-  '<text x="70" y="'+(v>9?80:84)+'" class="cv">'+v+'</text><text x="70" y="110" class="cy">元</text></svg>';}
+/* 台幣硬幣（數字面）：顏色、大小比例照真實硬幣（直徑 1 元 20mm、5 元 22mm、10 元 26mm、50 元 28mm） */
+function coinSVG(v){const C={1:{d:20,f:'#d9a35a',f2:'#efc78a',s:'#a8722d',t:'#6b4416',zh:'壹圓',reed:false},5:{d:22,f:'#d6dce2',f2:'#f4f6f8',s:'#8f9aa6',t:'#47515c',zh:'伍圓',reed:true},
+  10:{d:26,f:'#d3d9df',f2:'#f2f4f6',s:'#8a95a1',t:'#434d58',zh:'拾圓',reed:true},50:{d:28,f:'#e9c24a',f2:'#fbe49a',s:'#b48a17',t:'#6a4f05',zh:'伍拾圓',reed:true}}[v];
+ const px=C.d*3.1,id='g'+v;let reed='';if(C.reed){for(let i=0;i<72;i++){const a=i*5*Math.PI/180;reed+='<line x1="'+(70+66*Math.sin(a)).toFixed(1)+'" y1="'+(70-66*Math.cos(a)).toFixed(1)+'" x2="'+(70+62.5*Math.sin(a)).toFixed(1)+'" y2="'+(70-62.5*Math.cos(a)).toFixed(1)+'"/>';}}
+ return '<svg class="coin c'+v+'" viewBox="0 0 140 140" style="width:'+px+'px;height:'+px+'px" aria-label="'+v+' 元硬幣">'+
+  '<defs><radialGradient id="'+id+'" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="'+C.f2+'"/><stop offset="1" stop-color="'+C.f+'"/></radialGradient></defs>'+
+  '<circle cx="70" cy="70" r="67" fill="url(#'+id+')" stroke="'+C.s+'" stroke-width="3"/>'+(reed?'<g stroke="'+C.s+'" stroke-width="1.6" opacity=".7">'+reed+'</g>':'')+
+  '<circle cx="70" cy="70" r="57" fill="none" stroke="'+C.s+'" stroke-width="2.5"/>'+
+  '<text x="70" y="'+(v>9?78:80)+'" class="cv" fill="'+C.t+'" style="font-size:'+(v>9?50:58)+'px">'+v+'</text>'+
+  '<text x="70" y="108" class="cy" fill="'+C.t+'" style="font-size:'+(C.zh.length>2?17:20)+'px">'+C.zh+'</text></svg>';}
 function coinsTotal(a){return a.reduce((x,y)=>x+y,0);}
 function randCoins(maxT){let a;do{a=[];const n=ri(2,5);for(let i=0;i<n;i++)a.push(COINS[ri(0,maxT>=50?3:2)]);}while(coinsTotal(a)>maxT||coinsTotal(a)<3);return a.sort((x,y)=>y-x);}
 function hhmm(h,m){return h+':'+(m?'30':'00');}
