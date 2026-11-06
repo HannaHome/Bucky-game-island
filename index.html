@@ -678,7 +678,7 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
     <label for="setVen">英文語音<select id="setVen"></select></label>
     <div class="row" style="justify-content:flex-start;margin-top:-4px"><button class="btn" id="vTest">試聽語音</button></div>
     <p class="note" id="vMsg" role="status"></p>
-    <p class="note">網頁不會照 iPad「朗讀內容」裡選的語音唸，所以請直接在這裡選。選了會立刻試唸給你聽；⭐ 是音質較好的進階語音，要先在「設定 → 輔助使用 → 朗讀內容 → 聲音」<b>下載完成</b>才能用。</p>
+    <p class="note">網頁<b>不會</b>跟著 iPad／iPhone「朗讀內容」的設定改變，Apple 也只開放部分語音給網頁使用，所以請直接在這裡選。選了會立刻試唸給你聽。建議中文選「<b>美佳（台灣）</b>」，臺灣口音最標準；有「增強音質 ⭐」的聲音比較自然，要先在「設定 → 輔助使用 → 朗讀內容 → 聲音 → 中文 → 國語」把美佳的增強音質<b>下載完成</b>。</p>
     <label for="setGender">注音讀音<select id="setGender"><option value="F">女聲</option><option value="M">男聲</option></select></label>
     <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
     <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
@@ -860,7 +860,12 @@ try{const _speak=speechSynthesis.speak.bind(speechSynthesis);
   setTimeout(()=>{if(!started&&!done)rescue();},2000);
   return _speak(u);};}catch(e){}
 function fillVoiceLists(){[['setVzh',true,'vzh'],['setVen',false,'ven']].forEach(([id,zh,key])=>{const el=document.getElementById(id);if(!el)return;const vs=voicesFor(zh);
- const LN={'en-US':'美式','en-GB':'英式','en-AU':'澳洲','en-IN':'印度','en-IE':'愛爾蘭','en-ZA':'南非','zh-TW':'台灣','zh-HK':'香港','zh-CN':'大陸'};el.innerHTML='<option value="">iPad 預設語音</option>'+vs.map(v=>'<option value="'+String(v.voiceURI).replace(/"/g,'&quot;')+'">'+v.name+'（'+(LN[String(v.lang).replace('_','-')]||v.lang)+'）'+(/premium|enhanced|進階|增強|natural/i.test(v.name+v.voiceURI)?' ⭐':'')+(BADV.has(v.voiceURI)?' ✕不能用':'')+'</option>').join('');el.value=S[key]||'';});}
+ const LN={'en-US':'美式','en-GB':'英式','en-AU':'澳洲','en-IN':'印度','en-IE':'愛爾蘭','en-ZA':'南非','zh-TW':'台灣','zh-HK':'香港','zh-CN':'大陸'};
+ const q=v=>{const u=(v.voiceURI||'')+' '+(v.name||'');return /premium|enhanced|進階|增強|高品質|natural|neural/i.test(u)?'增強音質 ⭐':/compact|精簡/i.test(u)?'標準':'';};
+ const seen={},uniq=vs.filter(v=>{const k=v.voiceURI;if(seen[k])return false;seen[k]=1;return true;});
+ const base=v=>v.name.replace(/[（(].*[)）]/,'').trim()+'（'+(LN[String(v.lang).replace('_','-')]||v.lang)+(q(v)?'・'+q(v):'')+'）';
+ const cnt={};uniq.forEach(v=>{const k=base(v);cnt[k]=(cnt[k]||0)+1;});const idx={};
+ el.innerHTML='<option value="">系統預設語音</option>'+uniq.map(v=>{const k=base(v);idx[k]=(idx[k]||0)+1;const lbl=k+(cnt[k]>1?' 第 '+idx[k]+' 種':'')+(BADV.has(v.voiceURI)?' ✕不能用':'');return '<option value="'+String(v.voiceURI).replace(/"/g,'&quot;')+'">'+lbl+'</option>';}).join('');el.value=S[key]||'';});}
 try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}
 function say(text){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.88;u.pitch=1;speechSynthesis.speak(u);}catch(e){}}
 /* 注音真人讀音：教育部《國字標準字體筆順學習網》，F=女聲、M=男聲，編號 1–37 對應 ㄅ–ㄩ */
