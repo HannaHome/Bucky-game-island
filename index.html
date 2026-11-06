@@ -956,19 +956,20 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 /* ---------- coach text ---------- */
 const bubble=document.getElementById('bubble');
 function coach(msg,kind){bubble.textContent=msg;bubble.className='bubble'+(kind?' '+kind:'');}
-const praise=()=>{const n=S.name||'你';const a=['好棒！','漂亮！','對了！','太厲害了！','寫得好整齊！',n+'好棒！','完全正確！'];return a[Math.floor(Math.random()*a.length)];};
+/* 稱讚：寫字用一組，其他地方用另一組 */
+const praise=kind=>{const n=S.name||'你';const a=kind==='write'?['寫得好整齊！','寫得真漂亮！','筆順都對了！','好棒！','對了！',n+'寫得好棒！']:['答對了！','好棒！','你好聰明！','太厲害了！','完全正確！',n+'好棒！'];return a[Math.floor(Math.random()*a.length)];};
 
 /* ---------- game flow ---------- */
 function finishStroke(ink){const ch=G.lvl.c[G.ci],ss=strokesOf(ch);const r=judge(ink,ss[G.si],G.round===1?3:0);{const nc=curCps().length;if(r.ok&&G.cpi<nc-(nc>2?1:0)){r.ok=false;r.why='stars';}}
  if(r.ok){sfx.ok();G.si++;G.fail=0;startBoing(G.si-1);G.showHint=G.round===0;sparkle(ss[G.si-1]);
-  if(G.si>=ss.length){draw();charDone();return;}coach(praise()+' 第 '+(G.si+1)+' 筆'+(G.round===0?'從綠色圓點開始。':'在哪裡呢？'),'good');draw();return;}
+  if(G.si>=ss.length){draw();charDone();return;}coach(praise('write')+' 第 '+(G.si+1)+' 筆'+(G.round===0?'從綠色圓點開始。':'在哪裡呢？'),'good');draw();return;}
  sfx.bad();G.mist++;G.fail++;G.showHint=true;const b=document.getElementById('boardwrap');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
  const m={reverse:'方向反了喔，跟著紅色箭頭走。',start:'從綠色圓點開始寫喔。',short:'再寫長一點點，寫到箭頭那裡。',stars:'要經過路上每一顆星星喔！',shape:'差一點點！沿著灰色的路再寫一次。'}[r.why];
  let m2=m;if(ch==='8'&&(r.why==='short'||r.why==='stars'))m2='8 不是兩個圈圈喔！寫到中間不要停，繼續滑下去再繞回來。';if(ch==='6'&&r.why!=='short')m2='6 不是蘋果喔！從最上面的綠色圓點開始，溜滑梯滑下來，再轉一個小圈圈。';if(m2!==m)say(m2);coach(m2,'bad');draw();if(G.fail>=2){G.fail=0;setTimeout(()=>{coach('星星老師再寫一次給你看。');playDemo(G.si,true).then(()=>{coach('換你囉！從綠色圓點開始。');});},500);}
 }
 function charDone(){sfx.char();const ch=G.lvl.c[G.ci];
- if(G.round===0&&S.solo){coach(praise()+' 現在不看底稿，自己寫一次！','good');G.busy=true;setTimeout(()=>{G.round=1;G.si=0;G.showHint=false;G.busy=false;renderTop();draw();coach('自己寫寫看！忘記了就按「看示範」。');},1300);return;}
- coach(praise()+' 「'+ch+'」完成了！','good');burst(40);G.busy=true;setTimeout(()=>{G.busy=false;nextChar();},1400);}
+ if(G.round===0&&S.solo){coach(praise('write')+' 現在不看底稿，自己寫一次！','good');G.busy=true;setTimeout(()=>{G.round=1;G.si=0;G.showHint=false;G.busy=false;renderTop();draw();coach('自己寫寫看！忘記了就按「看示範」。');},1300);return;}
+ coach(praise('write')+' 「'+ch+'」完成了！','good');burst(40);G.busy=true;setTimeout(()=>{G.busy=false;nextChar();},1400);}
 function nextChar(){if(G.ci<G.lvl.c.length-1){G.ci++;startChar();}else levelDone();}
 function startChar(){G.round=0;G.si=0;G.fail=0;G.showHint=true;G.demo=null;G.ink=null;const ch=G.lvl.c[G.ci];
  if(isNum(ch)){picBig.textContent=NUMINFO[ch][0];picWord.innerHTML=NUMINFO[ch][2];}else{const z=ZYINFO[ch];picBig.textContent=z[0];picWord.innerHTML='<span class="hz">'+z[1]+'</span><span class="bp">'+[...z[2]].map(c=>c===ch?'<em>'+c+'</em>':c).join('')+'</span>';}
