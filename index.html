@@ -144,6 +144,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .xfer h4{margin:0;font-size:19px}
 .xfer textarea{font:15px/1.4 ui-monospace,Menlo,monospace;width:100%;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;color:var(--ink);word-break:break-all;resize:vertical;-webkit-user-select:text;user-select:text}
 .xfer .xl{font-weight:700;font-size:16px;display:block}
+label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 #vMsg.ok{color:var(--leaf-deep);font-weight:700}#vMsg.bad{color:#c43c52;font-weight:700}
 #xMsg.ok{color:var(--leaf-deep);font-weight:700}#xMsg.bad{color:#c43c52;font-weight:700}
 
@@ -659,6 +660,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <h3>家長設定</h3>
   <div class="form">
     <label for="setName">小朋友的名字<input type="text" id="setName" maxlength="8"></label>
+    <label for="setLimit" class="hot">⏳ 每天可以玩<select id="setLimit"><option value="0">不限制</option><option value="10">10 分鐘</option><option value="20">20 分鐘</option><option value="30">30 分鐘</option></select></label>
+    <p class="note" id="limitNote"></p>
     <label for="setTol">判定寬鬆度<select id="setTol"><option value="easy">寬鬆（剛開始）</option><option value="normal">一般</option><option value="hard">嚴格</option></select></label>
     <label for="setVoice">唸出注音和字<input type="checkbox" id="setVoice"></label>
     <label for="setVzh">中文語音<select id="setVzh"></select></label>
@@ -667,8 +670,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <p class="note" id="vMsg" role="status"></p>
     <p class="note">網頁不會照 iPad「朗讀內容」裡選的語音唸，所以請直接在這裡選。選了會立刻試唸給你聽；⭐ 是音質較好的進階語音，要先在「設定 → 輔助使用 → 朗讀內容 → 聲音」<b>下載完成</b>才能用。</p>
     <label for="setGender">注音讀音<select id="setGender"><option value="F">女聲</option><option value="M">男聲</option></select></label>
-    <label for="setLimit">每天可以玩<select id="setLimit"><option value="0">不限制</option><option value="10">10 分鐘</option><option value="20">20 分鐘</option><option value="30">30 分鐘</option></select></label>
-    <p class="note" id="limitNote"></p>
     <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
     <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
     <p class="note">「自己寫」會在描完之後，把字的灰色底稿變很淡，讓孩子憑記憶寫一次。錯兩次會自動再示範。<br>進度存在這台 iPad 的瀏覽器裡，清除 Safari 資料就會不見。<br>注音的筆順和真人讀音來自教育部《國字標準字體筆順學習網》；例字和數字的國字讀音也來自同一網站；只有載入失敗時才改用 iPad 內建語音。</p>
