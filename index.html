@@ -541,12 +541,12 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 .restidea span{background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;box-shadow:0 3px 0 var(--line)}
 
 /* ===== 小角色位置：不要被石頭蓋住 ===== */
-.stones{padding-top:78px}
+.stones{padding-top:64px}
 .avatar{z-index:6}
 .avatar .kid{top:-56px;font-size:42px;left:-23px;transform:translateZ(0)}
 .avatar .tag{top:-74px}
-@media (max-width:600px){.stones{padding-top:72px}.avatar .kid{top:-50px;font-size:36px;left:-19px}.avatar .tag{top:-66px}}
-@media (max-height:520px){.stones{padding-top:62px}.avatar .kid{top:-44px;font-size:32px;left:-17px}.avatar .tag{top:-58px}}
+@media (max-width:600px){.stones{padding-top:58px}.avatar .kid{top:-50px;font-size:36px;left:-19px}.avatar .tag{top:-66px}}
+@media (max-height:520px){.stones{padding-top:52px}.avatar .kid{top:-44px;font-size:32px;left:-17px}.avatar .tag{top:-58px}}
 #bgmBtn{font-size:22px}
 #bgmBtn.off{opacity:.45;filter:grayscale(1)}
 </style>
@@ -1217,7 +1217,7 @@ function layoutRoad(row,t){const stones=[...row.querySelectorAll('.stone')];if(!
  const d=(a,z)=>pts.slice(a,z+1).map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('');
  const W=row.scrollWidth,H=row.scrollHeight;let svg='<svg class="road" width="'+W+'" height="'+H+'" aria-hidden="true"><path class="r-bg" d="'+d(0,pts.length-1)+'"/><path class="r-dot" d="'+d(0,pts.length-1)+'"/>';
  if(tgt>0)svg+='<path class="r-done" d="'+d(0,tgt)+'"/>';svg+='</svg>';row.insertAdjacentHTML('afterbegin',svg);
- const av=document.createElement('div');av.className='avatar';av.setAttribute('aria-hidden','true');av.innerHTML='<span class="kid">🧒</span><span class="tag">'+((S.name||'我').slice(0,4))+'</span>';row.appendChild(av);
+ const av=document.createElement('div');av.className='avatar';av.setAttribute('aria-hidden','true');av.innerHTML='<span class="kid">🧒</span>';row.appendChild(av);
  const place=k=>{const b=stones[k];av.style.left=(b.offsetLeft+b.offsetWidth/2)+'px';av.style.top=(b.offsetTop)+'px';};
  const prev=AV[t];AV[t]=tgt;if(prev!==undefined&&prev!==tgt&&stones[prev]){av.style.transition='none';place(prev);void av.offsetWidth;requestAnimationFrame(()=>{av.style.transition='';av.classList.add('hop');place(tgt);tone([523,784],0.09,'triangle',0.1);setTimeout(()=>av.classList.remove('hop'),800);});}else place(tgt);}
 let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(!$('mapScreen').hidden)renderMap();},150);});
