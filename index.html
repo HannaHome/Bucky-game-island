@@ -112,7 +112,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .panel{position:relative}
 .xclose{position:sticky;top:0;float:right;margin:-12px -12px 0 8px;width:48px;height:48px;border-radius:50%;background:#f2f5fa;font-size:22px;font-weight:800;color:var(--ink);box-shadow:0 3px 0 var(--line);z-index:3;display:grid;place-items:center}
 .xclose:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
-.isltabs{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.isltabs{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.isltabs::-webkit-scrollbar{display:none}.isltabs .itab{flex:0 0 auto;min-width:156px;scroll-snap-align:start}
 .itab{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:20px;background:rgba(255,255,255,.55);box-shadow:0 4px 0 var(--line);text-align:left;min-width:0;border:3px solid transparent}
 .itab .badge{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;font-size:22px;font-weight:800}
 .itab.num .badge{background:var(--sun-deep);font-family:var(--f-num);font-size:26px}
@@ -462,12 +462,61 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .it{font-size:34px}.tf{grid-template-columns:repeat(5,44px);grid-auto-rows:44px}.tf .it{font-size:28px}
   .plate{width:118px;min-height:90px;padding:10px}.plate .it{font-size:26px}.crow .it{width:34px}
   .meq{font-size:32px}.op{font-size:38px}.mq{font-size:19px}.mopt{min-height:66px;font-size:36px}
-  .isltabs{grid-template-columns:repeat(5,1fr);gap:4px}.itab b{font-size:12px}.itab .badge{width:30px;height:30px;font-size:16px}
+  .isltabs{gap:6px}.isltabs .itab{min-width:76px}.itab b{font-size:12px}.itab .badge{width:30px;height:30px;font-size:16px}
 }
 @media (max-height:520px){
   .mside{width:290px;gap:6px}.mboard{padding:8px}.mscene{min-height:0}.it{font-size:30px}.tf{grid-template-columns:repeat(5,38px);grid-auto-rows:38px}.tf .it{font-size:24px}
   .meq{font-size:28px}.mq{font-size:16px}.mopt{min-height:52px;font-size:30px}.plate{width:100px;min-height:76px;padding:8px}.plate .it{font-size:22px}
 }
+
+/* ===== 滴答鐘樓 & 叮噹小商店 ===== */
+.island.clock{background-color:#dff6f3}.island.money{background-color:#ffe6f1}
+.island.clock .badge,.itab.clock .badge{background:#1aa39a}.island.money .badge,.itab.money .badge{background:#ec6aa0}
+.itab.clock.on{border-color:#1aa39a;background:#dff6f3}.itab.money.on{border-color:#ec6aa0;background:#ffe6f1}
+.island.clock .stone .chars,.island.money .stone .chars{font-size:34px}
+.clock .cf{fill:#fff;stroke:#1aa39a;stroke-width:8}
+.clock .mt{stroke:#b9c6d3;stroke-width:1.5}.clock .ht{stroke:#25314a;stroke-width:3.5}
+.clock text{font:800 22px var(--f-num);fill:var(--ink);text-anchor:middle}
+.clock .hh{stroke:#25314a;stroke-width:10;stroke-linecap:round}
+.clock .mh{stroke:#ff6b81;stroke-width:6;stroke-linecap:round}
+.clock .cc{fill:#25314a}
+.clock.big{width:min(340px,100%);height:auto}
+.clock.small{width:100%;max-width:120px;height:auto}
+.clock.setter{touch-action:none;cursor:grab}
+.clock.setter.gh .hh{stroke:#1aa39a}.clock.setter.gm .mh{stroke:#e2457a}
+.digital{font:800 96px var(--f-num);color:#7fffd4;background:#25314a;border-radius:24px;padding:4px 34px;letter-spacing:.06em;text-shadow:0 0 18px rgba(127,255,212,.5)}
+.mopt.pic{min-height:132px;padding:8px;display:grid;place-items:center}
+.mopt.pic svg{display:block;margin:auto}
+.mopts.two{grid-template-columns:1fr 1fr}.mopt.wide{font-size:30px}
+.mopt.txt{font-size:28px;white-space:nowrap;padding:0 4px}
+.mscene .coins .coin{scale:1.6;margin:22px 26px}
+.mopt.pic .coin{scale:1.35}
+@media (max-width:600px){.mscene .coins .coin{scale:1.25;margin:10px 12px}.mopt.txt{font-size:22px}.mopt.pic .coin{scale:1.1}}
+@media (max-height:520px){.mscene .coins .coin{scale:1.15;margin:6px 8px}.mopt.txt{font-size:20px}.mopt.pic .coin{scale:1}}
+.mopts.clockset,.mopts.pay{display:flex;flex-direction:column;gap:10px}
+.mok{min-height:64px;font-size:24px}
+.coin .cv{font:800 50px var(--f-num);fill:#5b4a2a;text-anchor:middle}
+.coin.c5 .cv,.coin.c10 .cv{fill:#4a5562}
+.coin .cy{font:700 22px var(--f-ui);fill:#5b4a2a;text-anchor:middle}
+.coin.c5 .cy,.coin.c10 .cy{fill:#4a5562}
+.coins{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+.coins .coin{animation:popin .45s cubic-bezier(.2,1.5,.4,1) backwards}
+.bigq{font:800 110px var(--f-num);color:#ec6aa0;line-height:1}.bigq small{font-size:40px;margin-left:6px}
+.tag{display:flex;align-items:center;gap:14px;background:#fff;border-radius:22px;padding:10px 20px;box-shadow:0 5px 0 var(--line)}
+.tag .ti{font-size:70px;line-height:1}.tag .tp{font:800 40px var(--f-num);color:#c43c52;background:#ffe6f1;border-radius:14px;padding:2px 14px;rotate:-4deg}
+.counter{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}
+.wallet{width:min(520px,100%);min-height:110px;border:3px dashed #f3a6c8;border-radius:22px;background:#fff7fb;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;padding:8px}
+.wempty{color:var(--muted);font-weight:700}
+.wcoin{padding:0;border-radius:50%;animation:popin .3s cubic-bezier(.2,1.5,.4,1)}
+.wcoin .coin{width:56px!important;height:56px!important}
+.wsum{font:800 26px var(--f-ui);color:#c43c52}
+.tray{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#fff;border-radius:22px;padding:10px;box-shadow:0 5px 0 var(--line)}
+.tcoin{display:grid;place-items:center;padding:4px;border-radius:16px;min-height:80px}
+.tcoin:active{transform:scale(.9)}
+.tcoin .coin{width:64px!important;height:64px!important}
+.paybtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:600px){.digital{font-size:64px;padding:2px 20px}.bigq{font-size:80px}.tag .ti{font-size:50px}.tag .tp{font-size:30px}.mopt.pic{min-height:104px}.clock.big{width:min(260px,100%)}.tcoin .coin{width:52px!important;height:52px!important}}
+@media (max-height:520px){.digital{font-size:56px}.clock.big{width:min(210px,100%)}.mopt.pic{min-height:84px}.clock.small{max-width:80px}.tag .ti{font-size:40px}.tag .tp{font-size:26px}.wallet{min-height:70px}.tcoin{min-height:56px}.tcoin .coin{width:46px!important;height:46px!important}}
 </style>
 
 <div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
@@ -688,9 +737,17 @@ const LEVELS=[
  {id:'m7',t:'math',c:[],icon:'⚖️',label:'比一比',q:'compare'},
  {id:'m8',t:'math',c:[],icon:'🧮',label:'20 以內加減',q:'mix20'},
  {id:'m9',t:'math',c:[],icon:'🍱',label:'一組一組數',q:'groups'},
- {id:'m10',t:'math',c:[],icon:'🐸',label:'跳著數',q:'skip'}
+ {id:'m10',t:'math',c:[],icon:'🐸',label:'跳著數',q:'skip'},
+ {id:'k1',t:'clock',c:[],icon:'🕒',label:'整點',q:'clockH'},
+ {id:'k2',t:'clock',c:[],icon:'🕞',label:'半點',q:'clockHalf'},
+ {id:'k3',t:'clock',c:[],icon:'👆',label:'撥撥看',q:'clockSet'},
+ {id:'k4',t:'clock',c:[],icon:'⌚',label:'對對看',q:'clockMatch'},
+ {id:'s1',t:'money',c:[],icon:'🪙',label:'認識錢幣',q:'coinWhich'},
+ {id:'s2',t:'money',c:[],icon:'💰',label:'數數看有多少錢',q:'coinSum'},
+ {id:'s3',t:'money',c:[],icon:'🍭',label:'買東西',q:'coinPay'},
+ {id:'s4',t:'money',c:[],icon:'🤔',label:'夠不夠',q:'coinEnough'}
 ];
-const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆','🎡','🚁','🗽','🏰','🐧','🦜','🚢','📚','🖍️','🦉','🐞','🍀','🎨','🧸','🌟','🧮','🎲','🦒','🐬','🍩','🪁','🦕','🚲','🎵','🏅'];
+const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆','🎡','🚁','🗽','🏰','🐧','🦜','🚢','📚','🖍️','🦉','🐞','🍀','🎨','🧸','🌟','🧮','🎲','🦒','🐬','🍩','🪁','🦕','🚲','🎵','🏅','⏰','🐭','🕰️','🌙','🐷','🛒','🎁','🪙'];
 const COLORS=['#ff6b81','#3fa2f7','#4fb865','#f29e00','#7a6cf0','#ff8c42'];
 const strokesOf=ch=>NUM[ch]?NUM[ch].s:ZY[ch];
 const isNum=ch=>!!NUM[ch];
@@ -857,7 +914,7 @@ function startChar(){G.round=0;G.si=0;G.fail=0;G.showHint=true;G.demo=null;G.ink
 const picBig=document.getElementById('picBig'),picWord=document.getElementById('picWord');
 function renderTop(){const pr=document.getElementById('progress');pr.innerHTML='';G.lvl.c.forEach((c,i)=>{const s=document.createElement('span');s.className='chip'+(isNum(c)?' num':'')+(i<G.ci?' ok':i===G.ci?' now':'');s.textContent=c;pr.appendChild(s);});
  const mt=document.getElementById('modeTag');mt.textContent=G.round===0?'描描看':'自己寫';mt.className='mode'+(G.round===1?' solo':'');}
-function startLevel(i){if(LEVELS[i].t==='math'){S.tab='math';save();startMath(i);return;}S.tab=LEVELS[i].t;save();if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
+function startLevel(i){if(['math','clock','money'].includes(LEVELS[i].t)){S.tab=LEVELS[i].t;save();startMath(i);return;}S.tab=LEVELS[i].t;save();if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
 function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/2)?3:G.mist<=per*2?2:1;const id=G.lvl.id;const first=!S.stars[id];
  S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(LEVELS[G.li].id)){S.stickers.push(LEVELS[G.li].id);}stk=STICKERS[G.li%STICKERS.length];save();
  sfx.win();burst(160);document.getElementById('winTitle').textContent=(S.name||'')+'過關了！';
@@ -872,13 +929,13 @@ function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open)return 
 function renderMap(){{const T=[...((S.name||'我')+'的冒險島')],C=['#ff6b81','#f29e00','#4fb865','#3fa2f7','#7a6cf0','#ff8c42','#e2694e','#2f8f47'];const tn=document.getElementById('titleName');tn.setAttribute('aria-label',T.join(''));tn.innerHTML=T.map((c,i)=>'<span class="tl" style="--i:'+i+';color:'+C[i%C.length]+'">'+c+'</span>').join('');}
  let total=0;Object.values(S.stars).forEach(v=>total+=v);document.getElementById('starTotal').textContent=total;
  const map=document.getElementById('map');map.innerHTML='';
- const ISL=[['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地'],['read','故事島','讀'],['math','數學島','＋']];
+ const ISL=[['num','數字島','1'],['zy','注音森林','ㄅ'],['geo','地球島','地'],['read','故事島','讀'],['math','數學島','＋'],['clock','滴答鐘樓','🕐'],['money','叮噹小商店','🪙']];
  if(!ISL.some(x=>x[0]===S.tab))S.tab='num';
  const tabs=$('islTabs');tabs.innerHTML='';ISL.forEach(([t,name,b])=>{const ls=LEVELS.filter(L=>L.t===t);let got=0;ls.forEach(L=>got+=S.stars[L.id]||0);
   const bt=document.createElement('button');bt.className='itab '+t+(t===S.tab?' on':'');bt.setAttribute('role','tab');bt.setAttribute('aria-selected',t===S.tab);
   bt.innerHTML='<span class="badge">'+b+'</span><span class="itx"><b>'+name+'</b><small>★ '+got+' / '+ls.length*3+'</small></span>';
-  bt.onclick=()=>{audio();S.tab=t;save();renderMap();$('map').scrollTop=0;};tabs.appendChild(bt);});
- ISL.forEach(([t,name,b])=>{if(t!==S.tab)return;const isl=document.createElement('div');isl.className='island '+t;isl.dataset.deco={num:'🐥',zy:'🍄',geo:'🐳',read:'🦉',math:'🐸'}[t]||'';isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
+  bt.onclick=()=>{audio();S.tab=t;save();renderMap();$('map').scrollTop=0;};tabs.appendChild(bt);if(t===S.tab)requestAnimationFrame(()=>{try{bt.scrollIntoView({inline:'nearest',block:'nearest'});}catch(e){}});});
+ ISL.forEach(([t,name,b])=>{if(t!==S.tab)return;const isl=document.createElement('div');isl.className='island '+t;isl.dataset.deco={num:'🐥',zy:'🍄',geo:'🐳',read:'🦉',math:'🐸',clock:'🐭',money:'🐷'}[t]||'';isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+'</h2>';const row=document.createElement('div');row.className='stones';
   let nextMarked=false;LEVELS.forEach((L,i)=>{if(L.t!==t)return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
    let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}if(st)cls+=' done';btn.className=cls;btn.style.setProperty('--i',String(LEVELS.filter(x=>x.t===t).indexOf(L)));
    const no=LEVELS.filter(x=>x.t===t).indexOf(L)+1;
@@ -1137,12 +1194,13 @@ function mkQ(type){const it=ITEMS[ri(0,ITEMS.length-1)];let q={type,it};
  else if(type==='mix20'){if(Math.random()<.5){q.a=ri(6,9);q.b=ri(11-q.a,9);q.ans=q.a+q.b;q.type='add';q.tf=true;}else{q.a=ri(11,18);q.b=ri(q.a-9,9);q.ans=q.a-q.b;q.type='sub';q.tf=true;}}
  else if(type==='groups'){q.g=ri(2,4);q.k=ri(2,5);q.ans=q.g*q.k;}
  else if(type==='skip'){q.s=[2,2,5,10][ri(0,3)];q.n=q.s===10?ri(2,5):q.s===5?ri(2,4):ri(2,8);q.ans=q.s*q.n;}
+ else extMk(type,q);
  return q;}
 function mOpts(ans){const set=new Set([ans]);const cand=[ans+1,ans-1,ans+2,ans-2,ans+3,ans+10,ans-10].filter(x=>x>=0);while(set.size<3&&cand.length){set.add(cand.splice(ri(0,Math.min(3,cand.length-1)),1)[0]);}let x=ans+4;while(set.size<3)set.add(x++);return shuffle([...set]);}
 function its(n,e,cls){let h='';for(let i=0;i<n;i++)h+='<span class="it'+(cls?' '+cls:'')+'">'+e+'</span>';return h;}
 function tenFrame(n,e,empty){let h='<div class="tf">';for(let i=0;i<10;i++)h+=i<n?'<span class="cell"><span class="it">'+e+'</span></span>':'<span class="cell'+(empty?' emp':'')+'"></span>';return h+'</div>';}
 function grp(n,e,useTf){if(useTf&&n>5){let h='';let left=n;while(left>0){h+=tenFrame(Math.min(10,left),e,false);left-=10;}return '<div class="grp">'+h+'</div>';}return '<div class="grp">'+its(n,e)+'</div>';}
-function sceneHTML(q){const e=q.it[0];
+function sceneHTML(q){const e=q.it[0];{const x=extScene(q);if(x!==null)return x;}
  if(q.type==='count')return '<div class="grp big">'+its(q.n,e)+'</div>';
  if(q.type==='add')return grp(q.a,e,q.tf)+'<span class="op">＋</span>'+grp(q.b,e,q.tf);
  if(q.type==='sub'){if(q.tf){let h='';const keep=q.a-q.b;let k=0;const cells=[];for(let i=0;i<q.a;i++)cells.push(i>=keep?'out':'');for(let f=0;f<Math.ceil(q.a/10);f++){h+='<div class="tf">';for(let i=0;i<10;i++){const idx=f*10+i;h+=idx<q.a?'<span class="cell"><span class="it '+cells[idx]+'">'+e+'</span></span>':'<span class="cell"></span>';}h+='</div>';}return '<div class="grp">'+h+'</div>';}
@@ -1155,7 +1213,7 @@ function sceneHTML(q){const e=q.it[0];
   for(let i=0;i<q.n;i++){const a=x(i*q.s),b=x((i+1)*q.s),m=(a+b)/2;svg+='<path class="hop" style="--d:'+(i*0.35)+'s" d="M'+a+' 104 Q'+m+' '+(104-Math.min(70,(b-a)*0.9))+' '+b+' 104"/>';}
   return svg+'<text class="frog" x="'+x(0)+'" y="98">🐸</text></svg>';}
  return '';}
-function eqHTML(q,show){const A=show?q.ans:'?';const b=v=>'<b class="'+(show&&v===q.ans?'ansv':'')+'">'+v+'</b>';
+function eqHTML(q,show){{const x=extEq(q,show);if(x!==null)return x;}const A=show?q.ans:'?';const b=v=>'<b class="'+(show&&v===q.ans?'ansv':'')+'">'+v+'</b>';
  if(q.type==='count')return '一共 '+b(A)+' '+q.it[2];
  if(q.type==='add')return q.a+' ＋ '+q.b+' ＝ '+b(A);
  if(q.type==='sub')return q.a+' － '+q.b+' ＝ '+b(A);
@@ -1163,7 +1221,7 @@ function eqHTML(q,show){const A=show?q.ans:'?';const b=v=>'<b class="'+(show&&v=
  if(q.type==='compare')return '多 '+b(A)+' '+q.it[2];
  if(q.type==='groups')return Array(q.g).fill(q.k).join(' ＋ ')+' ＝ '+b(A);
  if(q.type==='skip')return Array(q.n).fill(q.s).join(' ＋ ')+' ＝ '+b(A);}
-function mPrompt(q){const [e,nm,ms]=q.it;
+function mPrompt(q){{const x=extPrompt(q);if(x!==null)return x;}const [e,nm,ms]=q.it;
  if(q.type==='count')return '數數看，有幾'+ms+nm+'？';
  if(q.type==='add')return cnm(q.a)+ms+nm+'，再來'+cnm(q.b)+ms+'，一共有幾'+ms+'？';
  if(q.type==='sub')return '本來有'+cnm(q.a)+ms+nm+'，拿走了'+cnm(q.b)+ms+'，還剩下幾'+ms+'？';
@@ -1171,7 +1229,7 @@ function mPrompt(q){const [e,nm,ms]=q.it;
  if(q.type==='compare')return '上面有'+cnm(q.a)+ms+'，下面有'+cnm(q.b)+ms+'，多的那一排，多了幾'+ms+'？';
  if(q.type==='groups')return '有'+cnm(q.g)+'個盤子，每盤'+cnm(q.k)+ms+nm+'，一共有幾'+ms+'？';
  if(q.type==='skip')return '小青蛙一次跳'+cnm(q.s)+'格，跳了'+cnm(q.n)+'次，跳到幾？';}
-function mPraise(q){const a=cn(q.ans);
+function mPraise(q){{const x=extPraise(q);if(x!==null)return x;}const a=cn(q.ans);
  if(q.type==='add')return cn(q.a)+'加'+cn(q.b)+'等於'+a;if(q.type==='sub')return cn(q.a)+'減'+cn(q.b)+'等於'+a;
  if(q.type==='make10')return cn(q.n)+'加'+a+'等於十';if(q.type==='compare')return '多'+cnm(q.ans)+q.it[2];
  if(q.type==='groups')return cnm(q.g)+'個'+cn(q.k)+'是'+a;if(q.type==='skip')return cnm(q.n)+'個'+cn(q.s)+'是'+a;return '有'+cnm(q.ans)+q.it[2];}
@@ -1184,8 +1242,8 @@ function startMath(i){G.li=i;G.lvl=null;const L=LEVELS[i];MZ.tok++;show('math');
 function mProg(){const pr=$('mathProg');pr.innerHTML='';MZ.qs.forEach((q,i)=>{const s=document.createElement('span');s.className='chip num'+(i<MZ.qi?' ok':i===MZ.qi?' now':'');s.textContent=i<MZ.qi?'✓':String(i+1);pr.appendChild(s);});}
 function nextM(){if(!MZ.L)return;if(MZ.qi>=MZ.qs.length){mathDone();return;}const q=MZ.q=MZ.qs[MZ.qi];MZ.lock=false;MZ.cnt=0;mProg();
  const sc=$('mScene');sc.className='mscene t-'+q.type;sc.innerHTML=sceneHTML(q);$('mEq').innerHTML=eqHTML(q,false);$('mQ').textContent=mPrompt(q);
- const box=$('mOpts');box.innerHTML='';mOpts(q.ans).forEach(v=>{const b=document.createElement('button');b.className='mopt';b.textContent=v;b.onclick=()=>mAnswer(v,b);box.appendChild(b);});
- mCoach(q.type==='skip'?'看青蛙跳了幾次，一次跳幾格。':q.type==='groups'?'一盤一盤數數看。':'不知道的話，點點看東西，一個一個數。');
+ $('mRecount').hidden=!/^(count|add|sub|make10|compare|groups)$/.test(q.type);const box=$('mOpts');box.innerHTML='';box.className='mopts'+(q.ui?' '+q.ui:'')+(q.wide?' two':'');document.querySelector('#mathScreen .mode').textContent={math:'數學',clock:'時鐘',money:'錢幣'}[MZ.L.t]||'數學';if(!extUI(q,box))(q.opts||mOpts(q.ans)).forEach(v=>{const b=document.createElement('button');b.className='mopt'+(q.pic?' pic':'')+(q.wide?' wide':'')+(q.txt?' txt':'');if(q.render)b.innerHTML=q.render(v);else b.textContent=v;b.onclick=()=>mAnswer(v,b);box.appendChild(b);});
+ mCoach(extHint(q)||(q.type==='skip'?'看青蛙跳了幾次，一次跳幾格。':q.type==='groups'?'一盤一盤數數看。':'不知道的話，點點看東西，一個一個數。'));
  if(q.type==='sub')setTimeout(()=>{if(MZ.q===q)sc.classList.add('take');},700);
  mSay(mPrompt(q));}
 function mAnswer(v,btn){if(MZ.lock)return;audio();const q=MZ.q,tk=MZ.tok;
@@ -1195,17 +1253,90 @@ function mAnswer(v,btn){if(MZ.lock)return;audio();const q=MZ.q,tk=MZ.tok;
   let extra='';if(q.type==='groups'||q.type==='skip'){const k=q.type==='groups'?q.k:q.s,g=q.type==='groups'?q.g:q.n;extra=' '+cnm(g)+'個'+cn(k)+'是'+cn(q.ans)+'，二年級會寫成 '+k+' × '+g+' ＝ '+q.ans+'。';}
   mCoach(praise()+extra,'good');
   mSpeak('答對了！'+mPraise(q),tk).then(()=>setTimeout(()=>{if(MZ.tok!==tk)return;MZ.qi++;nextM();},700));return;}
- sfx.bad();MZ.mist++;btn.disabled=true;btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');
+ sfx.bad();MZ.mist++;if(!q.ui)btn.disabled=true;btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');
  const sc=$('mScene');sc.classList.remove('hint');void sc.offsetWidth;sc.classList.add('hint');
- const m=q.type==='skip'?'數數看青蛙跳了幾次，再一次一次加上去。':q.type==='make10'?'數數看，有幾個空格？':q.type==='compare'?'上下對齊，看看多出來幾個。':'再數一次看看，可以點東西一個一個數喔。';mCoach(m,'bad');mSay(m);}
+ const m=extWrong(q,v)||(q.type==='skip'?'數數看青蛙跳了幾次，再一次一次加上去。':q.type==='make10'?'數數看，有幾個空格？':q.type==='compare'?'上下對齊，看看多出來幾個。':'再數一次看看，可以點東西一個一個數喔。');mCoach(m,'bad');mSay(m);}
 /* 點東西就一個一個數 */
 $('mScene').addEventListener('click',e=>{const it=e.target.closest('.it');if(!it||it.classList.contains('out')||it.dataset.n||!MZ.q)return;audio();MZ.cnt++;it.dataset.n=MZ.cnt;it.classList.add('counted');playNum(MZ.cnt);});
 $('mRecount').onclick=()=>{MZ.cnt=0;$('mScene').querySelectorAll('.it[data-n]').forEach(x=>{delete x.dataset.n;x.classList.remove('counted');});};
 $('mSayQ').onclick=()=>{audio();MZ.tok++;if(MZ.q)mSay(mPrompt(MZ.q));};
 $('mathBack').onclick=()=>show('map');
 function mathDone(){MZ.lock=true;const stars=MZ.mist<=1?3:MZ.mist<=3?2:1;const L=MZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(L.id))S.stickers.push(L.id);save();
- sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+'算對了！';$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
- $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再玩一次可以拿到更多星星。':' 三顆星，數學小天才！');const nx=LEVELS[G.li+1];$('winNext').hidden=!nx||nx.t!=='math';say((S.name||'')+'好會算數學！');$('winOv').hidden=false;}
+ sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+({clock:'是時間小達人！',money:'是購物小達人！'}[L.t]||'算對了！');$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
+ $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再玩一次可以拿到更多星星。':' 三顆星，數學小天才！');const nx=LEVELS[G.li+1];$('winNext').hidden=!nx||nx.t!==L.t;say((S.name||'')+'好會算數學！');$('winOv').hidden=false;}
+
+/* ---------- 滴答鐘樓 & 叮噹小商店 ---------- */
+const SHOP=[['🍭','棒棒糖'],['🍦','冰淇淋'],['🧃','果汁'],['🍙','飯糰'],['🎈','氣球'],['✏️','鉛筆'],['🧸','小熊'],['🍌','香蕉'],['🍩','甜甜圈'],['🚂','小火車']];
+const COINS=[1,5,10,50];
+function tText(h,m){return h+' 點'+(m?'半':'');}
+function tSay(h,m){return cnm(h)+'點'+(m?'半':'');}
+function clockSVG(h,m,cls){const ha=((h%12)+m/60)*30,ma=m*6;let t='';for(let i=0;i<60;i++){const a=i*6*Math.PI/180,r1=i%5?86:80;t+='<line x1="'+(100+r1*Math.sin(a)).toFixed(1)+'" y1="'+(100-r1*Math.cos(a)).toFixed(1)+'" x2="'+(100+90*Math.sin(a)).toFixed(1)+'" y2="'+(100-90*Math.cos(a)).toFixed(1)+'" class="'+(i%5?'mt':'ht')+'"/>';}
+ let n='';for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;n+='<text x="'+(100+66*Math.sin(a)).toFixed(1)+'" y="'+(100-66*Math.cos(a)+8).toFixed(1)+'">'+i+'</text>';}
+ return '<svg class="clock '+(cls||'')+'" viewBox="0 0 200 200" aria-label="時鐘 '+tText(h,m)+'"><circle cx="100" cy="100" r="95" class="cf"/>'+t+n+
+  '<line class="hh" x1="100" y1="100" x2="100" y2="52" transform="rotate('+ha+' 100 100)"/><line class="mh" x1="100" y1="100" x2="100" y2="24" transform="rotate('+ma+' 100 100)"/><circle cx="100" cy="100" r="7" class="cc"/></svg>';}
+function coinSVG(v){const S2={1:[40,'#e2b35a','#b07f2a'],5:[48,'#d3dae1','#97a3af'],10:[54,'#dde3e8','#8f9aa6'],50:[62,'#f3cf55','#c79b1c']}[v];const r=S2[0];
+ return '<svg class="coin c'+v+'" viewBox="0 0 140 140" style="width:'+(r*1.55)+'px;height:'+(r*1.55)+'px" aria-label="'+v+' 元"><circle cx="70" cy="70" r="64" fill="'+S2[1]+'" stroke="'+S2[2]+'" stroke-width="6"/><circle cx="70" cy="70" r="50" fill="none" stroke="'+S2[2]+'" stroke-width="2.5" stroke-dasharray="'+(v===10?'4 4':'0')+'"/>'+
+  '<text x="70" y="'+(v>9?80:84)+'" class="cv">'+v+'</text><text x="70" y="110" class="cy">元</text></svg>';}
+function coinsTotal(a){return a.reduce((x,y)=>x+y,0);}
+function randCoins(maxT){let a;do{a=[];const n=ri(2,5);for(let i=0;i<n;i++)a.push(COINS[ri(0,maxT>=50?3:2)]);}while(coinsTotal(a)>maxT||coinsTotal(a)<3);return a.sort((x,y)=>y-x);}
+function hhmm(h,m){return h+':'+(m?'30':'00');}
+function extMk(type,q){const h=ri(1,12);
+ if(type==='clockH'){q.h=h;q.m=0;q.ans=hhmm(h,0);const o=new Set([h]);while(o.size<3)o.add(ri(1,12));q.opts=shuffle([...o]).map(x=>hhmm(x,0));q.render=v=>{const [a]=v.split(':');return a+' 點';};q.txt=1;return q;}
+ if(type==='clockHalf'){q.h=h;q.m=30;q.ans=hhmm(h,30);q.opts=shuffle([hhmm(h,30),hhmm(h%12+1,30),hhmm(h,0)]);q.render=v=>{const [a,b]=v.split(':');return a+' 點'+(b==='30'?'半':'');};q.txt=1;return q;}
+ if(type==='clockMatch'){q.h=h;q.m=ri(0,1)*30;q.ans=hhmm(h,q.m);const alt=q.m?hhmm(h,0):hhmm(h,30);let o2=hhmm((h+ri(2,9)-1)%12+1,q.m);q.opts=shuffle([q.ans,alt,o2]);q.pic=1;q.render=v=>{const [a,b]=v.split(':');return clockSVG(+a,+b,'small');};return q;}
+ if(type==='clockSet'){q.h=h;q.m=ri(0,1)*30;q.ans=hhmm(h,q.m);q.ui='clockset';return q;}
+ if(type==='coinWhich'){q.v=COINS[ri(0,3)];q.ans=q.v;q.opts=shuffle([q.v].concat(shuffle(COINS.filter(x=>x!==q.v)).slice(0,2)));q.pic=1;q.render=v=>coinSVG(v);return q;}
+ if(type==='coinSum'){q.coins=randCoins(60);q.ans=coinsTotal(q.coins);return q;}
+ if(type==='coinPay'){q.item=SHOP[ri(0,SHOP.length-1)];q.p=ri(2,30);q.ans=q.p;q.ui='pay';q.wallet=[];return q;}
+ if(type==='coinEnough'){q.item=SHOP[ri(0,SHOP.length-1)];q.coins=randCoins(60);q.t=coinsTotal(q.coins);let d=0;while(!d)d=ri(-6,6);q.p=Math.max(1,q.t+d);q.ans=q.p<=q.t?'yes':'no';q.opts=['yes','no'];q.render=v=>v==='yes'?'✅ 夠':'❌ 不夠';q.wide=1;return q;}
+ return null;}
+function extScene(q){
+ if(/^clock(H|Half)$/.test(q.type))return clockSVG(q.h,q.m,'big');
+ if(q.type==='clockMatch')return '<div class="digital">'+q.h+':'+(q.m?'30':'00')+'</div>';
+ if(q.type==='clockSet'){q.sh=12;q.sm=0;return clockSVG(12,0,'big setter');}
+ if(q.type==='coinWhich')return '<div class="bigq">'+q.v+'<small>元</small></div>';
+ if(q.type==='coinSum'||q.type==='coinEnough'){let h='<div class="coins">'+q.coins.map(coinSVG).join('')+'</div>';if(q.type==='coinEnough')h='<div class="tag"><span class="ti">'+q.item[0]+'</span><span class="tp">'+q.p+' 元</span></div>'+h;return h;}
+ if(q.type==='coinPay')return '<div class="tag"><span class="ti">'+q.item[0]+'</span><span class="tp">'+q.p+' 元</span></div><div class="counter"><div class="wallet" id="wallet"><span class="wempty">點下面的錢，放到這裡</span></div><div class="wsum" id="wsum">放了 0 元</div></div>';
+ return null;}
+function extEq(q,show){const A=show?'<b class="ansv">':'<b>',Z='</b>';
+ if(/^clock/.test(q.type))return '現在是 '+A+(show?tText(q.h,q.m):'?')+Z;
+ if(q.type==='coinWhich')return A+(show?q.v:'?')+Z+' 元';
+ if(q.type==='coinSum')return q.coins.join(' ＋ ')+' ＝ '+A+(show?q.ans:'?')+Z+' 元';
+ if(q.type==='coinPay')return '要付 '+q.p+' 元';
+ if(q.type==='coinEnough')return '有 '+q.t+' 元，要 '+q.p+' 元'+(show?'　'+A+(q.ans==='yes'?'夠':'不夠')+Z:'');
+ return null;}
+function extPrompt(q){
+ if(/^clock(H|Half)$/.test(q.type))return '時鐘上是幾點？';
+ if(q.type==='clockMatch')return '哪一個時鐘是'+tSay(q.h,q.m)+'？';
+ if(q.type==='clockSet')return '把時鐘撥到'+tSay(q.h,q.m)+'。拖拖看長針和短針，撥好了按「好了」。';
+ if(q.type==='coinWhich')return '哪一個是'+cnm(q.v)+'元？';
+ if(q.type==='coinSum')return '一共有多少錢？';
+ if(q.type==='coinPay')return q.item[1]+'要'+cnm(q.p)+'元。點下面的錢，放剛好的錢，再按「付錢」。';
+ if(q.type==='coinEnough')return q.item[1]+'要'+cnm(q.p)+'元，這些錢夠不夠買？';
+ return null;}
+function extPraise(q){if(/^clock/.test(q.type))return '是'+tSay(q.h,q.m);if(q.type==='coinWhich')return '這是'+cnm(q.v)+'元';if(q.type==='coinSum')return '一共'+cnm(q.ans)+'元';
+ if(q.type==='coinPay')return '付了剛好'+cnm(q.p)+'元';if(q.type==='coinEnough')return q.ans==='yes'?'錢夠買喔':'錢不夠喔';return null;}
+function extHint(q){if(/^clock(H|Half|Match)$/.test(q.type))return '短針指著幾，就是幾點；長針指著 6，就是半點。';if(q.type==='clockSet')return '短針（時針）指著幾點，長針（分針）指 12 是整點，指 6 是半點。';
+ if(q.type==='coinSum')return '先數大的錢，再數小的錢。';if(q.type==='coinPay')return '先放大的錢，再用小的錢補。';if(q.type==='coinEnough')return '先算算有多少錢，再跟價錢比一比。';if(q.type==='coinWhich')return '看看錢上面寫的數字。';return null;}
+function extWrong(q,v){
+ if(q.type==='clockSet'){const [h,m]=String(v).split(':').map(Number);return h!==q.h?'短針（時針）要指著 '+q.h+' 喔。'+(q.m?'半點的時候，短針會在 '+q.h+' 和 '+(q.h%12+1)+' 的中間。':''):'長針（分針）'+(q.m?'要指著 6，才是半點。':'要指著 12，才是整點。');}
+ if(q.type==='coinPay')return v>q.p?'太多了，拿掉一些錢再試試。':'還不夠，再放一點錢。';
+ if(/^clock/.test(q.type))return extHint(q);if(q.type==='coinSum')return '先數大的錢：10、20……再數小的錢。';if(q.type==='coinEnough')return '先算這些錢一共多少，再跟 '+q.p+' 元比一比。';return null;}
+/* 特別的作答方式：撥時鐘、付錢 */
+function extUI(q,box){
+ if(q.ui==='clockset'){box.innerHTML='<button class="btn leaf mok" id="clkOk">好了</button>';$('clkOk').onclick=e=>mAnswer(hhmm(q.sh,q.sm),e.currentTarget);
+  const svg=$('mScene').querySelector('.setter');let hand=null;const ang=ev=>{const r=svg.getBoundingClientRect(),x=ev.clientX-r.left-r.width/2,y=ev.clientY-r.top-r.height/2;return {a:(Math.atan2(x,-y)*180/Math.PI+360)%360,d:Math.hypot(x,y)/(r.width/2)};};
+  const redraw=()=>{svg.querySelector('.hh').setAttribute('transform','rotate('+(((q.sh%12)+q.sm/60)*30)+' 100 100)');svg.querySelector('.mh').setAttribute('transform','rotate('+(q.sm*6)+' 100 100)');};
+  const move=ev=>{const {a}=ang(ev);if(hand==='m'){const nm=Math.round(a/180)%2*30;if(nm!==q.sm){q.sm=nm;tone([880],0.04,'triangle',0.06);}}else{let nh=Math.round((a-q.sm/2)/30);nh=((nh%12)+12)%12||12;if(nh!==q.sh){q.sh=nh;tone([660],0.04,'triangle',0.06);}}redraw();};
+  svg.addEventListener('pointerdown',ev=>{if(MZ.lock)return;audio();const {a,d}=ang(ev);const ha=(((q.sh%12)+q.sm/60)*30),ma=q.sm*6;const diff=(x,y)=>Math.min(Math.abs(x-y),360-Math.abs(x-y));
+   hand=d>0.62?'m':d<0.42?'h':(diff(a,ma)<diff(a,ha)?'m':'h');svg.classList.add(hand==='m'?'gm':'gh');svg.setPointerCapture(ev.pointerId);move(ev);ev.preventDefault();});
+  svg.addEventListener('pointermove',ev=>{if(hand)move(ev);});const up=()=>{hand=null;svg.classList.remove('gm','gh');};svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);return true;}
+ if(q.ui==='pay'){box.innerHTML='<div class="tray">'+COINS.filter(v=>v<=50).map(v=>'<button class="tcoin" data-v="'+v+'" aria-label="放 '+v+' 元">'+coinSVG(v)+'</button>').join('')+'</div><div class="paybtns"><button class="btn" id="payClr">全部拿回來</button><button class="btn leaf mok" id="payOk">付錢</button></div>';
+  const draw=()=>{const w=$('wallet');w.innerHTML=q.wallet.length?q.wallet.map((v,i)=>'<button class="wcoin" data-i="'+i+'" aria-label="拿回 '+v+' 元">'+coinSVG(v)+'</button>').join(''):'<span class="wempty">點下面的錢，放到這裡</span>';$('wsum').textContent='放了 '+coinsTotal(q.wallet)+' 元';};
+  box.querySelectorAll('.tcoin').forEach(b=>b.onclick=()=>{if(MZ.lock)return;audio();if(q.wallet.length>=12)return;q.wallet.push(+b.dataset.v);q.wallet.sort((x,y)=>y-x);tone([1318,1760],0.05,'triangle',0.08);draw();});
+  $('wallet').addEventListener('click',e=>{const c=e.target.closest('.wcoin');if(!c||MZ.lock)return;q.wallet.splice(+c.dataset.i,1);draw();});
+  $('payClr').onclick=()=>{if(MZ.lock)return;q.wallet=[];draw();};$('payOk').onclick=e=>{if(!q.wallet.length){mCoach('先點下面的錢，放到櫃台上喔。','bad');return;}mAnswer(coinsTotal(q.wallet),e.currentTarget);};return true;}
+ return false;}
 
 renderMap();
 })();
