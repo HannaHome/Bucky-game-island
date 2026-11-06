@@ -528,6 +528,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .island h2 .idesc{font-size:15px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.7);border-radius:999px;padding:3px 12px;margin-left:4px}
 @media (max-width:600px){.isltabs{display:grid;grid-template-columns:repeat(4,1fr);overflow:visible}.isltabs .itab{min-width:0;padding:6px 2px}.isltabs .itab b{font-size:13px}.isltabs .itab small{font-size:10px}.isltabs .itab .badge{width:34px;height:34px;font-size:19px}.island h2{flex-wrap:wrap;row-gap:4px}.island h2 .idesc{font-size:12px;padding:2px 10px}}
 @media (max-height:520px){.isltabs .itab{min-width:84px;padding:4px;gap:2px;flex-direction:row;justify-content:center}.isltabs .itab .badge{width:28px;height:28px;font-size:16px}.isltabs .itab small{display:none}.isltabs .itab b{font-size:14px}}
+
+/* ===== 遊戲時間 ===== */
+.tpill{font-weight:800}
+.tpill.low{background:#ffe9ec;color:#c43c52;animation:glow 1.2s ease-in-out infinite}
+.overlay.rest{background:rgba(37,49,74,.75);z-index:25}
+#pinOv{z-index:26}
+.rest .panel{background:linear-gradient(180deg,#e9f0ff,#fff)}
+.zzz{font-size:84px;animation:snooze 3s ease-in-out infinite}
+.restidea{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.restidea span{background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;box-shadow:0 3px 0 var(--line)}
 </style>
 
 <div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
@@ -537,6 +547,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div class="bar">
       <span class="hello" aria-hidden="true"><svg viewBox="0 0 60 60"><path d="M30 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L30 42.8l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#ffc23d" stroke="#f29e00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="2.6" fill="#25314a"/><circle cx="36" cy="27" r="2.6" fill="#25314a"/><path d="M24.5 34q5.5 5 11 0" stroke="#25314a" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="19.5" cy="32" r="2.4" fill="#ff9aa8"/><circle cx="40.5" cy="32" r="2.4" fill="#ff9aa8"/></svg></span><div class="title"><span id="titleName" aria-label="愷愷的冒險島"></span><small>寫數字、學注音、環遊世界，收集星星和貼紙</small></div>
       <div class="spacer"></div>
+      <span class="pill tpill" id="timePill" hidden aria-live="polite"></span>
       <span class="pill" aria-label="星星總數"><span style="color:var(--sun-deep)">★</span><span class="n" id="starTotal">0</span></span>
       <button class="btn" id="openBook">貼紙簿</button>
       <button class="btn round" id="openParent" aria-label="家長設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
@@ -656,6 +667,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <p class="note" id="vMsg" role="status"></p>
     <p class="note">網頁不會照 iPad「朗讀內容」裡選的語音唸，所以請直接在這裡選。選了會立刻試唸給你聽；⭐ 是音質較好的進階語音，要先在「設定 → 輔助使用 → 朗讀內容 → 聲音」<b>下載完成</b>才能用。</p>
     <label for="setGender">注音讀音<select id="setGender"><option value="F">女聲</option><option value="M">男聲</option></select></label>
+    <label for="setLimit">每天可以玩<select id="setLimit"><option value="0">不限制</option><option value="10">10 分鐘</option><option value="20">20 分鐘</option><option value="30">30 分鐘</option></select></label>
+    <p class="note" id="limitNote"></p>
     <label for="setSolo">加上「自己寫」挑戰<input type="checkbox" id="setSolo"></label>
     <label for="setUnlock">全部關卡解鎖<input type="checkbox" id="setUnlock"></label>
     <p class="note">「自己寫」會在描完之後，把字的灰色底稿變很淡，讓孩子憑記憶寫一次。錯兩次會自動再示範。<br>進度存在這台 iPad 的瀏覽器裡，清除 Safari 資料就會不見。<br>注音的筆順和真人讀音來自教育部《國字標準字體筆順學習網》；例字和數字的國字讀音也來自同一網站；只有載入失敗時才改用 iPad 內建語音。</p>
@@ -681,6 +694,15 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <p class="pinmsg" id="pinMsg" role="status"></p>
   <div class="pad" id="pinPad"></div>
   <div class="row"><button class="btn" id="pinCancel">取消</button><button class="btn" id="pinForgot">忘記密碼</button></div>
+</div></div>
+
+<div class="overlay rest" id="restOv" hidden><div class="panel">
+  <div class="zzz" aria-hidden="true">😴</div>
+  <h3>休息時間到囉！</h3>
+  <p id="restMsg"></p>
+  <div class="restidea"><span>💧 喝喝水</span><span>🤸 動一動</span><span>👀 看看遠方</span></div>
+  <p>明天再來冒險吧！</p>
+  <div class="row"><button class="btn" id="restMore">家長：再玩 10 分鐘</button></div>
 </div></div>
 
 <canvas id="fx"></canvas>
@@ -967,7 +989,7 @@ $('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
 $('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
 $('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
 $('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(L.id);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
-function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';fillVoiceLists();$('setSolo').checked=S.solo;$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');$('parentOv').hidden=false;}
+function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';fillVoiceLists();$('setSolo').checked=S.solo;$('setLimit').value=String(S.limit||0);limitNote();$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');$('parentOv').hidden=false;}
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
 $('setTol').onchange=e=>{S.tol=e.target.value;save();};
 $('setVoice').onchange=e=>{S.voice=e.target.checked;save();};
@@ -986,6 +1008,7 @@ $('setVen').onchange=e=>probeVoice('ven',e.target.value,false);
 $('vTest').onclick=()=>{audio();pickVoice();pickEn();if(typeof sayPair==='function'){const keep=S.voice;S.voice=true;sayPair('你好，我是星星老師！今天也一起加油喔。','Hello! Japan. Tokyo.');S.voice=keep;}};
 $('setGender').onchange=e=>{S.gender=e.target.value;save();if(S.voice)playMoe('ㄅ').catch(()=>{});};
 $('setSolo').onchange=e=>{S.solo=e.target.checked;save();};
+$('setLimit').onchange=e=>{S.limit=+e.target.value;S.bonus=0;save();limitNote();tickTime(true);};
 $('setUnlock').onchange=e=>{S.unlock=e.target.checked;save();};
 $('resetBtn').onclick=e=>{const b=e.currentTarget;if(!b.dataset.arm){b.dataset.arm='1';b.textContent='再按一次確定清除';return;}S.stars={};S.stickers=[];save();b.dataset.arm='';b.textContent='已清除';};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{$(b.dataset.close).hidden=true;renderMap();});
@@ -1135,7 +1158,7 @@ const PIN={mode:'',buf:'',first:'',ans:'',fails:0};
 function pinRender(){const d=$('pinDots');if(PIN.mode==='math'){d.innerHTML='<span class="ans">'+(PIN.buf||'&nbsp;')+'</span>';}else{d.innerHTML=[0,1,2,3].map(i=>'<i class="'+(i<PIN.buf.length?'on':'')+'"></i>').join('');}}
 function pinSet(mode,msg,bad){PIN.mode=mode;PIN.buf='';const T={set1:['設定家長密碼','請輸入 4 位數字。之後打開家長設定，都要輸入這組密碼。'],set2:['再輸入一次','確認剛剛的 4 位數字密碼。'],enter:['家長密碼','請輸入 4 位數字密碼。'],math:['忘記密碼','請回答下面的乘法題，答對就能重新設定密碼。']}[mode];
  $('pinTitle').textContent=T[0];$('pinSub').textContent=mode==='math'?T[1]+'　'+PIN.q:T[1];const m=$('pinMsg');m.textContent=msg||'';m.className='pinmsg'+(bad?' bad':'');$('pinForgot').hidden=mode!=='enter';pinRender();}
-function pinDone(){$('pinOv').hidden=true;openSettings();}
+function pinDone(){$('pinOv').hidden=true;const f=PIN.after;PIN.after=null;(f||openSettings)();}
 function pinKey(k){if(k==='del'){PIN.buf=PIN.buf.slice(0,-1);pinRender();return;}
  const max=PIN.mode==='math'?PIN.ans.length:4;if(PIN.buf.length>=max)return;PIN.buf+=k;pinRender();if(PIN.buf.length<max)return;
  setTimeout(()=>{const v=PIN.buf;
@@ -1144,7 +1167,7 @@ function pinKey(k){if(k==='del'){PIN.buf=PIN.buf.slice(0,-1);pinRender();return;
   else if(PIN.mode==='enter'){if(v===S.pin){PIN.fails=0;pinDone();}else{PIN.fails++;const p=$('pinDots');p.classList.remove('shake');void p.offsetWidth;p.classList.add('shake');pinSet('enter','密碼不對'+(PIN.fails>=2?'。忘記了可以按「忘記密碼」。':'，再試一次。'),true);}}
   else if(PIN.mode==='math'){if(v===PIN.ans){delete S.pin;save();pinSet('set1','答對了！請設定新的密碼。');}else pinSet('math','答案不對，再算算看。',true);}
  },150);}
-function pinOpen(mode){const pad=$('pinPad');if(!pad.childElementCount){['1','2','3','4','5','6','7','8','9','','0','del'].forEach(k=>{const b=document.createElement('button');if(!k){b.style.visibility='hidden';b.disabled=true;}b.textContent=k==='del'?'⌫':k;if(k==='del')b.setAttribute('aria-label','刪除');b.onclick=()=>pinKey(k);pad.appendChild(b);});}
+function pinOpen(mode,after){PIN.after=after||null;const pad=$('pinPad');if(!pad.childElementCount){['1','2','3','4','5','6','7','8','9','','0','del'].forEach(k=>{const b=document.createElement('button');if(!k){b.style.visibility='hidden';b.disabled=true;}b.textContent=k==='del'?'⌫':k;if(k==='del')b.setAttribute('aria-label','刪除');b.onclick=()=>pinKey(k);pad.appendChild(b);});}
  PIN.fails=0;pinSet(mode);$('pinOv').hidden=false;}
 $('openParent').onclick=()=>{audio();pinOpen(S.pin?'enter':'set1');};
 $('pinCancel').onclick=()=>{$('pinOv').hidden=true;};
@@ -1348,6 +1371,23 @@ function extUI(q,box){
   $('wallet').addEventListener('click',e=>{const c=e.target.closest('.wcoin');if(!c||MZ.lock)return;q.wallet.splice(+c.dataset.i,1);draw();});
   $('payClr').onclick=()=>{if(MZ.lock)return;q.wallet=[];draw();};$('payOk').onclick=e=>{if(!q.wallet.length){mCoach('先點下面的錢，放到櫃台上喔。','bad');return;}mAnswer(coinsTotal(q.wallet),e.currentTarget);};return true;}
  return false;}
+
+/* ---------- 每天遊戲時間 ---------- */
+function today(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function leftSec(){if(!S.limit)return Infinity;if(S.playDate!==today()){S.playDate=today();S.playSec=0;S.bonus=0;}return S.limit*60+(S.bonus||0)-(S.playSec||0);}
+function limitNote(){const n=$('limitNote');if(!n)return;if(S.playDate!==today()){S.playDate=today();S.playSec=0;S.bonus=0;}const used=Math.floor((S.playSec||0)/60);n.textContent=S.limit?'今天已經玩了 '+used+' 分鐘。時間到了會出現休息畫面，要輸入家長密碼才能再玩。':'今天已經玩了 '+used+' 分鐘。';}
+let warned={},saveN=0;
+function tickTime(force){const l=leftSec();const pill=$('timePill');
+ if(!S.limit){pill.hidden=true;$('restOv').hidden=true;return;}
+ pill.hidden=false;const m=Math.max(0,Math.ceil(l/60));pill.textContent='⏳ 還可以玩 '+m+' 分鐘';pill.classList.toggle('low',l<=120);
+ if(l<=0){if($('restOv').hidden){$('restMsg').textContent='今天已經玩了 '+(S.limit+Math.round((S.bonus||0)/60))+' 分鐘，眼睛和小手都辛苦了。';$('restOv').hidden=false;try{speechSynthesis.cancel();}catch(e){}say((S.name||'')+'，休息時間到囉！明天再來玩吧！');}return;}
+ $('restOv').hidden=true;
+ for(const w of [120,60]){if(l<=w&&!warned[w+'@'+S.playDate+'@'+(S.bonus||0)]){warned[w+'@'+S.playDate+'@'+(S.bonus||0)]=1;const msg='再 '+(w/60)+' 分鐘就要休息囉！';
+   const id=['playScreen','geoScreen','readScreen','mathScreen'].find(x=>!$(x).hidden);const b=id&&$(id).querySelector('.bubble');if(b){b.textContent=msg;b.className='bubble';}if(!force)say(msg);}}}
+setInterval(()=>{if(document.visibilityState!=='visible'||!S.limit||!$('restOv').hidden){return;}leftSec();S.playSec=(S.playSec||0)+1;if(++saveN%10===0)save();tickTime();},1000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')save();});
+$('restMore').onclick=()=>{audio();pinOpen(S.pin?'enter':'set1',()=>{S.bonus=(S.bonus||0)+600;save();$('restOv').hidden=true;tickTime(true);});};
+tickTime(true);
 
 renderMap();
 })();
