@@ -1384,6 +1384,7 @@ function extHint(q){if(/^clock(H|Half|Match)$/.test(q.type))return '短針指著
 function extWrong(q,v){
  if(q.type==='clockSet'){const [h,m]=String(v).split(':').map(Number);return h!==q.h?'短針（時針）要指著 '+q.h+' 喔。'+(q.m?'半點的時候，短針會在 '+q.h+' 和 '+(q.h%12+1)+' 的中間。':''):'長針（分針）'+(q.m?'要指著 6，才是半點。':'要指著 12，才是整點。');}
  if(q.type==='coinPay')return v>q.p?'太多了，拿掉一些錢再試試。':'還不夠，再放一點錢。';
+ if(q.type==='coinWhich')return '這是 '+v+' 元喔。看看錢上面寫的數字，找找看 '+q.v+' 元在哪裡？';
  if(/^clock/.test(q.type))return extHint(q);if(q.type==='coinSum')return '先數大的錢：10、20……再數小的錢。';if(q.type==='coinEnough')return '先算這些錢一共多少，再跟 '+q.p+' 元比一比。';return null;}
 /* 特別的作答方式：撥時鐘、付錢 */
 function extUI(q,box){
