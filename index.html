@@ -840,11 +840,19 @@ function vScore(v,zh){const n=(v.name||'')+' '+(v.voiceURI||'');let sc=0;
  if(/samantha|ava|allison|zoe|aria|jenny|google us english/i.test(n))sc+=25;
  return sc;}
 function voicesFor(zh){try{return speechSynthesis.getVoices().map(v=>[vScore(v,zh),v]).filter(x=>x[0]>=0).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);}catch(e){return [];}}
+/* 破音字：畫面照樣顯示正確的字，唸的時候換成同音、不會唸錯的字 */
+const TTS_FIX=[['長針','常針'],['長長的','常常的'],['長長','常常'],
+ ['種下','眾下'],['種了','眾了'],['種紅','眾紅'],
+ ['背起','杯起'],['背書包','杯書包'],['睡大覺','睡大叫'],['睡覺','睡叫'],
+ ['便宜','偏宜'],['高興得','高興的'],['秘魯','必魯'],['差一點','岔一點'],
+ ['一個一個數','一個一個鼠'],['一盤一盤數','一盤一盤鼠'],['數一數','鼠一鼠'],['數數看','鼠鼠看'],['數數','鼠鼠'],['先數','先鼠'],['再數','再鼠'],['數一次','鼠一次'],
+ ['還','孩']];
+function ttsFix(t){t=String(t);for(const [a,b] of TTS_FIX)t=t.split(a).join(b);return t;}
 const BADV=new Set();
 function pickVoice(){const z=voicesFor(true);zhVoice=(S.vzh&&!BADV.has(S.vzh)&&z.find(v=>v.voiceURI===S.vzh))||null;fillVoiceLists();}
 /* 語音救援：指定的語音 2 秒內沒出聲或出錯，就改用 iPad 預設語音重唸 */
 try{const _speak=speechSynthesis.speak.bind(speechSynthesis);
- speechSynthesis.speak=function(u){if(!u||!u.voice||u._probe)return _speak(u);let started=false,done=false;const vu=u.voice.voiceURI;
+ speechSynthesis.speak=function(u){try{if(u&&/^zh/i.test(u.lang||'zh'))u.text=ttsFix(u.text);}catch(e){}if(!u||!u.voice||u._probe)return _speak(u);let started=false,done=false;const vu=u.voice.voiceURI;
   const rescue=()=>{if(started||done)return;done=true;BADV.add(vu);if(zhVoice&&zhVoice.voiceURI===vu)zhVoice=null;if(enVoice&&enVoice.voiceURI===vu)enVoice=null;
    const w=new SpeechSynthesisUtterance(u.text);w.lang=u.lang;w.rate=u.rate;w.pitch=u.pitch;w.onstart=u.onstart;w.onend=u.onend;w.onerror=u.onerror;w.onboundary=u.onboundary;
    u.onend=null;u.onerror=null;u.onstart=null;try{speechSynthesis.cancel();}catch(e){}_speak(w);};
