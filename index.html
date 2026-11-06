@@ -707,7 +707,14 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
 /* ---------- sound & voice ---------- */
 let AC=null;
-function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}return AC;}
+function audio(){/* iPad：讓錄音不受靜音開關影響（iOS 17 以上支援） */
+ try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+ try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume();}catch(e){}return AC;}
+/* 聲音系統被 iPad 暫停（suspended / interrupted）時先叫醒；叫不醒就改用一般的 <audio> 播放 */
+function audioReady(){const ac=audio();if(!ac)return Promise.resolve(false);if(ac.state==='running')return Promise.resolve(true);
+ return Promise.race([ac.resume().then(()=>ac.state==='running',()=>false),new Promise(r=>setTimeout(()=>r(ac.state==='running'),450))]);}
+let curEl=null;
+function htmlPlay(f){return new Promise(res=>{let done=false;const fin=()=>{if(!done){done=true;res();}};try{if(curEl){curEl.pause();}const a=new Audio('snd/'+f+'.mp3');curEl=a;a.onended=fin;a.onerror=fin;const p=a.play();if(p&&p.catch)p.catch(fin);setTimeout(fin,4000);}catch(e){fin();}});}
 function tone(freqs,dur,type,vol){const ac=audio();if(!ac)return;const t0=ac.currentTime;freqs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;const st=t0+i*dur*0.9;g.gain.setValueAtTime(0.0001,st);g.gain.exponentialRampToValueAtTime(vol||0.18,st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,st+dur);o.connect(g).connect(ac.destination);o.start(st);o.stop(st+dur+0.05);});}
 const sfx={ok:()=>tone([660,880],0.12,'triangle'),bad:()=>tone([300,240],0.16,'sine',0.12),char:()=>tone([523,659,784,1047],0.13,'triangle'),win:()=>tone([523,659,784,659,784,1047],0.14,'triangle',0.2)};
 let zhVoice=null;
@@ -742,7 +749,8 @@ function moeFile(ch){return (S.gender==='M'?'M':'F')+(ch.codePointAt(0)-12548);}
 function moeBuf(f){if(!BUF[f]){BUF[f]=fetch('snd/'+f+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>new Promise((res,rej)=>{const ac=audio();if(!ac)return rej();ac.decodeAudioData(ab,res,rej);}));BUF[f].catch(()=>{delete BUF[f];});}return BUF[f];}
 function playMoe(ch){return playFile(moeFile(ch));}
 function hzFile(ch){const h=isNum(ch)?NUMINFO[ch][1]:ZYINFO[ch][1];return 'c'+h.codePointAt(0);}
-function playFile(f){return moeBuf(f).then(buf=>new Promise(res=>{const ac=audio();if(curSrc){try{curSrc.stop();}catch(e){}}const s=ac.createBufferSource();s.buffer=buf;s.connect(ac.destination);let done=false;const fin=()=>{if(!done){done=true;res();}};s.onended=fin;setTimeout(fin,buf.duration*1000+200);s.start();curSrc=s;}));}
+function playFile(f){return audioReady().then(ok=>ok?webPlay(f).catch(()=>htmlPlay(f)):htmlPlay(f));}
+function webPlay(f){return moeBuf(f).then(buf=>new Promise(res=>{const ac=audio();if(curSrc){try{curSrc.stop();}catch(e){}}const s=ac.createBufferSource();s.buffer=buf;s.connect(ac.destination);let done=false;const fin=()=>{if(!done){done=true;res();}};s.onended=fin;setTimeout(fin,buf.duration*1000+200);s.start();curSrc=s;}));}
 function preload(chars){chars.forEach(c=>{if(!isNum(c))moeBuf(moeFile(c));moeBuf(hzFile(c));});}
 function sayChar(ch){if(!S.voice)return;try{speechSynthesis.cancel();}catch(e){}
  if(isNum(ch)){playFile(hzFile(ch)).then(()=>new Promise(r=>setTimeout(r,300))).then(()=>say(NUMTIP[ch])).catch(()=>say(NUMINFO[ch][1]+'，'+NUMTIP[ch]));return;}
