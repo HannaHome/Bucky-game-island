@@ -587,6 +587,14 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 .story.poem .sent{display:block;text-indent:0;margin:.2em 0}
 @media (max-width:600px){.mopt.zy{font-size:26px;min-height:104px}.bigemo.huge{font-size:100px}.earbtn{width:130px;height:130px;font-size:64px}.tscene .bigemo{font-size:80px}.tword{font-size:32px}.tzy{font-size:36px}}
 @media (max-height:520px){.mopt.zy{font-size:22px;min-height:78px}.bigemo.huge{font-size:80px}.earbtn{width:100px;height:100px;font-size:50px}.tscene{gap:4px}.tscene .bigemo{font-size:56px}.tword{font-size:26px}.tzy{font-size:28px}}
+
+.partial{border-top:2px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.partial h4{margin:0;font-size:19px}
+.plist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pitem{display:flex!important;align-items:center;justify-content:flex-start!important;gap:8px!important;background:#f6f8fc;border-radius:12px;padding:8px 10px;font-size:16px!important}
+.pitem input{width:22px;height:22px;accent-color:#c43c52;flex:none}
+.pitem small{margin-left:auto;color:var(--muted);font-family:var(--f-num);font-size:13px}
+@media (max-width:600px){.plist{grid-template-columns:1fr}}
 </style>
 
 <div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
@@ -732,7 +740,9 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
       <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn leaf" id="xLoad">匯入並合併</button></div>
       <p class="note" id="xMsg" role="status"></p>
     </div>
-    <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="resetBtn">清除進度</button><button class="btn" id="pinChange">更改家長密碼</button></div>
+    <div class="partial"><h4>清除部分進度</h4><p class="note">勾選要清除的地方，只會清掉那些地方的星星和貼紙（「環遊世界」也會清掉護照章），其他地方都會保留。</p><div class="plist" id="pList"></div>
+      <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="pClear">清除勾選的地方</button></div><p class="note" id="pMsg" role="status"></p></div>
+    <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn" id="resetBtn">清除全部進度</button><button class="btn" id="pinChange">更改家長密碼</button></div>
   </div>
   <div class="row"><button class="btn sun" data-close="parentOv">完成</button></div>
 </div></div>
@@ -825,7 +835,7 @@ const LEVELS=[
  {id:'k2',t:'clock',c:[],icon:'🕞',label:'半點',q:'clockHalf'},
  {id:'k3',t:'clock',c:[],icon:'👆',label:'撥撥看',q:'clockSet'},
  {id:'k4',t:'clock',c:[],icon:'⌚',label:'對對看',q:'clockMatch'},
- {id:'s1',t:'money',c:[],icon:'🪙',label:'認識錢幣',q:'coinWhich'},
+ {id:'s1',t:'money',c:[],icon:'🪙',label:'認識錢幣',q:'coinWhich',n:4},
  {id:'s2',t:'money',c:[],icon:'💰',label:'數數看有多少錢',q:'coinSum'},
  {id:'s3',t:'money',c:[],icon:'🍭',label:'買東西',q:'coinPay'},
  {id:'s4',t:'money',c:[],icon:'🤔',label:'夠不夠',q:'coinEnough'}
@@ -1087,7 +1097,7 @@ $('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
 $('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
 $('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
 $('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(L.id);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
-function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';fillVoiceLists();$('setSolo').checked=S.solo;$('setLimit').value=String(S.limit||0);limitNote();$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');$('parentOv').hidden=false;}
+function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';fillVoiceLists();$('setSolo').checked=S.solo;$('setLimit').value=String(S.limit||0);limitNote();$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');renderPartial();$('parentOv').hidden=false;}
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
 $('setTol').onchange=e=>{S.tol=e.target.value;save();};
 $('setVoice').onchange=e=>{S.voice=e.target.checked;save();};
@@ -1369,7 +1379,10 @@ function mCoach(t,k){const b=$('mBubble');b.textContent=t;b.className='bubble'+(
 function mSpeak(t,tk){return new Promise(done=>{if(!S.voice||MZ.tok!==tk){done();return;}try{speechSynthesis.cancel();}catch(e){}let fin=false;const go=()=>{if(!fin){fin=true;done();}};
  try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.88;u.pitch=1;u.onend=go;u.onerror=go;speechSynthesis.speak(u);setTimeout(go,t.length*400+2500);}catch(e){go();}});}
 function mSay(t){return mSpeak(t,MZ.tok);}
-function startMath(i){G.li=i;G.lvl=null;const L=LEVELS[i];MZ.tok++;show('math');MZ.L=L;MZ.qi=0;MZ.mist=0;MZ.qs=Array.from({length:6},()=>mkQ(L.q));
+/* 同一關內不出重複的題目：用題目的「數字內容」比對，抽到出過的就重抽 */
+function qSig(q){const k=['type','a','b','n','g','k','s','h','m','v','p','t','ans','ch','word'];return k.map(x=>x in q?String(q[x]):'').join('|')+'|'+(q.coins?q.coins.join(','):'');}
+function uniqQs(type,n){const out=[],seen=new Set();let tries=0;while(out.length<n&&tries<400){tries++;const q=mkQ(type);const sg=qSig(q);if(seen.has(sg)&&tries<380)continue;seen.add(sg);out.push(q);}return out;}
+function startMath(i){G.li=i;G.lvl=null;const L=LEVELS[i];MZ.tok++;show('math');MZ.L=L;MZ.qi=0;MZ.mist=0;MZ.qs=uniqQs(L.q,L.n||6);
  for(let n=0;n<=10;n++)moeBuf('c'+cn(n).codePointAt(0));nextM();}
 function mProg(){const pr=$('mathProg');pr.innerHTML='';MZ.qs.forEach((q,i)=>{const s=document.createElement('span');s.className='chip num'+(i<MZ.qi?' ok':i===MZ.qi?' now':'');s.textContent=i<MZ.qi?'✓':String(i+1);pr.appendChild(s);});}
 function nextM(){if(!MZ.L)return;if(MZ.qi>=MZ.qs.length){mathDone();return;}const q=MZ.q=MZ.qs[MZ.qi];MZ.lock=false;MZ.cnt=0;mProg();
@@ -1576,6 +1589,18 @@ TTS_FIX.push(['獨角仙','獨腳仙'],['長頸鹿','常頸鹿'],['ㄨㄛ','窩'
  const pa0=extPraise;extPraise=function(q){return q.type==='wordread'?'是'+q.word:pa0(q);};
  const hi0=extHint;extHint=function(q){return q.type==='wordread'?'一個字一個字拼拼看，拼出來再找圖片。':hi0(q);};
  const wr0=extWrong;extWrong=function(q,v){return q.type==='wordread'?'這是「'+v+'」喔。再一個字一個字拼拼看。':wr0(q,v);};}
+
+/* ---------- 清除部分進度 ---------- */
+const AREAS=[['num','數字樂園'],['zy','注音森林'],['geo','環遊世界'],['read','故事樹屋'],['math','數學城堡'],['clock','滴答鐘樓'],['money','叮噹商店'],['lesson','書包教室']];
+function renderPartial(){const box=$('pList');box.innerHTML=AREAS.map(([t,nm])=>{const ls=LEVELS.filter(L=>L.t===t);let st=0;ls.forEach(L=>st+=S.stars[L.id]||0);
+  return '<label class="pitem"><input type="checkbox" value="'+t+'"><span>'+nm+'</span><small>★ '+st+' / '+ls.length*3+'</small></label>';}).join('');
+ const b=$('pClear');b.dataset.arm='';b.textContent='清除勾選的地方';$('pMsg').textContent='';}
+$('pClear').onclick=()=>{const sel=[...$('pList').querySelectorAll('input:checked')].map(x=>x.value);const b=$('pClear');
+ if(!sel.length){$('pMsg').textContent='請先勾選要清除的地方。';return;}
+ const names=sel.map(t=>AREAS.find(a=>a[0]===t)[1]).join('、');
+ if(!b.dataset.arm){b.dataset.arm='1';b.textContent='確定清除：'+names+'？再按一次';$('pMsg').textContent='';return;}
+ const ids=new Set(LEVELS.filter(L=>sel.includes(L.t)).map(L=>L.id));Object.keys(S.stars).forEach(k=>{if(ids.has(k))delete S.stars[k];});
+ S.stickers=S.stickers.filter(k=>!ids.has(k));if(sel.includes('geo'))S.passport={};sel.forEach(t=>{delete AV[t];});save();renderMap();renderPartial();$('pMsg').textContent='已清除：'+names+'。其他地方的紀錄都保留著。';};
 
 renderMap();
 })();
