@@ -570,6 +570,10 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 .mopts.txt .mopt.zy{min-height:100px}
 .bigemo{font-size:64px;line-height:1}
 .bigemo.huge{font-size:140px}
+.readzy{font-size:64px;background:#fff;border-radius:28px;padding:18px 30px;box-shadow:0 6px 0 var(--line)}
+.readzy .zyw{gap:.6em}
+@media (max-width:600px){.readzy{font-size:44px;padding:12px 18px}}
+@media (max-height:520px){.readzy{font-size:36px;padding:8px 14px}}
 .earbtn{font-size:84px;width:170px;height:170px;border-radius:50%;background:#fff;box-shadow:0 6px 0 var(--line);display:grid;place-items:center;animation:bob 1.6s ease-in-out infinite}
 .earbtn.sm{font-size:40px;width:76px;height:76px}
 .earhint{width:100%;text-align:center;font-weight:800;color:var(--muted);font-size:20px}
@@ -845,7 +849,7 @@ const LESSONS=[
  {id:'L15',kind:'write',icon:'🐟',label:'寫寫看 ㄧㄣ',sy:[['ㄐㄧㄣ','金魚','🐟'],['ㄧㄣˇ','飲料','🥤'],['ㄌㄧㄣˊ','鄰居','🏘️']]},
  {id:'L16',kind:'quiz',q:'spell',icon:'🐘',label:'ㄧㄤ 拼拼看',set:[['ㄋㄧㄤˊ','娘'],['ㄌㄧㄤˊ','涼'],['ㄐㄧㄤ','江'],['ㄑㄧㄤ','槍'],['ㄒㄧㄤ','香'],['ㄧㄤ','央']]},
  {id:'L17',kind:'quiz',q:'spell',icon:'🦒',label:'ㄧㄥ 拼拼看',set:[['ㄅㄧㄥ','冰'],['ㄆㄧㄥ','乒'],['ㄇㄧㄥˊ','名'],['ㄉㄧㄥ','丁'],['ㄊㄧㄥ','聽'],['ㄋㄧㄥˊ','寧'],['ㄌㄧㄥˊ','零'],['ㄐㄧㄥ','京'],['ㄑㄧㄥ','青'],['ㄒㄧㄥ','星']]},
- {id:'L18',kind:'quiz',q:'wordpick',icon:'🗣️',label:'我會念語詞',set:[['獨角仙','🪲'],['消防車','🚒'],['溜溜球','🪀'],['乳牛','🐄'],['剪刀','✂️'],['天鵝','🦢'],['金魚','🐟'],['冰淇淋','🍦'],['月亮','🌙'],['大象','🐘'],['長頸鹿','🦒'],['烏龜','🐢'],['麻雀','🐦']]}
+ {id:'L18',kind:'quiz',q:'wordread',icon:'📖',label:'我會讀語詞',set:[['獨角仙','🪲','ㄉㄨˊ ㄐㄧㄠˇ ㄒㄧㄢ','ㄧㄠ'],['消防車','🚒','ㄒㄧㄠ ㄈㄤˊ ㄔㄜ','ㄧㄠ'],['溜溜球','🪀','ㄌㄧㄡ ㄌㄧㄡ ㄑㄧㄡˊ','ㄧㄡ'],['乳牛','🐄','ㄖㄨˇ ㄋㄧㄡˊ','ㄧㄡ'],['剪刀','✂️','ㄐㄧㄢˇ ㄉㄠ','ㄧㄢ'],['天鵝','🦢','ㄊㄧㄢ ㄜˊ','ㄧㄢ'],['煙火','🎆','ㄧㄢ ㄏㄨㄛˇ','ㄧㄢ'],['眼睛','👀','ㄧㄢˇ ㄐㄧㄥ','ㄧㄢ'],['金魚','🐟','ㄐㄧㄣ ㄩˊ','ㄧㄣ'],['冰淇淋','🍦','ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ','ㄧㄣ'],['鋼琴','🎹','ㄍㄤ ㄑㄧㄣˊ','ㄧㄣ'],['月亮','🌙','ㄩㄝˋ ˙ㄌㄧㄤ','ㄧㄤ'],['大象','🐘','ㄉㄚˋ ㄒㄧㄤˋ','ㄧㄤ'],['長頸鹿','🦒','ㄔㄤˊ ㄐㄧㄥˇ ㄌㄨˋ','ㄧㄥ'],['烏龜','🐢','ㄨ ㄍㄨㄟ','ㄨㄟ'],['麻雀','🐦','ㄇㄚˊ ㄑㄩㄝˋ','ㄩㄝ']]}
 ];
 LESSONS.forEach(L=>{L.t='lesson';L.c=L.sy?L.sy.flatMap(s=>[...s[0]].filter(c=>!'ˊˇˋ˙'.includes(c))):[];LEVELS.push(L);});
 
@@ -1555,10 +1559,23 @@ const _extHint=extHint;extHint=function(q){
 const _extWrong=extWrong;extWrong=function(q,v){
  if(q.type==='spell')return '再聽一次，注意開頭的聲母喔。';if(q.type==='tone')return '再聽一次：一聲平平的，二聲往上揚，三聲先降再升，四聲往下降。';
  if(q.type==='wordzy')return '這不是「'+q.word+'」的注音喔，再拼拼看。';if(q.type==='wordpick')return '不是這個喔，再聽一次「'+q.word+'」。';return _extWrong(q,v);};
-$('mScene').addEventListener('click',e=>{if(!e.target.closest('.earbtn')||!MZ.q)return;audio();if(MZ.q.play)MZ.q.play();else if(MZ.q.type==='wordpick')mSay(MZ.q.word);});
+/* 點耳朵：先讓星星老師停下來，在手指點下去的同一瞬間直接播放錄音（iPad 最穩定的方式） */
+$('mScene').addEventListener('click',e=>{if(!e.target.closest('.earbtn')||!MZ.q)return;const q=MZ.q;MZ.tok++;try{speechSynthesis.cancel();}catch(x){}
+ if(q.ch){htmlPlay('c'+q.ch.codePointAt(0)).then(()=>{});}else if(q.type==='wordpick')mSay(q.word);});
 /* 寫整個拼音：圖卡顯示語詞，正在寫的符號會亮起來 */
 function sylPos(ci){let n=0;for(let k=0;k<G.lvl.sy.length;k++){const sy=[...G.lvl.sy[k][0]].filter(c=>!'ˊˇˋ˙'.includes(c));if(ci<n+sy.length)return {k,i:ci-n};n+=sy.length;}return {k:0,i:0};}
 TTS_FIX.push(['獨角仙','獨腳仙'],['長頸鹿','常頸鹿'],['ㄨㄛ','窩'],['ㄧㄠ','腰'],['ㄧㄡ','優'],['ㄨㄟ','威'],['ㄧㄢ','煙'],['ㄧㄣ','音'],['ㄧㄤ','央'],['ㄧㄥ','英'],['ㄩㄝ','約'],['ㄩㄣ','暈']);
+
+/* 我會讀語詞：只看注音，自己拼讀後找圖片（錯的選項優先挑相同結合韻的詞） */
+{const mk0=extMk;extMk=function(type,q){if(type!=='wordread')return mk0(type,q);const it=lsDraw();[q.word,q.emo,q.zyw,q.fin]=it;q.ans=q.word;
+  const same=shuffle(MZ.L.set.filter(x=>x!==it&&x[3]===q.fin)),rest=shuffle(MZ.L.set.filter(x=>x!==it&&x[3]!==q.fin));
+  q.opts=shuffle([q.word].concat(same.concat(rest).slice(0,2).map(x=>x[0])));q.pic=1;q.render=v=>'<span class="bigemo">'+MZ.L.set.find(x=>x[0]===v)[1]+'</span>';return q;};
+ const sc0=extScene;extScene=function(q){return q.type==='wordread'?'<div class="readzy">'+zyWord(q.zyw)+'</div><div class="earhint">自己讀讀看，是哪一張圖？</div>':sc0(q);};
+ const eq0=extEq;extEq=function(q,show){return q.type==='wordread'?(show?'<b class="ansv">'+q.word+'</b>':''):eq0(q,show);};
+ const pr0=extPrompt;extPrompt=function(q){return q.type==='wordread'?'讀讀看注音，是哪一張圖？':pr0(q);};
+ const pa0=extPraise;extPraise=function(q){return q.type==='wordread'?'是'+q.word:pa0(q);};
+ const hi0=extHint;extHint=function(q){return q.type==='wordread'?'一個字一個字拼拼看，拼出來再找圖片。':hi0(q);};
+ const wr0=extWrong;extWrong=function(q,v){return q.type==='wordread'?'這是「'+v+'」喔。再一個字一個字拼拼看。':wr0(q,v);};}
 
 renderMap();
 })();
