@@ -595,6 +595,37 @@ label.hot{background:#fff3cf;border-radius:14px;padding:8px 10px;margin:0 -10px}
 .pitem input{width:22px;height:22px;accent-color:#c43c52;flex:none}
 .pitem small{margin-left:auto;color:var(--muted);font-family:var(--f-num);font-size:13px}
 @media (max-width:600px){.plist{grid-template-columns:1fr}}
+
+/* ===== 數學城堡 Level 分頁與新題型 ===== */
+.lvtabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+.lvtab{display:flex;flex-direction:column;align-items:flex-start;padding:8px 14px;border-radius:16px;background:rgba(255,255,255,.75);box-shadow:0 3px 0 var(--line);border:3px solid transparent}
+.lvtab b{font-family:var(--f-num);font-size:18px}.lvtab small{font-size:12px;color:var(--muted);font-weight:700}
+.lvtab.on{border-color:#7a6cf0;background:#fff}
+.blk{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap;justify-content:center;max-width:100%}
+.blk .flat{width:100px;height:100px;border-radius:6px;background:#8fd19e;background-image:linear-gradient(rgba(255,255,255,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.55) 1px,transparent 1px);background-size:10px 10px;border:2px solid #4fb865}
+.blk .rod{width:12px;height:100px;border-radius:4px;background:#7ab8f5;background-image:linear-gradient(rgba(255,255,255,.7) 1px,transparent 1px);background-size:12px 10px;border:2px solid #3a8ad8}
+.blk .units{display:grid;grid-template-columns:repeat(5,12px);gap:2px;align-content:end}
+.blk .unit{width:12px;height:12px;border-radius:3px;background:#ffc23d;border:1.5px solid #f29e00}
+.blk.big .flat{width:130px;height:130px;background-size:13px 13px}.blk.big .rod{width:16px;height:130px;background-size:16px 13px}
+.blk.big .units{grid-template-columns:repeat(5,16px)}.blk.big .unit{width:16px;height:16px}
+.cmpbig{display:flex;align-items:center;gap:22px;font:800 84px var(--f-num)}
+.cbox{display:inline-grid;place-items:center;width:84px;height:84px;border:5px dashed #7a6cf0;border-radius:20px;color:#7a6cf0;font-size:48px}
+.seqrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.seqrow .sq{min-width:84px;height:84px;padding:0 10px;border-radius:20px;background:#fff;box-shadow:0 5px 0 var(--line);display:grid;place-items:center;font:800 40px var(--f-num)}
+.seqrow .sq.hole{border:4px dashed #7a6cf0;color:#7a6cf0}.seqrow .sarr{font-size:26px;color:var(--muted)}
+.wstory{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:520px;text-align:center}
+.wstory p{font-size:28px;font-weight:800;line-height:1.6;margin:0}
+.arr{display:grid;gap:6px}.arr .dot{width:22px;height:22px;border-radius:50%;background:#ff8c42;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+@media (max-width:600px){.cmpbig{font-size:56px;gap:12px}.cbox{width:60px;height:60px;font-size:34px}.seqrow .sq{min-width:58px;height:58px;font-size:28px}.wstory p{font-size:21px}.blk .flat{width:70px;height:70px;background-size:7px 7px}.blk .rod{height:70px;width:9px;background-size:9px 7px}.blk.big .flat{width:90px;height:90px;background-size:9px 9px}.blk.big .rod{height:90px;width:11px;background-size:11px 9px}.arr .dot{width:16px;height:16px}}
+@media (max-height:520px){.cmpbig{font-size:46px}.cbox{width:52px;height:52px}.seqrow .sq{min-width:50px;height:50px;font-size:24px}.wstory p{font-size:18px}.blk .flat,.blk.big .flat{width:64px;height:64px;background-size:6.4px 6.4px}.blk .rod,.blk.big .rod{height:64px;width:8px;background-size:8px 6.4px}}
+
+.ordrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.ordstart{font-weight:800;color:var(--muted);font-size:20px;margin-right:4px}
+.shape{width:84px;height:84px}
+.bigq.shp{font-size:72px;color:#7a6cf0}
+.splitbox{display:flex;flex-direction:column;align-items:center;gap:10px}
+.plate.qplate{display:grid;place-items:center;font:800 48px var(--f-num);color:#7a6cf0}
+@media (max-width:600px){.bigq.shp{font-size:50px}.shape{width:64px;height:64px}}
 </style>
 
 <div class="sky" aria-hidden="true"><i class="skysun"></i><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i><i class="wave w1"></i><i class="wave w2"></i></div>
@@ -862,6 +893,32 @@ const LESSONS=[
  {id:'L18',kind:'quiz',q:'wordread',icon:'📖',label:'我會讀語詞',set:[['獨角仙','🪲','ㄉㄨˊ ㄐㄧㄠˇ ㄒㄧㄢ','ㄧㄠ'],['消防車','🚒','ㄒㄧㄠ ㄈㄤˊ ㄔㄜ','ㄧㄠ'],['溜溜球','🪀','ㄌㄧㄡ ㄌㄧㄡ ㄑㄧㄡˊ','ㄧㄡ'],['乳牛','🐄','ㄖㄨˇ ㄋㄧㄡˊ','ㄧㄡ'],['剪刀','✂️','ㄐㄧㄢˇ ㄉㄠ','ㄧㄢ'],['天鵝','🦢','ㄊㄧㄢ ㄜˊ','ㄧㄢ'],['煙火','🎆','ㄧㄢ ㄏㄨㄛˇ','ㄧㄢ'],['眼睛','👀','ㄧㄢˇ ㄐㄧㄥ','ㄧㄢ'],['金魚','🐟','ㄐㄧㄣ ㄩˊ','ㄧㄣ'],['冰淇淋','🍦','ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ','ㄧㄣ'],['鋼琴','🎹','ㄍㄤ ㄑㄧㄣˊ','ㄧㄣ'],['月亮','🌙','ㄩㄝˋ ˙ㄌㄧㄤ','ㄧㄤ'],['大象','🐘','ㄉㄚˋ ㄒㄧㄤˋ','ㄧㄤ'],['長頸鹿','🦒','ㄔㄤˊ ㄐㄧㄥˇ ㄌㄨˋ','ㄧㄥ'],['烏龜','🐢','ㄨ ㄍㄨㄟ','ㄨㄟ'],['麻雀','🐦','ㄇㄚˊ ㄑㄩㄝˋ','ㄩㄝ']]}
 ];
 LESSONS.forEach(L=>{L.t='lesson';L.c=L.sy?L.sy.flatMap(s=>[...s[0]].filter(c=>!'ˊˇˋ˙'.includes(c))):[];LEVELS.push(L);});
+/* ---------- 數學城堡 Level 2（一年級下）、Level 3（二年級） ---------- */
+[
+ {id:'m2_1',lv:2,icon:'🧱',label:'十位和個位',q:'place'},
+ {id:'m2_2',lv:2,icon:'➕',label:'二位數加一位數',q:'add21'},
+ {id:'m2_3',lv:2,icon:'➖',label:'二位數減一位數',q:'sub21'},
+ {id:'m2_4',lv:2,icon:'🔟',label:'整十加減',q:'tens'},
+ {id:'m2_5',lv:2,icon:'⚖️',label:'比大小',q:'cmpsym'},
+ {id:'m2_6',lv:2,icon:'🔢',label:'找規律',q:'seq'},
+ {id:'m2_7',lv:2,icon:'📝',label:'應用題',q:'word1'},
+ {id:'m3_1',lv:3,icon:'➕',label:'二位數加二位數',q:'add22'},
+ {id:'m3_2',lv:3,icon:'➖',label:'二位數減二位數',q:'sub22'},
+ {id:'m3_3',lv:3,icon:'🟩',label:'百位、十位、個位',q:'place3'},
+ {id:'m3_4',lv:3,icon:'✖️',label:'2、5、10 的乘法',q:'mul25'},
+ {id:'m3_5',lv:3,icon:'✖️',label:'3、4 的乘法',q:'mul34'},
+ {id:'m3_6',lv:3,icon:'🏆',label:'九九乘法大挑戰',q:'mul'},
+ {id:'m3_7',lv:3,icon:'📦',label:'乘法應用題',q:'mulword'},
+ {id:'m3_8',lv:3,icon:'🛍️',label:'兩步驟應用題',q:'word2'}
+].forEach((L,i)=>{L.t='math';L.c=[];LEVELS.push(L);});
+[{id:'m1a',icon:'🐶',label:'第幾個',q:'ordinal',ord:20},{id:'m1b',icon:'🔢',label:'數的順序',q:'nextprev',ord:30},{id:'m1c',icon:'🔺',label:'認識形狀',q:'shape',ord:40},
+ {id:'m1d',icon:'🍱',label:'分一分',q:'split',ord:60},{id:'m1e',icon:'➕',label:'連加',q:'add3',ord:100},{id:'m1f',icon:'🐦',label:'圖畫應用題',q:'wordL1',ord:110},{id:'m1g',icon:'🧮',label:'十幾的加減',q:'add20nc',ord:140}
+].forEach(L=>{L.t='math';L.c=[];L.lv=1;LEVELS.push(L);});
+{const O={m1:10,m2:50,m3:70,m4:80,m5:90,m6:120,m7:130,m8:150,m9:160,m10:170};LEVELS.forEach(L=>{if(O[L.id])L.ord=O[L.id];});}
+/* 依照顯示順序排好的關卡（數學城堡 Level 1 有穿插新關卡） */
+function ordered(t,lv){return LEVELS.map((L,i)=>[L,i]).filter(([L])=>L.t===t&&(L.lv||1)===lv).sort((a,b)=>(a[0].ord??a[1])-(b[0].ord??b[1])).map(x=>x[0]);}
+function nextIdx(i){const L=LEVELS[i];if(!L)return -1;const o=ordered(L.t,L.lv||1);const k=o.indexOf(L);return k>=0&&o[k+1]?LEVELS.indexOf(o[k+1]):-1;}
+function lvDone(lv){return ordered('math',lv).every(L=>S.stars[L.id]);}
 
 const STICKERS=['🦄','🐳','🦖','🚀','🐼','🦊','🐙','🌈','🍦','🐝','🦋','🚂','🎠','🏅','🌍','🧭','✈️','🛳️','🏝️','🗺️','🏆','🎡','🚁','🗽','🏰','🐧','🦜','🚢','📚','🖍️','🦉','🐞','🍀','🎨','🧸','🌟','🧮','🎲','🦒','🐬','🍩','🪁','🦕','🚲','🎵','🏅','⏰','🐭','🕰️','🌙','🐷','🛒','🎁','🪙','📒','✏️','🎒','🖍️','📐','🧩','🎹','🐨','🎆','🍜','🐟','🪱','🦢','🐘','🦒','🪀','🚒','🌟'];
 const COLORS=['#ff6b81','#3fa2f7','#4fb865','#f29e00','#7a6cf0','#ff8c42'];
@@ -1056,7 +1113,7 @@ function startChar(){G.round=0;G.si=0;G.fail=0;G.showHint=true;G.demo=null;G.ink
 const picBig=document.getElementById('picBig'),picWord=document.getElementById('picWord');
 function renderTop(){const pr=document.getElementById('progress');pr.innerHTML='';G.lvl.c.forEach((c,i)=>{const s=document.createElement('span');s.className='chip'+(isNum(c)?' num':'')+(i<G.ci?' ok':i===G.ci?' now':'');s.textContent=c;pr.appendChild(s);});
  const mt=document.getElementById('modeTag');mt.textContent=G.round===0?'描描看':'自己寫';mt.className='mode'+(G.round===1?' solo':'');}
-function startLevel(i){if(LEVELS[i].t==='lesson'){S.tab='lesson';save();if(LEVELS[i].kind==='read'){startRead(i);return;}if(LEVELS[i].kind==='quiz'){startMath(i);return;}}if(['math','clock','money'].includes(LEVELS[i].t)){S.tab=LEVELS[i].t;save();startMath(i);return;}S.tab=LEVELS[i].t;save();if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
+function startLevel(i){if(LEVELS[i].t==='lesson'){S.tab='lesson';save();if(LEVELS[i].kind==='read'){startRead(i);return;}if(LEVELS[i].kind==='quiz'){startMath(i);return;}}if(['math','clock','money'].includes(LEVELS[i].t)){S.tab=LEVELS[i].t;if(LEVELS[i].t==='math')S.mathLv=LEVELS[i].lv||1;save();startMath(i);return;}S.tab=LEVELS[i].t;save();if(LEVELS[i].t==='geo'){startGeo(i);return;}if(LEVELS[i].t==='read'){startRead(i);return;}G.lvl=LEVELS[i];G.li=i;G.ci=0;G.mist=0;audio();preload(G.lvl.c);show('play');requestAnimationFrame(()=>{sizeBoard();startChar();});}
 function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/2)?3:G.mist<=per*2?2:1;const id=G.lvl.id;const first=!S.stars[id];
  S.stars[id]=Math.max(S.stars[id]||0,stars);let stk='';if(!S.stickers.includes(LEVELS[G.li].id)){S.stickers.push(LEVELS[G.li].id);}stk=STICKERS[G.li%STICKERS.length];save();
  sfx.win();burst(160);document.getElementById('winTitle').textContent=(S.name||'')+'過關了！';
@@ -1067,7 +1124,7 @@ function levelDone(){const per=G.lvl.c.length;const stars=G.mist<=Math.ceil(per/
 
 /* ---------- map ---------- */
 const LOCK='<svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open)return true;const same=LEVELS.filter(x=>x.t===L.t);const k=same.indexOf(L);return k===0||!!S.stars[same[k-1].id];}
+function unlocked(i){if(S.unlock)return true;const L=LEVELS[i];if(L.open||S.stars[L.id])return true;const same=ordered(L.t,L.lv||1);if(L.t==='math'&&(L.lv||1)>1&&same.indexOf(L)===0)return lvDone((L.lv||1)-1);const k=same.indexOf(L);return k===0||!!S.stars[same[k-1].id];}
 function renderMap(){{const T=[...((S.name||'我')+'的冒險島')],C=['#ff6b81','#f29e00','#4fb865','#3fa2f7','#7a6cf0','#ff8c42','#e2694e','#2f8f47'];const tn=document.getElementById('titleName');tn.setAttribute('aria-label',T.join(''));tn.innerHTML=T.map((c,i)=>'<span class="tl" style="--i:'+i+';color:'+C[i%C.length]+'">'+c+'</span>').join('');}
  let total=0;Object.values(S.stars).forEach(v=>total+=v);document.getElementById('starTotal').textContent=total;
  const map=document.getElementById('map');map.innerHTML='';
@@ -1078,13 +1135,14 @@ function renderMap(){{const T=[...((S.name||'我')+'的冒險島')],C=['#ff6b81'
   bt.innerHTML='<span class="badge">'+b+'</span><span class="itx"><b>'+name+'</b><small>★ '+got+' / '+ls.length*3+'</small></span>';
   bt.onclick=()=>{audio();S.tab=t;save();renderMap();$('map').scrollTop=0;};tabs.appendChild(bt);if(t===S.tab)requestAnimationFrame(()=>{try{bt.scrollIntoView({inline:'nearest',block:'nearest'});}catch(e){}});});
  ISL.forEach(([t,name,b])=>{if(t!==S.tab)return;const isl=document.createElement('div');isl.className='island '+t;isl.dataset.deco={num:'🐥',zy:'🍄',geo:'🐳',read:'🦉',math:'🐸',clock:'🐭',money:'🐷',lesson:'🐿️'}[t]||'';const desc=(ISL.find(x=>x[0]===t)||[])[3]||'';isl.innerHTML='<h2><span class="badge">'+b+'</span>'+name+(desc?'<small class="idesc">'+desc+'</small>':'')+'</h2>';const row=document.createElement('div');row.className='stones';
-  let nextMarked=false;LEVELS.forEach((L,i)=>{if(L.t!==t)return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
-   let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}if(st)cls+=' done';btn.className=cls;btn.style.setProperty('--i',String(LEVELS.filter(x=>x.t===t).indexOf(L)));
-   const no=LEVELS.filter(x=>x.t===t).indexOf(L)+1;
+  let nextMarked=false;LEVELS.map((L,i)=>[L,i]).sort((a,b)=>(a[0].ord??a[1])-(b[0].ord??b[1])).forEach(([L,i])=>{if(L.t!==t)return;if(t==='math'&&(L.lv||1)!==(S.mathLv||1))return;const st=S.stars[L.id]||0,open=unlocked(i);const btn=document.createElement('button');
+   let cls='stone';if(!open)cls+=' locked';else if(!st&&!nextMarked){cls+=' next';nextMarked=true;}if(st)cls+=' done';btn.className=cls;btn.style.setProperty('--i',String(ordered(t,L.lv||1).indexOf(L)));
+   const no=ordered(t,L.lv||1).indexOf(L)+1;
    btn.innerHTML='<span class="no">'+no+'</span><span class="chars">'+(L.icon||L.c.join(t==='num'?' ':''))+'</span>'+(L.label?'<span class="lbl">'+L.label+'</span>':'')+(open?'<span class="stars">'+[0,1,2].map(k=>k<st?'<b>★</b>':'★').join('')+'</span>':LOCK);
    if(st===3)btn.insertAdjacentHTML('beforeend','<span class="crown" aria-hidden="true">👑</span>');btn.setAttribute('aria-label','第'+no+'關 '+(L.label||L.c.join(' '))+(open?'':'，還沒解鎖'));
    btn.onclick=()=>{audio();if(!open){sfx.bad();btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');return;}startLevel(i);};row.appendChild(btn);});
-  isl.appendChild(row);map.appendChild(isl);layoutRoad(row,t);});}
+  if(t==='math'){const tb=document.createElement('div');tb.className='lvtabs';[1,2,3].forEach(n=>{const ls=LEVELS.filter(x=>x.t==='math'&&(x.lv||1)===n);let g=0;ls.forEach(x=>g+=S.stars[x.id]||0);const bt=document.createElement('button');bt.className='lvtab'+(n===(S.mathLv||1)?' on':'');const lk=n>1&&!lvDone(n-1);bt.innerHTML='<b>'+(lk?'🔒 ':'')+'Level '+n+'</b><small>'+(lk?'完成 Level '+(n-1)+' 就會打開':['一年級上','一年級下','二年級'][n-1]+'・★ '+g+'/'+ls.length*3)+'</small>';bt.onclick=()=>{audio();S.mathLv=n;save();renderMap();};tb.appendChild(bt);});isl.insertBefore(tb,isl.querySelector('h2').nextSibling);}
+  isl.appendChild(row);map.appendChild(isl);layoutRoad(row,t==='math'?'math'+(S.mathLv||1):t);});}
 function show(w){document.getElementById('mapScreen').hidden=w!=='map';document.getElementById('playScreen').hidden=w!=='play';document.getElementById('geoScreen').hidden=w!=='geo';document.getElementById('readScreen').hidden=w!=='read';document.getElementById('mathScreen').hidden=w!=='math';if(w!=='math'&&typeof MZ!=='undefined'){MZ.tok++;MZ.L=null;}if(w!=='read'){RZ.tok++;RZ.L=null;}if(w!=='geo'){GZ.tok++;GZ.L=null;}if(w==='map'){G.lvl=null;G.demo=null;try{speechSynthesis.cancel();}catch(e){}renderMap();}}
 
 /* ---------- buttons ---------- */
@@ -1096,7 +1154,7 @@ $('btnRedo').onclick=()=>{if(!G.lvl||G.busy)return;G.si=0;G.showHint=true;G.ink=
 $('btnSkip').onclick=()=>{if(!G.lvl||G.busy)return;G.mist+=2;nextChar();};
 $('winMap').onclick=()=>{$('winOv').hidden=true;show('map');};
 $('winAgain').onclick=()=>{$('winOv').hidden=true;startLevel(G.li);};
-$('winNext').onclick=()=>{$('winOv').hidden=true;const n=G.li+1;if(LEVELS[n])startLevel(n);else show('map');};
+$('winNext').onclick=()=>{$('winOv').hidden=true;const n=nextIdx(G.li);if(n>=0&&unlocked(n))startLevel(n);else show('map');};
 $('openBook').onclick=()=>{const b=$('book');b.innerHTML='';LEVELS.forEach((L,i)=>{const s=document.createElement('div');const got=S.stickers.includes(L.id);s.className='slot'+(got?' got':'');s.textContent=got?STICKERS[i%STICKERS.length]:'?';b.appendChild(s);});$('bookOv').hidden=false;};
 function openSettings(){$('setName').value=S.name;$('setTol').value=S.tol;$('setVoice').checked=S.voice;$('setGender').value=S.gender||'F';fillVoiceLists();$('setSolo').checked=S.solo;$('setLimit').value=String(S.limit||0);limitNote();$('setUnlock').checked=S.unlock;$('resetBtn').textContent='清除進度';$('resetBtn').dataset.arm='';$('xOut').hidden=true;$('xCopy').hidden=true;xMsg('','');renderPartial();$('parentOv').hidden=false;}
 $('setName').oninput=e=>{S.name=e.target.value.trim();save();};
@@ -1381,16 +1439,16 @@ function mSpeak(t,tk){return new Promise(done=>{if(!S.voice||MZ.tok!==tk){done()
  try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-TW';if(zhVoice)u.voice=zhVoice;u.rate=0.88;u.pitch=1;u.onend=go;u.onerror=go;speechSynthesis.speak(u);setTimeout(go,t.length*400+2500);}catch(e){go();}});}
 function mSay(t){return mSpeak(t,MZ.tok);}
 /* 同一關內不出重複的題目：用題目的「數字內容」比對，抽到出過的就重抽 */
-function qSig(q){const k=['type','a','b','n','g','k','s','h','m','v','p','t','ans','ch','word'];return k.map(x=>x in q?String(q[x]):'').join('|')+'|'+(q.coins?q.coins.join(','):'');}
+function qSig(q){const k=['type','a','b','c','n','g','k','s','h','m','v','p','t','u','x','y','st','hole','eqs','ans','ch','word','row','who','dir','shape'];return k.map(x=>x in q?String(q[x]):'').join('|')+'|'+(q.coins?q.coins.join(','):'');}
 function uniqQs(type,n){const out=[],seen=new Set();let tries=0;while(out.length<n&&tries<400){tries++;const q=mkQ(type);const sg=qSig(q);if(seen.has(sg)&&tries<380)continue;seen.add(sg);out.push(q);}return out;}
 function startMath(i){G.li=i;G.lvl=null;const L=LEVELS[i];MZ.tok++;show('math');MZ.L=L;MZ.qi=0;MZ.mist=0;MZ.qs=uniqQs(L.q,L.n||6);
  for(let n=0;n<=10;n++)moeBuf('c'+cn(n).codePointAt(0));nextM();}
 function mProg(){const pr=$('mathProg');pr.innerHTML='';MZ.qs.forEach((q,i)=>{const s=document.createElement('span');s.className='chip num'+(i<MZ.qi?' ok':i===MZ.qi?' now':'');s.textContent=i<MZ.qi?'✓':String(i+1);pr.appendChild(s);});}
 function nextM(){if(!MZ.L)return;if(MZ.qi>=MZ.qs.length){mathDone();return;}const q=MZ.q=MZ.qs[MZ.qi];MZ.lock=false;MZ.cnt=0;mProg();
  const sc=$('mScene');sc.className='mscene t-'+q.type;sc.innerHTML=sceneHTML(q);$('mEq').innerHTML=eqHTML(q,false);$('mQ').textContent=mPrompt(q);
- $('mRecount').hidden=!/^(count|add|sub|make10|compare|groups)$/.test(q.type);const box=$('mOpts');box.innerHTML='';box.className='mopts'+(q.ui?' '+q.ui:'')+(q.wide?' two':'')+(q.four?' four':'')+(q.one?' txt':'');document.querySelector('#mathScreen .mode').textContent={math:'數學',clock:'時鐘',money:'錢幣',lesson:'書包'}[MZ.L.t]||'數學';if(!extUI(q,box))(q.opts||mOpts(q.ans)).forEach(v=>{const b=document.createElement('button');b.className='mopt'+(q.pic?' pic':'')+(q.wide?' wide':'')+(q.txt?' txt':'')+(q.zy?' zy':'');if(q.render)b.innerHTML=q.render(v);else b.textContent=v;b.onclick=()=>mAnswer(v,b);box.appendChild(b);});
+ $('mRecount').hidden=!/^(count|add|sub|make10|compare|groups)$/.test(q.type);const box=$('mOpts');box.innerHTML='';box.className='mopts'+(q.ui?' '+q.ui:'')+(q.wide?' two':'')+(q.four?' four':'')+(q.one?' txt':'');document.querySelector('#mathScreen .mode').textContent=(MZ.L.t==='math'&&MZ.L.lv?'Level '+MZ.L.lv:{math:'數學',clock:'時鐘',money:'錢幣',lesson:'書包'}[MZ.L.t])||'數學';if(!extUI(q,box))(q.opts||mOpts(q.ans)).forEach(v=>{const b=document.createElement('button');b.className='mopt'+(q.pic?' pic':'')+(q.wide?' wide':'')+(q.txt?' txt':'')+(q.zy?' zy':'');if(q.render)b.innerHTML=q.render(v);else b.textContent=v;b.onclick=()=>mAnswer(v,b);box.appendChild(b);});
  mCoach(extHint(q)||(q.type==='skip'?'看青蛙跳了幾次，一次跳幾格。':q.type==='groups'?'一盤一盤數數看。':'不知道的話，點點看東西，一個一個數。'));
- if(q.type==='sub')setTimeout(()=>{if(MZ.q===q)sc.classList.add('take');},700);
+ if(q.type==='sub'||q.take)setTimeout(()=>{if(MZ.q===q)sc.classList.add('take');},700);
  mSay(mPrompt(q)).then(()=>{if(MZ.q===q&&q.play)q.play();});}
 function mAnswer(v,btn){if(MZ.lock)return;audio();const q=MZ.q,tk=MZ.tok;
  if(v===q.ans){MZ.lock=true;sfx.char();btn.classList.add('right');$('mEq').innerHTML=eqHTML(q,true);const sc=$('mScene');sc.classList.add('solved');
@@ -1409,7 +1467,7 @@ $('mSayQ').onclick=()=>{audio();MZ.tok++;const q=MZ.q;if(q)mSay(mPrompt(q)).then
 $('mathBack').onclick=()=>show('map');
 function mathDone(){MZ.lock=true;const stars=MZ.mist<=1?3:MZ.mist<=3?2:1;const L=MZ.L,first=!S.stars[L.id];S.stars[L.id]=Math.max(S.stars[L.id]||0,stars);if(!S.stickers.includes(L.id))S.stickers.push(L.id);save();
  sfx.win();burst(160);$('winTitle').textContent=(S.name||'')+({clock:'是時間小達人！',money:'是購物小達人！',lesson:'好會拼音！'}[L.t]||'算對了！');$('winStars').innerHTML=[0,1,2].map(k=>k<stars?'<b>★</b>':'☆').join('');$('winSticker').textContent=STICKERS[G.li%STICKERS.length];
- $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再玩一次可以拿到更多星星。':' 三顆星，數學小天才！');const nx=LEVELS[G.li+1];$('winNext').hidden=!nx||nx.t!==L.t;say((S.name||'')+'好會算數學！');$('winOv').hidden=false;}
+ $('winMsg').textContent=(first?'拿到新貼紙！':'貼紙已經在貼紙簿裡囉。')+(stars<3?' 再玩一次可以拿到更多星星。':' 三顆星，數學小天才！');const nx=LEVELS[nextIdx(G.li)];$('winNext').hidden=!nx;say((S.name||'')+'好會算數學！');$('winOv').hidden=false;}
 
 /* ---------- 滴答鐘樓 & 叮噹小商店 ---------- */
 const SHOP=[['🍭','棒棒糖'],['🍦','冰淇淋'],['🧃','果汁'],['🍙','飯糰'],['🎈','氣球'],['✏️','鉛筆'],['🧸','小熊'],['🍌','香蕉'],['🍩','甜甜圈'],['🚂','小火車']];
@@ -1602,6 +1660,116 @@ $('pClear').onclick=()=>{const sel=[...$('pList').querySelectorAll('input:checke
  if(!b.dataset.arm){b.dataset.arm='1';b.textContent='確定清除：'+names+'？再按一次';$('pMsg').textContent='';return;}
  const ids=new Set(LEVELS.filter(L=>sel.includes(L.t)).map(L=>L.id));Object.keys(S.stars).forEach(k=>{if(ids.has(k))delete S.stars[k];});
  S.stickers=S.stickers.filter(k=>!ids.has(k));if(sel.includes('geo'))S.passport={};sel.forEach(t=>{delete AV[t];});save();renderMap();renderPartial();$('pMsg').textContent='已清除：'+names+'。其他地方的紀錄都保留著。';};
+
+/* ---------- 數學城堡 Level 2、3 題型 ---------- */
+const NAMES=['小明','小美','哥哥','姐姐','弟弟','妹妹'];
+function pickName(){return NAMES[ri(0,NAMES.length-1)];}
+/* 百板、十條、一個小方塊 */
+function blocks(n,cls){const h=Math.floor(n/100),t=Math.floor(n%100/10),u=n%10;let s='<div class="blk '+(cls||'')+'">';
+ for(let i=0;i<h;i++)s+='<span class="flat"></span>';for(let i=0;i<t;i++)s+='<span class="rod"></span>';s+='<span class="units">';for(let i=0;i<u;i++)s+='<span class="unit"></span>';return s+'</span></div>';}
+function mulScene(k,g,e){if(g<=5&&k<=10){let h='<div class="plates">';for(let i=0;i<g;i++)h+='<div class="plate">'+its(k,e)+'</div>';return h+'</div>';}
+ let h='<div class="arr" style="grid-template-columns:repeat('+k+',auto)">';for(let r=0;r<g;r++)for(let c=0;c<k;c++)h+='<span class="dot"></span>';return h+'</div><div class="earhint">'+g+' 排，每排 '+k+' 個</div>';}
+{const mk0=extMk;extMk=function(type,q){const e=q.it[0];
+ if(type==='place'){q.t=ri(1,9);q.u=ri(0,9);q.ans=q.t*10+q.u;return q;}
+ if(type==='add21'){q.a=ri(11,89);q.b=ri(2,9);if(q.a+q.b>99)q.a=99-q.b-ri(0,5);q.ans=q.a+q.b;q.type='add2';return q;}
+ if(type==='sub21'){q.a=ri(20,99);q.b=ri(2,9);q.ans=q.a-q.b;q.type='sub2';return q;}
+ if(type==='tens'){if(Math.random()<.5){q.a=10*ri(1,8);q.b=10*ri(1,9-q.a/10);q.ans=q.a+q.b;q.type='add2';}else{q.a=10*ri(2,9);q.b=10*ri(1,q.a/10-1);q.ans=q.a-q.b;q.type='sub2';}return q;}
+ if(type==='add22'){q.a=ri(15,78);q.b=ri(11,99-q.a);q.ans=q.a+q.b;q.type='add2';return q;}
+ if(type==='sub22'){q.a=ri(31,99);q.b=ri(11,q.a-10);q.ans=q.a-q.b;q.type='sub2';return q;}
+ if(type==='place3'){q.h=ri(1,9);q.t=ri(0,9);q.u=ri(0,9);q.ans=q.h*100+q.t*10+q.u;return q;}
+ if(type==='cmpsym'){q.x=ri(10,99);q.y=Math.random()<.2?q.x:ri(10,99);if(Math.random()<.4)q.y=Math.floor(q.x/10)*10+ri(0,9);q.ans=q.x>q.y?'>':q.x<q.y?'<':'=';q.opts=['>','<','='];q.sym=1;return q;}
+ if(type==='seq'){q.st=[1,2,5,10][ri(0,3)];const st0=q.st===1?ri(10,90):q.st===2?2*ri(1,40):q.st===5?5*ri(0,14):10*ri(0,5);q.list=[0,1,2,3].map(i=>st0+i*q.st);q.hole=ri(1,3);q.ans=q.list[q.hole];return q;}
+ if(type==='word1'){const nm=pickName(),[em,it,ms]=q.it;const k=ri(0,2);
+  if(k===0){q.a=ri(12,89);q.b=ri(2,9);if(q.a+q.b>99)q.a=99-q.b;q.ans=q.a+q.b;q.story=nm+'有 '+q.a+' '+ms+it+'，又得到 '+q.b+' '+ms+'，一共有幾'+ms+'？';q.eqs=q.a+' ＋ '+q.b;}
+  else if(k===1){q.a=ri(15,95);q.b=ri(2,9);q.ans=q.a-q.b;q.story=nm+'有 '+q.a+' '+ms+it+'，送給朋友 '+q.b+' '+ms+'，還剩下幾'+ms+'？';q.eqs=q.a+' － '+q.b;}
+  else{q.a=ri(15,90);q.b=q.a-ri(2,9);q.ans=q.a-q.b;q.story='哥哥有 '+q.a+' '+ms+it+'，妹妹有 '+q.b+' '+ms+'，哥哥比妹妹多幾'+ms+'？';q.eqs=q.a+' － '+q.b;}
+  q.type='word';return q;}
+ if(type==='mul25'||type==='mul34'||type==='mul'){q.k=type==='mul25'?[2,5,10][ri(0,2)]:type==='mul34'?ri(3,4):ri(2,9);q.g=ri(2,9);q.ans=q.k*q.g;q.type='mul';return q;}
+ if(type==='mulword'){const [em,it,ms]=q.it;q.k=ri(2,9);q.g=ri(2,9);q.ans=q.k*q.g;const box=['盒','袋','盤','排'][ri(0,3)];q.story='每'+box+'有 '+q.k+' '+ms+it+'，'+q.g+' '+box+'一共有幾'+ms+'？';q.eqs=q.k+' × '+q.g;q.type='word';q.mulw=1;return q;}
+ if(type==='word2'){const nm=pickName();const A=[50,100][ri(0,1)];q.b=ri(5,A/2-5);q.c=ri(5,A-q.b-5);q.a=A;q.ans=A-q.b-q.c;
+  const its2=[['鉛筆','橡皮擦'],['果汁','餅乾'],['貼紙','小汽車'],['麵包','牛奶']][ri(0,3)];q.story=nm+'有 '+A+' 元，買了 '+q.b+' 元的'+its2[0]+'和 '+q.c+' 元的'+its2[1]+'，還剩多少元？';q.eqs=A+' － '+q.b+' － '+q.c;q.type='word';q.it=['🛍️','',''];return q;}
+ return mk0(type,q);};
+ const sc0=extScene;extScene=function(q){const e=q.it[0];
+  if(q.type==='place')return blocks(q.ans,'big');
+  if(q.type==='place3')return blocks(q.ans,'big');
+  if(q.type==='add2')return blocks(q.a)+'<span class="op">＋</span>'+blocks(q.b);
+  if(q.type==='sub2')return blocks(q.a)+'<div class="earhint">拿走 '+q.b+'</div>';
+  if(q.type==='cmpsym')return '<div class="cmpbig"><b>'+q.x+'</b><span class="cbox">?</span><b>'+q.y+'</b></div>';
+  if(q.type==='seq')return '<div class="seqrow">'+q.list.map((v,i)=>i===q.hole?'<span class="sq hole">?</span>':'<span class="sq">'+v+'</span>').join('<span class="sarr">→</span>')+'</div>';
+  if(q.type==='word')return '<div class="wstory"><div class="bigemo">'+(q.mulw?q.it[0].repeat(3):q.it[0])+'</div><p>'+q.story+'</p></div>';
+  if(q.type==='mul')return mulScene(q.k,q.g,e);
+  return sc0(q);};
+ const eq0=extEq;extEq=function(q,show){const A=show?'<b class="ansv">'+q.ans+'</b>':'<b>?</b>';
+  if(q.type==='place')return q.t+' 個十和 '+q.u+' 個一 ＝ '+A;
+  if(q.type==='place3')return q.h+' 個百、'+q.t+' 個十、'+q.u+' 個一 ＝ '+A;
+  if(q.type==='add2')return q.a+' ＋ '+q.b+' ＝ '+A;if(q.type==='sub2')return q.a+' － '+q.b+' ＝ '+A;
+  if(q.type==='cmpsym')return q.x+' '+(show?'<b class="ansv">'+q.ans+'</b>':'<b>?</b>')+' '+q.y;
+  if(q.type==='seq')return '每次'+(show?'多 '+q.st:'多多少？');
+  if(q.type==='word')return q.eqs+' ＝ '+A;
+  if(q.type==='mul')return q.k+' × '+q.g+' ＝ '+A;
+  return eq0(q,show);};
+ const pr0=extPrompt;extPrompt=function(q){
+  if(q.type==='place')return '有幾個十、幾個一？一共是多少？';if(q.type==='place3')return '有幾個百、幾個十、幾個一？一共是多少？';
+  if(q.type==='add2')return q.a+'加'+q.b+'等於多少？';if(q.type==='sub2')return q.a+'減'+q.b+'等於多少？';
+  if(q.type==='cmpsym')return '比比看，'+q.x+'和'+q.y+'，哪一個比較大？';if(q.type==='seq')return '找出規律，空格裡是多少？';
+  if(q.type==='word')return q.story;if(q.type==='mul')return q.k+'乘以'+q.g+'等於多少？';return pr0(q);};
+ const pa0=extPraise;extPraise=function(q){
+  if(q.type==='cmpsym')return q.x+(q.ans==='>'?'大於':q.ans==='<'?'小於':'等於')+q.y;if(q.type==='seq')return '每次多'+q.st+'，是'+q.ans;
+  if(['place','place3','add2','sub2','word','mul'].includes(q.type))return '答案是'+q.ans;return pa0(q);};
+ const hi0=extHint;extHint=function(q){
+  if(q.type==='place'||q.type==='place3')return '一條長條是 10，一塊大方板是 100，小方塊是 1。';
+  if(q.type==='add2')return '先算個位，滿 10 就進位到十位。';if(q.type==='sub2')return '先算個位，不夠減就跟十位借 10。';
+  if(q.type==='cmpsym')return '先比十位，十位一樣再比個位。開口朝向大的數字。';if(q.type==='seq')return '看看每次多了多少。';
+  if(q.type==='word')return q.mulw?'每一份一樣多，就用乘法。':'想一想：變多了用加法，變少了或比多少用減法。';
+  if(q.type==='mul')return '可以一組一組加起來：'+Array(Math.min(q.g,5)).fill(q.k).join('＋')+(q.g>5?'……':'');return hi0(q);};
+ const wr0=extWrong;extWrong=function(q,v){
+  if(q.type==='place'||q.type==='place3')return '先數長條有幾條，再數小方塊有幾個。';if(q.type==='add2')return '再算一次：個位加起來滿 10 了嗎？';
+  if(q.type==='sub2')return '再算一次：個位夠不夠減？不夠要借 10 喔。';if(q.type==='cmpsym')return '先比十位的數字，大的那邊開口朝它。';
+  if(q.type==='seq')return '看看前後兩個數字差多少，再算空格。';if(q.type==='word')return '再讀一次題目，想想要用加法、減法還是乘法。';
+  if(q.type==='mul')return '試試看用加的：'+q.k+' 加 '+q.g+' 次。';return wr0(q,v);};}
+
+/* ---------- 數學城堡 Level 1 新題型（第幾個、數的順序、形狀、分一分、連加、圖畫應用題） ---------- */
+const ANIMALS=[['🐶','小狗'],['🐱','小貓'],['🐰','小兔子'],['🐻','小熊'],['🐼','貓熊'],['🐸','青蛙'],['🐷','小豬'],['🐵','猴子']];
+const SHAPES=[['circle','圓形'],['tri','三角形'],['square','正方形'],['rect','長方形']];
+function shapeSVG(k){const c={circle:'#ff6b81',tri:'#4fb865',square:'#3fa2f7',rect:'#f29e00'}[k];const f={circle:'<circle cx="50" cy="50" r="38"/>',tri:'<polygon points="50,12 90,86 10,86"/>',square:'<rect x="16" y="16" width="68" height="68" rx="4"/>',rect:'<rect x="6" y="28" width="88" height="46" rx="4"/>'}[k];
+ return '<svg class="shape" viewBox="0 0 100 100" aria-hidden="true"><g fill="'+c+'" stroke="rgba(0,0,0,.18)" stroke-width="3">'+f+'</g></svg>';}
+{const mk0=extMk;extMk=function(type,q){const e=q.it[0];
+ if(type==='ordinal'){const row=shuffle(ANIMALS.slice()).slice(0,ri(5,7));q.row=row.map(x=>x[0]);const k=ri(0,row.length-1);q.who=row[k][1];q.ans=k+1;return q;}
+ if(type==='nextprev'){q.dir=Math.random()<.5?'next':'prev';q.n=q.dir==='next'?ri(1,19):ri(2,20);q.ans=q.dir==='next'?q.n+1:q.n-1;return q;}
+ if(type==='shape'){const s=SHAPES[ri(0,3)];q.shape=s[0];q.sname=s[1];q.ans=s[0];q.opts=shuffle([s[0]].concat(shuffle(SHAPES.filter(x=>x[0]!==s[0])).slice(0,2).map(x=>x[0])));q.pic=1;q.render=v=>shapeSVG(v);return q;}
+ if(type==='split'){q.n=ri(3,10);q.a=ri(1,q.n-1);q.ans=q.n-q.a;return q;}
+ if(type==='add3'){q.a=ri(1,4);q.b=ri(1,4);q.c=ri(1,Math.max(1,10-q.a-q.b));if(q.a+q.b+q.c>10)q.c=10-q.a-q.b;q.ans=q.a+q.b+q.c;return q;}
+ if(type==='wordL1'){if(Math.random()<.5){q.a=ri(2,7);q.b=ri(1,10-q.a);q.ans=q.a+q.b;q.wadd=1;q.it=['🐦','小鳥','隻'];q.story='樹上有 '+q.a+' 隻小鳥，又飛來 '+q.b+' 隻，一共有幾隻？';}
+  else{q.a=ri(3,10);q.b=ri(1,q.a-1);q.ans=q.a-q.b;q.it=['🍎','蘋果','顆'];q.story='盤子裡有 '+q.a+' 顆蘋果，吃掉 '+q.b+' 顆，還剩幾顆？';q.take=1;}return q;}
+ if(type==='add20nc'){if(Math.random()<.5){q.a=ri(11,17);q.b=ri(1,9-q.a%10);q.ans=q.a+q.b;q.type='add';}else{q.a=ri(12,19);q.b=ri(1,q.a%10);q.ans=q.a-q.b;q.type='sub';}q.tf=true;return q;}
+ return mk0(type,q);};
+ const sc0=extScene;extScene=function(q){const e=q.it[0];
+  if(q.type==='ordinal')return '<div class="ordrow"><span class="ordstart">左邊 👉</span>'+q.row.map(x=>'<span class="it">'+x+'</span>').join('')+'</div>';
+  if(q.type==='nextprev')return '<div class="seqrow">'+(q.dir==='next'?'<span class="sq">'+q.n+'</span><span class="sarr">→</span><span class="sq hole">?</span>':'<span class="sq hole">?</span><span class="sarr">→</span><span class="sq">'+q.n+'</span>')+'</div>';
+  if(q.type==='shape')return '<div class="bigq shp">'+q.sname+'</div>';
+  if(q.type==='split')return '<div class="splitbox"><div class="grp big">'+its(q.n,e)+'</div><div class="earhint">一共 '+q.n+' '+q.it[2]+'，分成兩盤</div><div class="plates"><div class="plate">'+its(q.a,e)+'</div><div class="plate qplate">?</div></div></div>';
+  if(q.type==='add3')return grp(q.a,e)+'<span class="op">＋</span>'+grp(q.b,e)+'<span class="op">＋</span>'+grp(q.c,e);
+  if(q.type==='wordL1')return '<div class="wstory"><p>'+q.story+'</p></div>'+(q.wadd?grp(q.a,e)+'<span class="op">＋</span>'+grp(q.b,e):'<div class="grp big">'+its(q.a-q.b,e)+its(q.b,e,'out')+'</div>');
+  return sc0(q);};
+ const eq0=extEq;extEq=function(q,show){const A=show?'<b class="ansv">'+q.ans+'</b>':'<b>?</b>';
+  if(q.type==='ordinal')return '第 '+A+' 個';if(q.type==='nextprev')return q.dir==='next'?q.n+' 的下一個是 '+A:q.n+' 的前一個是 '+A;
+  if(q.type==='shape')return show?'<b class="ansv">'+q.sname+'</b>':'';if(q.type==='split')return q.n+' 可以分成 '+q.a+' 和 '+A;
+  if(q.type==='add3')return q.a+' ＋ '+q.b+' ＋ '+q.c+' ＝ '+A;if(q.type==='wordL1')return q.a+(q.wadd?' ＋ ':' － ')+q.b+' ＝ '+A;return eq0(q,show);};
+ const pr0=extPrompt;extPrompt=function(q){
+  if(q.type==='ordinal')return '從左邊數過來，'+q.who+'排在第幾個？';if(q.type==='nextprev')return q.n+(q.dir==='next'?'的下一個數是多少？':'的前一個數是多少？');
+  if(q.type==='shape')return '哪一個是'+q.sname+'？';if(q.type==='split')return cnm(q.n)+q.it[2]+q.it[1]+'分成兩盤，一盤有'+cnm(q.a)+q.it[2]+'，另一盤有幾'+q.it[2]+'？';
+  if(q.type==='add3')return cn(q.a)+'加'+cn(q.b)+'再加'+cn(q.c)+'，等於多少？';if(q.type==='wordL1')return q.story;return pr0(q);};
+ const pa0=extPraise;extPraise=function(q){
+  if(q.type==='ordinal')return q.who+'排在第'+cn(q.ans)+'個';if(q.type==='nextprev')return '是'+cn(q.ans);if(q.type==='shape')return '這是'+q.sname;
+  if(q.type==='split')return cn(q.n)+'可以分成'+cn(q.a)+'和'+cn(q.ans);if(q.type==='add3'||q.type==='wordL1')return '答案是'+cn(q.ans);return pa0(q);};
+ const hi0=extHint;extHint=function(q){
+  if(q.type==='ordinal')return '從左邊的手指開始，一個一個數過去。';if(q.type==='nextprev')return q.dir==='next'?'下一個就是多 1。':'前一個就是少 1。';
+  if(q.type==='shape')return '圓形圓圓的；三角形有 3 個角；正方形 4 個邊一樣長；長方形扁扁長長的。';if(q.type==='split')return '可以點上面的東西數數看，再想想還差幾個。';
+  if(q.type==='add3')return '先算前面兩個，再加第三個。';if(q.type==='wordL1')return '看看是變多了，還是變少了？';return hi0(q);};
+ const wr0=extWrong;extWrong=function(q,v){
+  if(q.type==='ordinal')return '從左邊開始，用手指一個一個數到'+q.who+'。';if(q.type==='nextprev')return q.dir==='next'?'數數看，'+q.n+' 後面是哪一個？':'倒著數，'+q.n+' 前面是哪一個？';
+  if(q.type==='shape')return '這不是'+q.sname+'喔，再看看它有幾個角、幾個邊。';if(q.type==='split')return '兩盤合起來要是 '+q.n+' 喔，再想想看。';
+  if(q.type==='add3')return '先算 '+q.a+' 加 '+q.b+'，再加 '+q.c+'。';if(q.type==='wordL1')return '再讀一次題目，可以點圖片數數看。';return wr0(q,v);};}
 
 renderMap();
 })();
